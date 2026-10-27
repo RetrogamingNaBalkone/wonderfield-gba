@@ -1,0 +1,44 @@
+# Local build products and Zig caches
+/build/
+/dist/
+/originals/
+/.zig-cache/
+/zig-cache/
+/zig-out/
+
+# Python bytecode and virtual environments
+__pycache__/
+*.py[cod]
+/.venv/
+/venv/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*~
+
+# Emulator saves and save states
+/saves/
+*.sav
+*.srm
+*.ss[0-9]
+*.state
+*.state[0-9]*
+
+# Machine-specific configuration and credentials
+/.env
+/.env.*
+!/.env.example
+/.aws/
+
+# Local editor and OS files
+/.idea/
+/.vs/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Keep source assets, analysis exports and documentation.

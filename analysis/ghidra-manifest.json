@@ -1,0 +1,14 @@
+﻿{
+    "input":  "originals/Wonderfield/POLE.EXE",
+    "sha256":  "37c2a9d340206687b4200412080be5ef56f7dbedfd01c6ebc443b0957e899bb4",
+    "ghidra":  "12.1.2 PUBLIC",
+    "project":  "build/ghidra/Wonderfield.gpr",
+    "script":  "scripts/ExportPole.java",
+    "functions":  235,
+    "language":  "x86 16-bit real mode MZ",
+    "outputs":  [
+                    "analysis/decompiled.c",
+                    "analysis/listing.asm",
+                    "analysis/functions.tsv"
+                ]
+}

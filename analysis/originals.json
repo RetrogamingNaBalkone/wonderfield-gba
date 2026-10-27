@@ -1,0 +1,26 @@
+{
+  "old-games.nfo": {
+    "bytes": 1620,
+    "sha256": "cc2283945241a42a54020c30fa83aa3c17a91a59c034ae5f444db62e303b1602"
+  },
+  "POLE.EXE": {
+    "bytes": 54752,
+    "sha256": "37c2a9d340206687b4200412080be5ef56f7dbedfd01c6ebc443b0957e899bb4"
+  },
+  "POLE.FNT": {
+    "bytes": 7168,
+    "sha256": "c97a2a69ebe88577d7453408bf92a1739ed6d7b5a8c010f1d3078b5b9c9dd364"
+  },
+  "POLE.LIB": {
+    "bytes": 80640,
+    "sha256": "fe9ca0bfedf35d429ecbb14e787f347b55b12beed4d0daee6179db0f4affed94"
+  },
+  "POLE.OVL": {
+    "bytes": 20811,
+    "sha256": "05497f21358a2efc3f73859d76e04f759a345cf257e20e7c0bdcc1d75de45843"
+  },
+  "POLE.PIC": {
+    "bytes": 104,
+    "sha256": "c9d6abc43125428ee0976bbea3e8d32c8b8e67b251e8aa72a1db64bb652af7e3"
+  }
+}

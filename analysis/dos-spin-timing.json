@@ -1,0 +1,33 @@
+{
+  "original_sha256": "37c2a9d340206687b4200412080be5ef56f7dbedfd01c6ebc443b0957e899bb4",
+  "results": [
+    {
+      "cpu_cycles": 5000,
+      "seconds": 2.3470911000622436,
+      "player": 3,
+      "sector_value": -1,
+      "phase_samples": 56,
+      "distinct_phases": 29,
+      "dosbox_info": {
+        "configHome": "C:\\Users\\dspev\\AppData\\Local\\DOSBox",
+        "configWebserver": "C:\\Users\\dspev\\AppData\\Local\\DOSBox\\webserver",
+        "version": "0.83.0 (7b400)"
+      },
+      "measurement": "1000:2c6a entry to original DS:084e write, host monotonic clock, ~20 ms polling"
+    },
+    {
+      "cpu_cycles": 20000,
+      "seconds": 0.9848082000389695,
+      "player": 3,
+      "sector_value": 10,
+      "phase_samples": 22,
+      "distinct_phases": 19,
+      "dosbox_info": {
+        "configHome": "C:\\Users\\dspev\\AppData\\Local\\DOSBox",
+        "configWebserver": "C:\\Users\\dspev\\AppData\\Local\\DOSBox\\webserver",
+        "version": "0.83.0 (7b400)"
+      },
+      "measurement": "1000:2c6a entry to original DS:084e write, host monotonic clock, ~20 ms polling"
+    }
+  ]
+}

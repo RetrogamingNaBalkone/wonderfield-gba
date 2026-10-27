@@ -1,0 +1,20 @@
+Built-in image_gen tool. Style-reference inputs: assets/sprite-31.png,
+assets/sprite-32.png, assets/sprite-33.png. Original resources remain unchanged.
+
+Use case: stylized-concept. Asset type: a seamless raster texture for a
+DOS-to-GBA game, matching the three reference images exactly in visual
+language. Generate ONLY a flat 2D blue stone wall texture, no game interface,
+no text, no people. The three images are style references: original
+hand-pixelled EGA masonry, cobalt blue fills, electric-blue and light-grey
+angular pixel outlines, sparse black creases, almost no shading. Draw
+additional irregular rectangular blue stones like these, arranged in four
+offset horizontal rows. This texture will extend the lower strip of the
+existing wall. Preserve a straight horizontal lower boundary, and make left
+and right edges tile seamlessly. Landscape 3:1 canvas. Intended logical pixel
+grid 192 by 64, shown enlarged 8 times to 1536 by 512: every pixel must be a
+hard square block, no antialiasing, no smooth gradients, no 3D lighting, no
+photographic stone, no bevelled glossy rendering, no extra decorations. Use
+ONLY black #000000, dark blue #0000AA, bright periwinkle blue #5555FF, and
+light grey #AAAAAA. Stones about 16–28 logical pixels wide and 12–16 logical
+pixels high, outlines one logical pixel thick, matching the references
+rather than modern pixel-art stone tiles. No border around the asset.
