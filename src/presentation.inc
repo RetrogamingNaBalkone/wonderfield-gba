@@ -55,7 +55,7 @@ static void wheel(void){
 }
 static void score_badge(int player,int x,int y){
  int value=game.score[player];
- if(value==0){half_image(28,x+6,y,7);return;}
+ if(value==0){const Sprite*s=&sprites_half[28];image(s,x+(44-s->w)/2,y,7);return;}
  rect(x,y,44,10,5);border(x,y,44,10,0);number(x+2,y+1,value,1,0);
 }
 static int host_visible(void){

@@ -6,6 +6,40 @@ Only colours already present in the original image can appear in the result.
 """
 import math
 
+def snickers_label(raw):
+    """Hint DOS resource 28 for the score slot, using its original ink colours.
+
+    A 22x7 nearest-neighbour reduction cannot retain eight distinct letters.
+    Keep a five-row wordmark, its rightward slant and light-blue highlights in
+    a 34x9 wrapper; the complete badge still fits inside the 44x10 score slot.
+    The extracted DOS sprite and the gallery resource remain lossless.
+    """
+    import json
+    from pathlib import Path
+    spec=json.loads((Path(__file__).resolve().parents[1]/'assets/snickers-label.json').read_text())
+    w,h=spec['width'],spec['height']
+    rows=['']*5
+    for ch in spec['text']:
+        glyph=spec['glyphs'][ch]
+        assert len(glyph)==5 and len(set(map(len,glyph)))==1
+        for y,row in enumerate(glyph):rows[y]+=('.' if rows[y] else '')+row
+    assert (w,h)==(34,9) and len(rows[0])==w-5
+    result=bytearray(w*h)
+    for y in range(h):
+        # Black crimped ends and the original brown wrapper around white foil.
+        inset=2 if y in (0,h-1) else 1
+        for x in range(inset,w-inset):result[y*w+x]=4
+    for y in range(1,h-1):
+        shift=int(y<4)
+        for x in range(2+shift,w-2+shift):result[y*w+x]=15
+    for y,row in enumerate(rows):
+        shift=int(y<2)
+        for x,ink in enumerate(row):
+            if ink=='#':
+                result[(y+2)*w+x+2+shift]=9 if y==3 and x>0 and row[x-1]=='.' else 1
+    assert set(result)<=set(raw)
+    return w,h,bytes(result)
+
 def title_logo_resize(raw,w,h,nw,nh,resource):
     """Repair only identified hairline cuts, then reduce the original ink mask.
 

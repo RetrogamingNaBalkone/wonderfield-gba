@@ -26,8 +26,33 @@ if (directory/'pole.gba').exists() and (directory/'pole.elf').exists():
   baseline=profile(directory/'pole.gba',directory/'pole.elf',directory/'idle-profile-normalized.json')
  for old,new in zip(baseline['results'],current['results']):
   if new['name']=='title-settled':
-   check('title pixels outside the smaller version caption match previous ROM',old['title_without_version_crc32']==new['title_without_version_crc32'])
+   check('baseline and current title fixtures agree',old['name']==new['name'])
   else:check(new['name']+' has identical pixels to previous ROM',old['name']==new['name'] and old['ppu_crc32']==new['ppu_crc32'])
+ # Compare actual PPU pixels: only the smaller version caption and blue ink
+ # in the two large logo bounds may differ. Background/grid pixels must match
+ # wherever neither version draws blue ink, even inside those bounds.
+ def title_pixels(rom_path,elf_path):
+  em=Emulator(rom_path,elf_path)
+  try:
+   em.run(300);pixels=[]
+   for v, in struct.iter_unpack('<I' if em.format==1 else '<H',em.raw):
+    if em.format==1:r,g,b=(v>>19)&31,(v>>11)&31,(v>>3)&31
+    elif em.format==2:r,g,b=(v>>11)&31,(v>>6)&31,v&31
+    else:r,g,b=(v>>10)&31,(v>>5)&31,v&31
+    pixels.append(r|(g<<5)|(b<<10))
+   data=c.string_at(em.info.data,em.info.size)
+   blue=struct.unpack_from('<H',data,em.sym['palette']-0x08000000+2)[0]
+   return pixels,blue
+  finally:em.close()
+ old_pixels,old_blue=title_pixels(directory/'pole.gba',directory/'pole.elf')
+ new_pixels,new_blue=title_pixels(ROOT/'build/gba/pole.gba',ROOT/'build/gba/pole.elf')
+ def allowed_title_change(p,a,b):
+  x,y=p%240,p//240
+  if 206<=x<234 and 120<=y<134:return True
+  in_logo=(9<=x<102 and 23<=y<111) or (104<=x<213 and 23<=y<131)
+  return in_logo and (a==old_blue or b==new_blue)
+ check('title changes only approved blue logo strokes and version caption',
+       all(a==b or allowed_title_change(p,a,b) for p,(a,b) in enumerate(zip(old_pixels,new_pixels))))
 
 reference=json.loads((ROOT/'analysis/pacing-reference.json').read_text())
 pacing=measure_pacing();previous=reference['timings']

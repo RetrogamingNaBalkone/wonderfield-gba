@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "count": 117,
+  "count": 118,
   "checks": [
     "title-settled has no redundant full redraws",
     "title-settled keeps exactly one PPU image",
@@ -46,7 +46,7 @@
     "cash-completed keeps exactly one PPU image",
     "cash-completed polls the main loop every VBlank",
     "cash-completed takes the empty-audio fast path",
-    "title pixels outside the smaller version caption match previous ROM",
+    "baseline and current title fixtures agree",
     "human-turn-settled has identical pixels to previous ROM",
     "human-turn-muted has identical pixels to previous ROM",
     "solve-keyboard-idle has identical pixels to previous ROM",
@@ -57,6 +57,7 @@
     "records-idle has identical pixels to previous ROM",
     "credits-settled has identical pixels to previous ROM",
     "cash-completed has identical pixels to previous ROM",
+    "title changes only approved blue logo strokes and version caption",
     "spin seed 0 retains pre-optimization duration",
     "spin seed 1 retains pre-optimization duration",
     "spin seed 2 retains pre-optimization duration",
@@ -120,11 +121,11 @@
     "muted active note preserves queue and oscillator state",
     "muted active note preserves sample/transition diagnostics"
   ],
-  "rom_sha256": "7d35169988e8becfe0c55e6606a6b49ccf3fc069939782d0217a4485fa66fb30",
+  "rom_sha256": "3940ebda812a4c7cc63d2b54277f3e964523390986fbff02686bdc8c4e8c004d",
   "ai_chest_vblanks": 328,
   "audio_cases": 10,
   "idle_profile": {
-    "rom_sha256": "7d35169988e8becfe0c55e6606a6b49ccf3fc069939782d0217a4485fa66fb30",
+    "rom_sha256": "3940ebda812a4c7cc63d2b54277f3e964523390986fbff02686bdc8c4e8c004d",
     "rom_bytes": 1048576,
     "hash_source": "retro_load_game input buffer",
     "fps": 59.727500915527344,
@@ -141,10 +142,10 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1304895322
+          3800471863
         ],
         "title_without_version_crc32": [
-          1111918838
+          3976662683
         ],
         "audio_irqs": 10287,
         "audio_samples": 164592,

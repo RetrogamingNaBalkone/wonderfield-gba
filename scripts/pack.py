@@ -2,7 +2,7 @@
 from pathlib import Path
 import json,struct,re,math
 from extract import ROOT,OUT,SRC,EGA
-from pixel_art import outlined_resize,wheel_symbol,title_logo_resize
+from pixel_art import outlined_resize,wheel_symbol,title_logo_resize,snickers_label
 GEN=ROOT/'build/generated'; GEN.mkdir(parents=True,exist_ok=True)
 def cstr(b):return '"'+''.join('\\%03o'%x for x in b)+'"'
 def arr(name,b):return f'const unsigned char {name}[] __attribute__((aligned(4)))={{'+','.join(map(str,b))+'};\n'
@@ -40,6 +40,7 @@ def main():
   if s['id'] in (21,22,23,24,25,26,48,49,50,51):small=outlined_resize(raw,w,h,sw,sh,2)
   elif s['id'] in (27,42,45):small=outlined_resize(raw,w,h,sw,sh,3)
   elif s['id'] in (43,44):small=outlined_resize(raw,w,h,sw,sh,5)
+  elif s['id']==28:sw,sh,small=snickers_label(raw)
   code.append(arr(f'small_data_{s["id"]}',small));half.append((sw,sh,small));half_refs.append(f'{{{sw},{sh},small_data_{s["id"]}}}')
  code.append('const Sprite sprites[57]={'+','.join(sprites)+'};\n')
  code.append('const Sprite sprites_half[57]={'+','.join(half_refs)+'};\n')
