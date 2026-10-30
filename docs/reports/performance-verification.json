@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "count": 118,
+  "count": 119,
   "checks": [
     "title-settled has no redundant full redraws",
     "title-settled keeps exactly one PPU image",
@@ -86,8 +86,9 @@
     "settled chests do not redraw",
     "reward chest disappears at its deadline",
     "expired reward remains static",
-    "AI chest waits instead of accelerating with the main loop",
-    "AI chest decision retains approximately 5.5 seconds",
+    "AI chest prompt lasts about 2.5 seconds",
+    "AI chest reply remains static and readable",
+    "AI chest reply lasts about 1.5 seconds before opening",
     "START pauses animated chest",
     "resuming shifts chest animation clock by the pause duration",
     "empty preserves every FIFO byte",
@@ -121,11 +122,11 @@
     "muted active note preserves queue and oscillator state",
     "muted active note preserves sample/transition diagnostics"
   ],
-  "rom_sha256": "3940ebda812a4c7cc63d2b54277f3e964523390986fbff02686bdc8c4e8c004d",
-  "ai_chest_vblanks": 328,
+  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b",
+  "ai_chest_vblanks": 240,
   "audio_cases": 10,
   "idle_profile": {
-    "rom_sha256": "3940ebda812a4c7cc63d2b54277f3e964523390986fbff02686bdc8c4e8c004d",
+    "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b",
     "rom_bytes": 1048576,
     "hash_source": "retro_load_game input buffer",
     "fps": 59.727500915527344,
@@ -161,7 +162,7 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1346862613
+          3410679897
         ],
         "title_without_version_crc32": [],
         "audio_irqs": 10287,
@@ -178,7 +179,7 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1346862613
+          3410679897
         ],
         "title_without_version_crc32": [],
         "audio_irqs": 10287,
@@ -215,7 +216,7 @@
           1164672475
         ],
         "title_without_version_crc32": [],
-        "audio_irqs": 10287,
+        "audio_irqs": 10286,
         "audio_samples": 164576,
         "fast_silent_buffers": 10286
       },
@@ -263,7 +264,7 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1614327862
+          3773556619
         ],
         "title_without_version_crc32": [],
         "audio_irqs": 10287,
@@ -324,7 +325,7 @@
     ]
   },
   "baseline_profile": {
-    "rom_sha256": "97ecf88b6cbaedc0233dbeaff8cfc29f1964d2d56c65673bd441fb371e24a820",
+    "rom_sha256": "7575346563da313617811a6e3fd9728fec65ad86867ede8cccb63a139780a9ed",
     "rom_bytes": 1048576,
     "hash_source": "retro_load_game input buffer",
     "fps": 59.727500915527344,
@@ -338,119 +339,119 @@
         "main_updates": 300,
         "scheduled_redraws": 0,
         "rendered_frames": 0,
-        "draw_counter": "legacy scheduling",
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1854360826
+          3800471863
         ],
         "title_without_version_crc32": [
-          1111918838
+          3976662683
         ],
         "audio_irqs": 10287,
         "audio_samples": 164592,
-        "fast_silent_buffers": 0
+        "fast_silent_buffers": 10287
       },
       {
         "name": "human-turn-settled",
         "mode": 1,
         "vblanks": 300,
-        "main_updates": 50,
-        "scheduled_redraws": 50,
-        "rendered_frames": 50,
-        "draw_counter": "legacy scheduling",
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1346862613
+          3410679897
         ],
         "title_without_version_crc32": [],
         "audio_irqs": 10287,
         "audio_samples": 164592,
-        "fast_silent_buffers": 0
+        "fast_silent_buffers": 10287
       },
       {
         "name": "human-turn-muted",
         "mode": 1,
         "vblanks": 300,
-        "main_updates": 50,
-        "scheduled_redraws": 50,
-        "rendered_frames": 50,
-        "draw_counter": "legacy scheduling",
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1346862613
+          3410679897
         ],
         "title_without_version_crc32": [],
         "audio_irqs": 10287,
         "audio_samples": 164592,
-        "fast_silent_buffers": 0
+        "fast_silent_buffers": 10287
       },
       {
         "name": "solve-keyboard-idle",
         "mode": 5,
         "vblanks": 300,
-        "main_updates": 43,
-        "scheduled_redraws": 43,
-        "rendered_frames": 43,
-        "draw_counter": "legacy scheduling",
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           3298633534
         ],
         "title_without_version_crc32": [],
         "audio_irqs": 10287,
-        "audio_samples": 164578,
-        "fast_silent_buffers": 0
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
       },
       {
         "name": "name-keyboard-idle",
         "mode": 14,
         "vblanks": 300,
-        "main_updates": 43,
-        "scheduled_redraws": 43,
-        "rendered_frames": 43,
-        "draw_counter": "legacy scheduling",
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           1164672475
         ],
         "title_without_version_crc32": [],
         "audio_irqs": 10286,
-        "audio_samples": 164583,
-        "fast_silent_buffers": 0
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
       },
       {
         "name": "gift-page-idle",
         "mode": 19,
         "vblanks": 300,
-        "main_updates": 38,
-        "scheduled_redraws": 38,
-        "rendered_frames": 38,
-        "draw_counter": "legacy scheduling",
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           1761400240
         ],
         "title_without_version_crc32": [],
         "audio_irqs": 10286,
-        "audio_samples": 164588,
-        "fast_silent_buffers": 0
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
       },
       {
         "name": "gallery-idle",
         "mode": 13,
         "vblanks": 300,
-        "main_updates": 37,
+        "main_updates": 300,
         "scheduled_redraws": 0,
-        "rendered_frames": 37,
-        "draw_counter": "legacy scheduling",
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           190437343
         ],
         "title_without_version_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 0
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
       },
       {
         "name": "help-idle",
@@ -459,15 +460,15 @@
         "main_updates": 300,
         "scheduled_redraws": 0,
         "rendered_frames": 0,
-        "draw_counter": "legacy scheduling",
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1614327862
+          3773556619
         ],
         "title_without_version_crc32": [],
-        "audio_irqs": 10286,
-        "audio_samples": 164587,
-        "fast_silent_buffers": 0
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
       },
       {
         "name": "records-idle",
@@ -476,24 +477,24 @@
         "main_updates": 300,
         "scheduled_redraws": 0,
         "rendered_frames": 0,
-        "draw_counter": "legacy scheduling",
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           536576372
         ],
         "title_without_version_crc32": [],
-        "audio_irqs": 10286,
-        "audio_samples": 164587,
-        "fast_silent_buffers": 0
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
       },
       {
         "name": "credits-settled",
         "mode": 17,
         "vblanks": 300,
-        "main_updates": 27,
-        "scheduled_redraws": 27,
-        "rendered_frames": 27,
-        "draw_counter": "legacy scheduling",
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           2983715019
@@ -501,16 +502,16 @@
         "title_without_version_crc32": [],
         "audio_irqs": 10287,
         "audio_samples": 164592,
-        "fast_silent_buffers": 0
+        "fast_silent_buffers": 10287
       },
       {
         "name": "cash-completed",
         "mode": 21,
         "vblanks": 300,
-        "main_updates": 75,
-        "scheduled_redraws": 75,
-        "rendered_frames": 75,
-        "draw_counter": "legacy scheduling",
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           2732350346
@@ -518,7 +519,7 @@
         "title_without_version_crc32": [],
         "audio_irqs": 10287,
         "audio_samples": 164592,
-        "fast_silent_buffers": 0
+        "fast_silent_buffers": 10287
       }
     ]
   },

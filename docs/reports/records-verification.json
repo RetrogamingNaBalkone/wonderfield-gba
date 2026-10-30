@@ -97,7 +97,7 @@
     "cash exit shows farewell rather than requesting name",
     "cash exit leaves high-score SRAM intact"
   ],
-  "rom_sha256": "a930b04c0a96ac585a49b34238141218d6888543b8681b11a6d1131a679a8f4e",
+  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b",
   "initial_scores": [
     8000,
     7000,

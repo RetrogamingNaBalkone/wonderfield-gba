@@ -1,5 +1,5 @@
 {
-  "rom_sha256": "3940ebda812a4c7cc63d2b54277f3e964523390986fbff02686bdc8c4e8c004d",
+  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b",
   "rom_bytes": 1048576,
   "hash_source": "retro_load_game input buffer",
   "fps": 59.727500915527344,
@@ -35,7 +35,7 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        1346862613
+        3410679897
       ],
       "title_without_version_crc32": [],
       "audio_irqs": 10287,
@@ -52,7 +52,7 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        1346862613
+        3410679897
       ],
       "title_without_version_crc32": [],
       "audio_irqs": 10287,
@@ -89,7 +89,7 @@
         1164672475
       ],
       "title_without_version_crc32": [],
-      "audio_irqs": 10287,
+      "audio_irqs": 10286,
       "audio_samples": 164576,
       "fast_silent_buffers": 10286
     },
@@ -137,7 +137,7 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        1614327862
+        3773556619
       ],
       "title_without_version_crc32": [],
       "audio_irqs": 10287,

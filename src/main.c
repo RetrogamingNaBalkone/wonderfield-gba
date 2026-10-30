@@ -112,7 +112,10 @@ static void farewell(void){set_mode(GAME_OVER);game.keyboard=0;game.deal=0;say(m
 static void result(const char*a,const char*b,int next,int player){say(a,b);set_mode(RESULT);game.next_mode=next;game.next_player=player;game.wait=game.player==2?0:65;}
 static int nextplayer(void){return (game.player+1)%3;}
 static void begin_turn(void){set_mode(TURN);game.choice=1;const char*a=game.player==2?msg_d9a:game.player==0?msg_d8c:msg_d93;int p=0;while(a[p]){turn_line[p]=a[p];p++;}for(int i=0;msg_da1[i];i++)turn_line[p++]=msg_da1[i];turn_line[p]=0;say(turn_line,msg_da9);if(game.player!=2)game.wait=65;}
-static void new_round(void){int duplicate;do{game.word_id=random_n(495);duplicate=0;for(int i=0;i<game.round;i++)if(selected_words[i]==game.word_id)duplicate=1;}while(duplicate);selected_words[game.round]=game.word_id;for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;game.score[0]=game.score[1]=0;game.player=2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
+static void new_round(void){int duplicate;do{game.word_id=random_n(495);duplicate=0;for(int i=0;i<game.round;i++)if(selected_words[i]==game.word_id)duplicate=1;}while(duplicate);selected_words[game.round]=game.word_id;for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;
+ /* DOS 1000:5799..57d4: each opponent starts with round * (Random(4)*15+5). */
+ for(int i=0;i<2;i++)game.score[i]=game.round*(random_n(4)*15+5);
+ game.player=2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
 static void new_game(void){game.round=0;game.score[2]=0;game.sector=12;for(int i=0;i<6;i++)game.opponent[i]=i;for(int i=0;i<20;i++){int a=random_n(6),b=random_n(6),t=game.opponent[a];game.opponent[a]=game.opponent[b];game.opponent[b]=t;}new_round();}
 static int hidden(void){int n=0;for(int i=0;word()[i];i++)if(!game.revealed[i])n++;return n;}
 static void finish_round(void){

@@ -77,7 +77,7 @@
     "Prize black contour visible in actual PPU phase 31",
     "Prize contour checked in all 32 moving wheel phases"
   ],
-  "rom_sha256": "7575346563da313617811a6e3fd9728fec65ad86867ede8cccb63a139780a9ed",
+  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b",
   "source_reference": "build/reference/original-*.png",
   "native_glyph_height": 14,
   "sign_height": 12,

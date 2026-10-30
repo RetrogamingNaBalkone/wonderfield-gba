@@ -529,9 +529,9 @@
     },
     {
       "rubles": 1000000,
-      "vblanks": 9
+      "vblanks": 8
     }
   ],
   "long_cash": true,
-  "rom_sha256": "3940ebda812a4c7cc63d2b54277f3e964523390986fbff02686bdc8c4e8c004d"
+  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b"
 }
