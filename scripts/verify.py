@@ -56,7 +56,7 @@ fixture_sector(14);check('bankrupt clears score',e.state()[11]==0 and e.state()[
 fixture_sector(2);check('zero sector keeps bank',e.state()[11]==100 and e.state()[3]==6)
 fixture_sector(0);check('plus opens board selector',e.state()[3]==4);e.screenshot('plus.png');e.tap(8);e.run(30);e.until(lambda s:s[3]!=16);check('plus reveals chosen position',e.state()[18]==1);check('plus does not award numeric points',e.state()[11]==100)
 fixture_sector(6);check('prize offers choice',e.state()[3]==7);e.screenshot('prize.png');e.tap(8);check('declining prize continues game',e.state()[3]==3)
-fixture_sector(6);e.tap(6);e.tap(8);check('prize negotiation begins at original 100 rubles',e.state()[82:84]==(1,100));e.tap(6);e.tap(8);check('cash offer can be accepted',e.state()[3]==10 and e.state()[82]==5);e.screenshot('cash-prize.png')
+fixture_sector(6);e.tap(6);e.tap(8);check('prize negotiation begins at original 100 rubles',e.state()[82:84]==(1,100));e.tap(6);e.tap(8);check('cash offer enters dedicated scene',e.state()[3]==21 and e.state()[82]==5);e.screenshot('cash-prize.png')
 fixture_sector(6);e.tap(6);e.tap(8)
 offers=[]
 for i in range(3):e.tap(8);offers.append(e.state()[83])
@@ -84,11 +84,11 @@ hz=(len(cross)-1)*e.rate/(cross[-1]-cross[0]);check('PIT 440 Hz pitch in emulate
 e.tap(10);tone_fixture();e.run(20);offset=len(e.audio);e.run(30)
 check('L mutes speaker synthesis',all(abs(v[0])<=16 and abs(v[1])<=16 for v in struct.iter_unpack('<hh',b''.join(e.audio[offset:]))));e.tap(10)
 # Start a fresh game using only menu and keypad; solve three original words.
-e.tap(2);e.tap(3);e.run(30);e.tap(8);e.run(30);skip_intro()
+e.tap(3);e.tap(2);e.run(30);e.tap(8);e.run(30);skip_intro()
 played=[]
 for round_no in range(3):
  check(f'round {round_no+1} enters',e.state()[3]==1 and e.state()[4]==round_no)
- entry=words[e.state()[6]];played.append(entry['id']);e.tap(3);check('START enters full-word input',e.state()[3]==5)
+ entry=words[e.state()[6]];played.append(entry['id']);e.tap(6);e.tap(8);check('turn menu enters full-word input',e.state()[3]==5)
  for letter in entry['word']:select(letter)
  e.screenshot(f'solve-round-{round_no+1}.png');e.tap(3);e.run(30);check(f'round {round_no+1} solved',e.state()[3]==9 and e.state()[5]==2)
  e.tap(8);e.run(30);skip_intro()
@@ -106,7 +106,7 @@ select('Я');e.tap(3);e.run(30);check('record table after name',e.state()[3]==12
 saveptr=e.core.retro_get_memory_data(0);savebytes=c.string_at(saveptr,128)
 check('SRAM signature',savebytes[:4]==b'POL2');check('SRAM score stored',struct.unpack_from('<I',savebytes,15)[0]==30000)
 e.core.retro_reset();e.run(100);check('SRAM score survives console reset',e.state()[85]==30000)
-e.tap(8);e.run(30);skip_intro();e.tap(3)
+e.tap(8);e.run(30);skip_intro();e.tap(6);e.tap(8)
 entry=words[e.state()[6]];wrong='Я' if entry['word'][0]!='Я' else 'А'
 for letter in wrong*len(entry['word']):select(letter)
 e.tap(3);e.run(30);check('wrong full word rejected',e.state()[3]==6);e.tap(8);e.run(30);check('wrong full word eliminates human',e.state()[3]==10)

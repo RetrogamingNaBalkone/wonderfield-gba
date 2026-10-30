@@ -2,7 +2,7 @@
 from pathlib import Path
 import json,struct,re,math
 from extract import ROOT,OUT,SRC,EGA
-from pixel_art import outlined_resize,symbol_resize
+from pixel_art import outlined_resize,wheel_symbol,title_logo_resize
 GEN=ROOT/'build/generated'; GEN.mkdir(parents=True,exist_ok=True)
 def cstr(b):return '"'+''.join('\\%03o'%x for x in b)+'"'
 def arr(name,b):return f'const unsigned char {name}[] __attribute__((aligned(4)))={{'+','.join(map(str,b))+'};\n'
@@ -43,13 +43,41 @@ def main():
   code.append(arr(f'small_data_{s["id"]}',small));half.append((sw,sh,small));half_refs.append(f'{{{sw},{sh},small_data_{s["id"]}}}')
  code.append('const Sprite sprites[57]={'+','.join(sprites)+'};\n')
  code.append('const Sprite sprites_half[57]={'+','.join(half_refs)+'};\n')
+ # The large title gets its own carefully reduced masks; DOS resources and
+ # the smaller logos on the certificate/cash screens retain their original ink.
+ title_refs=[]
+ for id in (46,47):
+  w,h=metadata[id]['width'],metadata[id]['height'];raw=(OUT/f'sprite-{id:02}.bin').read_bytes()
+  tw,th=round(w*35/48)*150//256,h*150//256
+  code.append(arr(f'title_logo_data_{id}',title_logo_resize(raw,w,h,tw,th,id)))
+  title_refs.append(f'{{{tw},{th},title_logo_data_{id}}}')
+ code.append('const Sprite title_logos[2]={'+','.join(title_refs)+'};\n')
+ # Large payouts skip directly to one prepared DOS-style finished picture.
+ # Draw these stamps at build time; the ARM7 only copies a bitmap on A.
+ finished=bytearray([7]*38400)
+ def cash_blit(item,x,y,transparent,bottom=160):
+  w,h,pixels=item
+  for yy in range(min(h,bottom-y)):
+   row=(y+yy)*240+x
+   for xx in range(w):
+    color=pixels[yy*w+xx]
+    if color!=transparent:finished[row+xx]=color
+ for id,x,y,transparent in ((46,4,4,7),(47,73,4,7),(27,185,75,-1),(45,196,76,-1),(43,204,94,-1)):
+  cash_blit(half[id],x,y,transparent)
+ seed=1
+ for _ in range(100000):
+  seed=(seed*134775813+1)&0xffffffff
+  seed=(seed*134775813+1)&0xffffffff;x=((seed>>16)%400)*35//96
+  seed=(seed*134775813+1)&0xffffffff;y=((seed>>16)%295)//2
+  cash_blit(half[56],x,y,2,152)
+ code.append(arr('cash_finished_bitmap',finished))
  stage=build_stage(half)
  # Bake wheel composites from original sprites; scaling is not repeated per frame.
  labels=[4,5,12,6,14,7,13,6,12,8,11,5,10,7,9,8]
  wheel=[];wheel_labels=[];symbol_cache={}
  for id in set(labels):
   ow,oh=metadata[id]['width'],metadata[id]['height'];raw=(OUT/f'sprite-{id:02}.bin').read_bytes();h=12;w=round(ow*35/48*h/oh)
-  symbol_cache[id]=(w,h,symbol_resize(raw,ow,oh,w,h,7,outline=id==13))
+  symbol_cache[id]=(w,h,wheel_symbol(raw,ow,oh,w,h,id))
  for frame in range(32):
   # Keep the blue wall visible through transparent areas above the wheel.
   pixels=bytearray(b''.join(stage[(43+y)*240+32:(43+y)*240+160] for y in range(112)))
@@ -123,6 +151,8 @@ def main():
  (GEN/'assets.c').write_text(''.join(code),encoding='ascii')
  hdr='#pragma once\ntypedef struct {int w,h;const unsigned char *data;} Sprite;\ntypedef struct {const char *word,*topic;} Word;\nextern const Sprite sprites[57];\nextern const Word words[495];\nextern const unsigned char font6[],font8[],font14[],opponent_sprites[6];\nextern const char *const opponent_names[6];\nextern const short wheel_sectors[16],sector_values[12];\nextern const unsigned short palette[16];\n'
  hdr+='extern const Sprite sprites_half[57];\nextern const unsigned char wheel_bitmaps[],stage_background[];\nextern const char *const gift_names[10];\nextern const char *const initial_names[8];\nextern const unsigned short initial_scores[8];\n'
+ hdr+='extern const unsigned char cash_finished_bitmap[];\n'
+ hdr+='extern const Sprite title_logos[2];\n'
  hdr+=''.join(f'extern const char msg_{off:x}[];\n' for off,b in literals)
  (GEN/'assets.h').write_text(hdr)
  for name in ('main.c','presentation.inc','scene.inc'):

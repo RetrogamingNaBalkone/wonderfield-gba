@@ -16,7 +16,7 @@ typedef unsigned int u32;
 #define DOWN 128
 #define R 256
 #define L 512
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,GALLERY,NAME,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,GALLERY,NAME,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH};
 /* Read-only diagnostic state is also used by the emulator integration checks. */
 typedef struct {
  u32 magic,frame,rng; int mode,round,player,word_id,sector,sector_value;
@@ -27,6 +27,8 @@ typedef struct {
 } Game;
 volatile Game game;
 static u8 framebuffer[240*160] __attribute__((aligned(4)));
+static u8 cash_canvas[240*160] __attribute__((aligned(4)));
+static volatile struct {u32 drawn,total,rng,next_at,pause_at;int ready;u32 credit;} cash;
 static const char *message1,*message2;
 static char sector_message[32],turn_line[32];
 volatile u32 video_ticks;
@@ -50,8 +52,12 @@ static void capture_keys(void){
 }
 void game_irq(unsigned flags){if(flags&1){video_ticks++;capture_keys();}speaker_irq(flags);}
 
-static u16 oldkeys,heldframes;
-static int dirty=1,sound_on=1;
+static u16 oldkeys;
+static u32 repeat_at,rendered_key=~0u,solve_fixed;
+static u8 host_durations[10];
+volatile u32 rendered_frames;
+static volatile int dirty=1;
+static int sound_on=1;
 static char record_names[8][11];
 static int record_scores[8],record_entry=-1,selected_words[3];
 static const char save_id[] __attribute__((used,section(".rodata.save_id")))="SRAM_V113";
@@ -88,11 +94,24 @@ static int load(void){
 }
 static const char*word(void){return words[game.word_id].word;}
 static void set_mode(int mode){if(mode==TITLE)scene.title_at=video_ticks;game.mode=mode;game.wait=0;dirty=1;}
-static void say(const char*a,const char*b){message1=a;message2=b;scene.speech_at=scene.host_at=scene.host_phase_at=video_ticks;scene.host_active=1;scene.host_phase=0;effect(0);scene.host_seed=game.rng;dirty=1;}
+static void say(const char*a,const char*b){
+ message1=a;message2=b;scene.speech_at=scene.host_at=scene.host_phase_at=video_ticks;
+ scene.host_active=1;scene.host_phase=0;effect(0);scene.host_seed=game.rng;
+ host_durations[0]=12;host_durations[1]=host_durations[2]=9;host_durations[9]=6;
+ u32 seed=scene.host_seed;
+ for(int i=0;i<3;i++){
+  seed=seed*134775813u+1;host_durations[3+i*2]=6+((seed>>16)&1)*12;
+  seed=seed*134775813u+1;host_durations[4+i*2]=6+((seed>>16)&1)*3;
+ }
+ /* Speech used to advance on the eight-VBlank redraw cadence. Keep
+  * that wall-clock pacing after removing the render-bound delay. */
+ for(int i=0;i<10;i++)host_durations[i]=(host_durations[i]+7)&~7;
+ dirty=1;
+}
 static void farewell(void){set_mode(GAME_OVER);game.keyboard=0;game.deal=0;say(msg_f9a,msg_fa9);}
 static void result(const char*a,const char*b,int next,int player){say(a,b);set_mode(RESULT);game.next_mode=next;game.next_player=player;game.wait=game.player==2?0:65;}
 static int nextplayer(void){return (game.player+1)%3;}
-static void begin_turn(void){set_mode(TURN);const char*a=game.player==2?msg_d9a:game.player==0?msg_d8c:msg_d93;int p=0;while(a[p]){turn_line[p]=a[p];p++;}for(int i=0;msg_da1[i];i++)turn_line[p++]=msg_da1[i];turn_line[p]=0;say(turn_line,msg_da9);if(game.player!=2)game.wait=65;}
+static void begin_turn(void){set_mode(TURN);game.choice=1;const char*a=game.player==2?msg_d9a:game.player==0?msg_d8c:msg_d93;int p=0;while(a[p]){turn_line[p]=a[p];p++;}for(int i=0;msg_da1[i];i++)turn_line[p++]=msg_da1[i];turn_line[p]=0;say(turn_line,msg_da9);if(game.player!=2)game.wait=65;}
 static void new_round(void){int duplicate;do{game.word_id=random_n(495);duplicate=0;for(int i=0;i<game.round;i++)if(selected_words[i]==game.word_id)duplicate=1;}while(duplicate);selected_words[game.round]=game.word_id;for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;game.score[0]=game.score[1]=0;game.player=2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
 static void new_game(void){game.round=0;game.score[2]=0;game.sector=12;for(int i=0;i<6;i++)game.opponent[i]=i;for(int i=0;i<20;i++){int a=random_n(6),b=random_n(6),t=game.opponent[a];game.opponent[a]=game.opponent[b];game.opponent[b]=t;}new_round();}
 static int hidden(void){int n=0;for(int i=0;word()[i];i++)if(!game.revealed[i])n++;return n;}
@@ -109,7 +128,26 @@ static void final_records(void){
  record_scores[record_entry]=game.score[2];for(int j=0;j<11;j++)record_names[record_entry][j]=0;
  for(int j=0;j<21;j++)game.answer[j]=0;game.cursor=game.solve_pos=0;set_mode(NAME);
 }
-static void award_letter(int letter){int count=0;for(int i=0;word()[i];i++)if((u8)word()[i]==128+letter&&!game.revealed[i]){game.revealed[i]=1;count++;}game.used[letter]=1;game.keyboard=0;if(count){if(game.sector_value<100)game.score[game.player]+=game.sector_value*count;else if(game.sector_value/100==2)game.score[game.player]*=game.sector_value%100;effect(1);if(!hidden()){set_mode(ROUND_END);say(msg_e77,msg_e65);return;}if(game.streak==3){game.streak=0;result(msg_eb5,msg_ec8,CHEST,game.player);return;}result(msg_e77,msg_e65,TURN,game.player);}else{effect(0);game.streak=0;result(msg_e7f,msg_e90,TURN,nextplayer());}}
+static void award_letter(int letter){
+ int count=0;
+ for(int i=0;word()[i];i++)if((u8)word()[i]==128+letter&&!game.revealed[i]){game.revealed[i]=1;count++;}
+ game.used[letter]=1;game.keyboard=0;
+ if(count){
+  if(game.sector_value<100)game.score[game.player]+=game.sector_value*count;
+  else if(game.sector_value/100==2)game.score[game.player]*=game.sector_value%100;
+  effect(1);
+  if(game.sector_value==100){
+   /* DOS 1fcf returns straight to 1698. Only ordinary letter selection
+    * (1a3a) calls host dialogue 3: Plus has no "there is that letter". */
+   message1=message2="";scene.host_active=0;
+   game.next_mode=TURN;game.next_player=game.player;
+   set_mode(hidden()?TURN:ROUND_END);return;
+  }
+  if(!hidden()){set_mode(ROUND_END);say(msg_e77,msg_e65);return;}
+  if(game.streak==3){game.streak=0;result(msg_eb5,msg_ec8,CHEST,game.player);return;}
+  result(msg_e77,msg_e65,TURN,game.player);
+ }else{effect(0);game.streak=0;result(msg_e7f,msg_e90,TURN,nextplayer());}
+}
 
 static void choose_letter(int letter){
  int before[20],count=0;
@@ -142,40 +180,65 @@ static void start_spin(void){
  say(msg_da9,"");scene.host_active=0;
 }
 static void end_result(void){int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(game.player!=2)game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==FINAL_RECORDS)final_records();else set_mode(next);}
-static void solve_word(void){set_mode(SOLVE);game.solve_pos=0;for(int i=0;i<21;i++)game.answer[i]=0;game.cursor=0;game.keyboard=1;say(msg_f20,"");}
+static int fixed_letter(int letter){return (solve_fixed>>letter)&1;}
+static void solve_advance(void){while(game.solve_pos<len(word())&&game.revealed[game.solve_pos])game.solve_pos++;}
+static void solve_word(void){set_mode(SOLVE);game.solve_pos=0;solve_fixed=0;int n=len(word());for(int i=0;i<21;i++){game.answer[i]=i<n&&game.revealed[i]?word()[i]:0;if(i<n&&game.revealed[i])solve_fixed|=1u<<((u8)word()[i]-128);}solve_advance();game.cursor=0;while(game.cursor<31&&fixed_letter(game.cursor))game.cursor++;game.keyboard=1;say(msg_f20,"");}
 static void confirm_word(void){int good=1;for(int i=0;word()[i];i++)if(game.answer[i]!=word()[i])good=0;if(good)finish_round();else{game.keyboard=0;game.streak=0;result(msg_f5b,msg_f6b,GAME_OVER,game.player);}}
 #include "presentation.inc"
 #include "scene.inc"
 static void update(u16 pressed,u16 repeat){
  scene.now=video_ticks;
- if(game.mode==HELP){if(pressed&(A|B|SELECT)){set_mode(game.return_mode);return;}if(pressed&START){set_mode(TITLE);return;}return;}
- if(game.mode==TITLE){if(scene.now-scene.title_at<180)dirty=1;if(pressed&(A|START))new_game();else if(pressed&SELECT){game.return_mode=TITLE;set_mode(HELP);}else if(pressed&R){game.album=0;set_mode(GALLERY);}else if(pressed&L)set_mode(RECORDS);return;}
+ if(game.mode==HELP){
+  if(pressed&(A|B|START)){
+   if(game.return_mode!=TITLE){
+    u32 duration=video_ticks-(u32)game.paused;
+    scene.speech_at+=duration;scene.start+=duration;scene.phase_at+=duration;scene.spin_at+=duration;
+    scene.host_at+=duration;scene.host_phase_at+=duration;scene.chest_until+=duration;
+    if(game.return_mode==CASH)cash.next_at+=duration;
+   }
+   set_mode(game.return_mode);return;
+  }
+  if(pressed&SELECT){set_mode(TITLE);return;}return;
+ }
+ if(game.mode==TITLE){if(pressed&(A|START))new_game();else if(pressed&SELECT){game.return_mode=TITLE;set_mode(HELP);}else if(pressed&R){game.album=0;set_mode(GALLERY);}else if(pressed&L)set_mode(RECORDS);return;}
  if(game.mode==RECORDS){if(pressed&(A|B|START))set_mode(TITLE);return;}
- if(game.mode==GALLERY){if(repeat&RIGHT)game.album=(game.album+1)%57;if(repeat&LEFT)game.album=(game.album+56)%57;if(pressed&B)set_mode(TITLE);dirty=1;return;}
- if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);}if(pressed&SELECT){game.return_mode=game.mode;set_mode(HELP);return;}
+ if(game.mode==GALLERY){if(repeat&RIGHT)game.album=(game.album+1)%57;if(repeat&LEFT)game.album=(game.album+56)%57;if(pressed&B)set_mode(TITLE);if(repeat&(LEFT|RIGHT))dirty=1;return;}
+ if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);}
+ if(pressed&((game.mode==SOLVE||game.mode==NAME)?SELECT:START)){
+  game.return_mode=game.mode;game.paused=video_ticks;
+  if(game.mode==CASH){cash.pause_at=video_ticks;speaker_tone(0,1);}
+  set_mode(HELP);return;
+ }
  if(scene_tick(pressed))return;
  if(game.mode==GIFT_PAGES){
   if((pressed&B)&&scene.gift_page>0){scene.gift_page--;dirty=1;}
   else if(pressed&A){if(scene.gift_page<2){scene.gift_page++;dirty=1;}else if(scene.gift_final)result(msg_f7b,msg_f8a,FINAL_RECORDS,2);else farewell();}
   return;
  }
- if(game.mode==TURN){if(game.player!=2){if(scene.now-scene.speech_at>=36)start_spin();}else if(pressed&A)start_spin();else if(pressed&START)solve_word();return;}
+ if(game.mode==TURN){if(game.player!=2){if(scene.now-scene.speech_at>=40)start_spin();}else{if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}if(pressed&A){if(game.choice)start_spin();else solve_word();}}return;}
  if(game.mode==SPIN){
   if(pressed&A){game.sector=scene.spin_target;game.spin_steps=0;scene.spin_half=0;stop_spin();return;}
-  if(scene.now-scene.spin_at>=(unsigned)game.spin_wait){game.wait=0;scene.spin_half^=1;scene.spin_at=scene.now;dirty=1;
+  /* The original renderer spent five VBlank per wheel phase. Preserve
+   * its speed explicitly without changing spin_wait or the tone pitch. */
+  unsigned spin_delay=game.spin_wait<5?5:(unsigned)game.spin_wait;
+  if(scene.now-scene.spin_at>=spin_delay){game.wait=0;scene.spin_half^=1;scene.spin_at=scene.now;dirty=1;
    if(!scene.spin_half){game.spin_ticks++;game.sector=(game.sector+15)&15;game.spin_steps--;if(game.spin_steps<8)game.spin_wait=2+(8-game.spin_steps)*2;speaker_tone(55+(game.spin_steps%10)*10+game.spin_wait*100,1);if(game.spin_steps<=0){game.sector=scene.spin_target;stop_spin();}}
   }return;
  }
  if(game.mode==AI_ANSWER){if(scene.now-scene.speech_at>=120||((pressed&A)&&scene.now-scene.speech_at>=24))choose_letter(scene.ai_letter);return;}
- if(game.mode==RESULT){if(pressed&A || (game.player!=2&&scene.now-scene.speech_at>=75))end_result();return;}
- if(game.mode==LETTER||game.mode==SOLVE){if(game.player!=2){if(scene.now-scene.speech_at>=40)ai_letter();return;}if(game.mode==LETTER&&(pressed&B)){game.keyboard=!game.keyboard;dirty=1;return;}if(!game.keyboard){if(pressed&A){game.keyboard=1;dirty=1;}return;}if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;if(repeat&(UP|DOWN|LEFT|RIGHT))dirty=1;if(game.mode==SOLVE){if(pressed&B){if(game.solve_pos)game.solve_pos--;game.answer[game.solve_pos]=0;dirty=1;}if(pressed&A&&game.solve_pos<len(word())){game.answer[game.solve_pos++]=128+game.cursor;dirty=1;}if((pressed&START)&&game.solve_pos==len(word()))confirm_word();}else if(pressed&A){if(!game.used[game.cursor])choose_letter(game.cursor);else beep(110,10);}return;}
+ if(game.mode==RESULT){if(pressed&A || (game.player!=2&&scene.now-scene.speech_at>=80))end_result();return;}
+ if(game.mode==LETTER||game.mode==SOLVE){if(game.player!=2){if(scene.now-scene.speech_at>=40)ai_letter();return;}if(game.mode==LETTER&&(pressed&B)){game.keyboard=!game.keyboard;dirty=1;return;}if(!game.keyboard){if(pressed&A){game.keyboard=1;dirty=1;}return;}if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;if(repeat&(UP|DOWN|LEFT|RIGHT))dirty=1;if(game.mode==SOLVE){
+  if(pressed&B){int p=game.solve_pos;do{p--;}while(p>=0&&game.revealed[p]);if(p>=0){game.solve_pos=p;game.answer[p]=0;dirty=1;}}
+  if(pressed&A){if(fixed_letter(game.cursor))beep(110,10);else if(game.solve_pos<len(word())){game.answer[game.solve_pos++]=128+game.cursor;solve_advance();dirty=1;}}
+  if((pressed&START)&&game.solve_pos==len(word()))confirm_word();
+ }else if(pressed&A){if(!game.used[game.cursor])choose_letter(game.cursor);else beep(110,10);}return;}
  if(game.mode==PLUS){int n=len(word());if(game.player!=2&&scene.now-scene.speech_at>=40){do{game.cursor=random_n(n);}while(game.revealed[game.cursor]);ai_announce((u8)word()[game.cursor]-128,game.cursor+1);return;}if(repeat&(LEFT|RIGHT)){int delta=repeat&RIGHT?1:n-1;do{game.cursor=(game.cursor+delta)%n;}while(game.revealed[game.cursor]);dirty=1;}if(pressed&A)choose_letter((u8)word()[game.cursor]-128);return;}
- if(game.mode==CHEST){if(repeat&(LEFT|RIGHT)){game.choice=1-game.choice;dirty=1;}if(pressed&A||(game.player!=2&&++game.wait>100)){int reward=random_n(2)==(unsigned)game.choice?100:0;game.score[game.player]+=reward;scene.chest_until=scene.now+120;scene.chest_money=reward!=0;result(reward?msg_ef1:msg_f07,reward?msg_efa:msg_f10,TURN,game.player);}return;}
+ if(game.mode==CHEST){if(repeat&(LEFT|RIGHT)){game.choice=1-game.choice;dirty=1;}if(pressed&A||(game.player!=2&&scene.now-scene.speech_at>=328)){int reward=random_n(2)==(unsigned)game.choice?100:0;game.score[game.player]+=reward;scene.chest_until=scene.now+120;scene.chest_money=reward!=0;result(reward?msg_ef1:msg_f07,reward?msg_efa:msg_f10,TURN,game.player);}return;}
  if(game.mode==PRIZE){
-  if(repeat&(LEFT|RIGHT)){game.choice=(repeat&RIGHT)?1:0;dirty=1;}
+  if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}
   if(pressed&A){
    if(!game.deal){if(game.choice==1){open_letter();say(msg_fba,msg_fc7);}else{game.deal=1;game.prize=100;game.choice=1;prize_offer();}}
-   else if(!game.choice){game.deal=5;set_mode(GAME_OVER);say(msg_ffa,msg_1004);}
+   else if(!game.choice){cash_begin();}
    else if(game.deal<4){game.deal++;game.prize=game.deal==2?1000:game.deal==3?100000:1000000;prize_offer();}
    else{game.deal=6;game.prize=random_n(10);set_mode(GAME_OVER);say(msg_ffa,msg_1029);}
   }return;
@@ -183,12 +246,13 @@ static void update(u16 pressed,u16 repeat){
  if(game.mode==ROUND_END&&(pressed&A)&&game.player==2&&game.round<2){credits_begin();return;}
  if(game.mode==ROUND_END){if(pressed&A){if(game.player!=2)farewell();else gift_begin(1);}return;}
  if(game.mode==NAME){
+  int old_cursor=game.cursor,old_pos=game.solve_pos;
   if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;
   if((pressed&A)&&game.solve_pos<10)game.answer[game.solve_pos++]=128+game.cursor;
   if((pressed&R)&&game.solve_pos<10)game.answer[game.solve_pos++]=' ';
   if((pressed&B)&&game.solve_pos>0)game.answer[--game.solve_pos]=0;
   if(pressed&START){const char*n=game.solve_pos?(const char*)game.answer:"ИГРОК";for(int i=0;i<11;i++)record_names[record_entry][i]=i<len(n)?n[i]:0;game.best=record_scores[0];save();set_mode(RECORDS);}
-  if(repeat||pressed)dirty=1;return;
+  if(game.cursor!=old_cursor||game.solve_pos!=old_pos)dirty=1;return;
  }
  if(game.mode==GAME_OVER){if(pressed&A){if(game.deal==6)gift_begin(0);else if(game.deal==5)farewell();else set_mode(TITLE);}return;}
 }
@@ -201,8 +265,11 @@ void gba_main(void){
   if(input_read!=input_write){pressed=input_events[input_read];input_read=(input_read+1)&31;}
   REG16(0x04000208)=ime;
   u16 repeat=pressed;
-  if(keys==oldkeys){heldframes++;if(heldframes>18&&heldframes%5==0)repeat|=keys&(UP|DOWN|LEFT|RIGHT);}else heldframes=0;
+  u32 now=video_ticks;
+  if(keys!=oldkeys||(pressed&(UP|DOWN|LEFT|RIGHT)))repeat_at=now+18;
+  else if((keys&(UP|DOWN|LEFT|RIGHT))&&(int)(now-repeat_at)>=0){repeat|=keys&(UP|DOWN|LEFT|RIGHT);repeat_at=now+5;}
   oldkeys=keys;game.frame++;if(game.mode==TITLE)game.rng+=game.frame;update(pressed,repeat);
-  if(dirty){scene.now=video_ticks;render();present();dirty=0;}else vblank();
+  scene.now=video_ticks;visual_tick();u32 key=visual_key();if(key!=rendered_key)dirty=1;
+  if(dirty){scene.last_redraw=scene.now;render();present();rendered_key=key;rendered_frames++;dirty=0;}else vblank();
  }
 }

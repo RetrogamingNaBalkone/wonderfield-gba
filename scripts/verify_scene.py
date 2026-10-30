@@ -12,41 +12,7 @@ def check(name,ok):
  assert ok,name
  checks.append(name)
 def store_u32(e,name,value,offset=0):c.memmove(e.ram+e.sym[name]-0x02000000+offset,struct.pack('<I',value),4)
-def gif(path,frames,fmt,delay=8):
- """Lossless GIF, fixed-width LZW with frequent clear codes (stdlib only)."""
- values=[];lookup={};indexed=[]
- size=4 if fmt==1 else 2
- for frame in frames:
-  out=bytearray()
-  for v, in struct.iter_unpack('<I' if size==4 else '<H',frame):
-   if v not in lookup:lookup[v]=len(values);values.append(v)
-   out.append(lookup[v])
-  indexed.append(out)
- check('emulated capture stays within original palette',len(values)<=16)
- bits=max(2,(len(values)-1).bit_length());table=1<<bits;palette=bytearray()
- for v in values:
-  if fmt==1:palette.extend(((v>>16)&255,(v>>8)&255,v&255))
-  else:
-   g=6 if fmt==2 else 5;palette.extend((((v>>(5+g))&31)*255//31,((v>>5)&((1<<g)-1))*255//((1<<g)-1),(v&31)*255//31))
- palette.extend(bytes(table*3-len(palette)))
- data=bytearray(b'GIF89a'+struct.pack('<HHBBB',240,160,0x80|0x70|(bits-1),0,0))+palette
- data+=b'!\xff\x0bNETSCAPE2.0\x03\x01\x00\x00\x00'
- clear=1<<bits;end=clear+1;width=bits+1
- for frame in indexed:
-  data+=b'!\xf9\x04'+struct.pack('<BHB',4,delay,0)+b'\0'
-  data+=b','+struct.pack('<HHHHB',0,0,240,160,0)+bytes([bits])
-  packed=bytearray();acc=0;n=0
-  # No dictionary expansion reaches the next code width before a clear.
-  codes=[]
-  for p in range(0,len(frame),8):codes.append(clear);codes.extend(frame[p:p+8])
-  codes.append(end)
-  for value in codes:
-   acc|=value<<n;n+=width
-   while n>=8:packed.append(acc&255);acc>>=8;n-=8
-  if n:packed.append(acc&255)
-  for p in range(0,len(packed),255):part=packed[p:p+255];data.append(len(part));data+=part
-  data+=b'\0'
- data+=b';';path.write_bytes(data)
+from capture_media import gif
 
 e=Emulator();frames=[]
 rom=(ROOT/'build/gba/pole.gba').read_bytes()
@@ -128,14 +94,14 @@ labels=json.loads((ROOT/'build/generated/wheel-labels.json').read_text())
 check('512 rotating signs are entirely on the correct black or white wedge',len(labels)==512 and all(d['noncontrasting_pixels']==0 for d in labels))
 check('rotating signs never overlap another sign',all(d['overlapping_pixels']==0 for d in labels))
 check('wheel signs fit their sector at twelve pixels high',all(d['height']==12 for d in labels))
-from pixel_art import symbol_resize
-e.poke(3,1);store_u32(e,'scene',0,4);e.run(150)
+from pixel_art import symbol_resize,wheel_symbol
+e.poke(3,9);store_u32(e,'scene',0,4);store_u32(e,'message1',0);e.run(150)
 sign_strokes=0;sign_errors=0
 for i in range(16):
  e.poke(7,i);store_u32(e,'dirty',1);e.run(24);e.screenshot(f'wheel-{i:02}.png')
  pixels=ppu();phase=(24-i*2)&31
  for sign in (d for d in labels if d['frame']==phase):
-  id=sign['resource'];s=meta[id];data=symbol_resize((ROOT/f'assets/sprite-{id:02}.bin').read_bytes(),s['width'],s['height'],sign['width'],sign['height'],outline=id==13)
+  id=sign['resource'];s=meta[id];data=wheel_symbol((ROOT/f'assets/sprite-{id:02}.bin').read_bytes(),s['width'],s['height'],sign['width'],sign['height'],id)
   for yy in range(sign['height']):
    for xx in range(sign['width']):
     ink=data[yy*sign['width']+xx]

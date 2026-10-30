@@ -1,0 +1,199 @@
+{
+  "rom_sha256": "7d35169988e8becfe0c55e6606a6b49ccf3fc069939782d0217a4485fa66fb30",
+  "rom_bytes": 1048576,
+  "hash_source": "retro_load_game input buffer",
+  "fps": 59.727500915527344,
+  "warmup_vblanks": 240,
+  "sample_vblanks": 300,
+  "results": [
+    {
+      "name": "title-settled",
+      "mode": 0,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        1304895322
+      ],
+      "title_without_version_crc32": [
+        1111918838
+      ],
+      "audio_irqs": 10287,
+      "audio_samples": 164592,
+      "fast_silent_buffers": 10287
+    },
+    {
+      "name": "human-turn-settled",
+      "mode": 1,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        1346862613
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10287,
+      "audio_samples": 164592,
+      "fast_silent_buffers": 10287
+    },
+    {
+      "name": "human-turn-muted",
+      "mode": 1,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        1346862613
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10287,
+      "audio_samples": 164592,
+      "fast_silent_buffers": 10287
+    },
+    {
+      "name": "solve-keyboard-idle",
+      "mode": 5,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        3298633534
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10287,
+      "audio_samples": 164592,
+      "fast_silent_buffers": 10287
+    },
+    {
+      "name": "name-keyboard-idle",
+      "mode": 14,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        1164672475
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10287,
+      "audio_samples": 164576,
+      "fast_silent_buffers": 10286
+    },
+    {
+      "name": "gift-page-idle",
+      "mode": 19,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        1761400240
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10286,
+      "audio_samples": 164576,
+      "fast_silent_buffers": 10286
+    },
+    {
+      "name": "gallery-idle",
+      "mode": 13,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        190437343
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10286,
+      "audio_samples": 164576,
+      "fast_silent_buffers": 10286
+    },
+    {
+      "name": "help-idle",
+      "mode": 11,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        1614327862
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10287,
+      "audio_samples": 164592,
+      "fast_silent_buffers": 10287
+    },
+    {
+      "name": "records-idle",
+      "mode": 12,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        536576372
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10287,
+      "audio_samples": 164592,
+      "fast_silent_buffers": 10287
+    },
+    {
+      "name": "credits-settled",
+      "mode": 17,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        2983715019
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10287,
+      "audio_samples": 164592,
+      "fast_silent_buffers": 10287
+    },
+    {
+      "name": "cash-completed",
+      "mode": 21,
+      "vblanks": 300,
+      "main_updates": 300,
+      "scheduled_redraws": 0,
+      "rendered_frames": 0,
+      "draw_counter": "rendered_frames",
+      "unique_ppu_frames": 1,
+      "ppu_crc32": [
+        2732350346
+      ],
+      "title_without_version_crc32": [],
+      "audio_irqs": 10287,
+      "audio_samples": 164592,
+      "fast_silent_buffers": 10287
+    }
+  ]
+}

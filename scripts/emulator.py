@@ -13,8 +13,8 @@ AUDIO=c.CFUNCTYPE(None,c.c_int16,c.c_int16)
 BATCH=c.CFUNCTYPE(c.c_size_t,c.POINTER(c.c_int16),c.c_size_t)
 POLL=c.CFUNCTYPE(None)
 INPUT=c.CFUNCTYPE(c.c_int16,c.c_uint,c.c_uint,c.c_uint,c.c_uint)
-def symbols():
- b=(ROOT/'build/gba/pole.elf').read_bytes();off=struct.unpack_from('<I',b,32)[0];size,n=struct.unpack_from('<HH',b,46);ss=[struct.unpack_from('<10I',b,off+i*size) for i in range(n)];result={}
+def symbols(path=None):
+ b=Path(path or ROOT/'build/gba/pole.elf').read_bytes();off=struct.unpack_from('<I',b,32)[0];size,n=struct.unpack_from('<HH',b,46);ss=[struct.unpack_from('<10I',b,off+i*size) for i in range(n)];result={}
  for s in ss:
   if s[1]!=2:continue
   t=ss[s[6]];strings=b[t[4]:t[4]+t[5]]
@@ -23,7 +23,7 @@ def symbols():
    if name:result[strings[name:strings.index(0,name)].decode()]=value
  return result
 class Emulator:
- def __init__(self):
+ def __init__(self,rom_path=None,elf_path=None):
   self.core=c.CDLL(str(Path(os.environ['LOCALAPPDATA'])/'Programs/mGBA/libretro-20261024/mgba_libretro.dll'));self.keys=set();self.format=0;self.raw=b'';self.variables={};self.samples=0;self.nonzero=0;self.errors=[];self.audio=[]
   self.directory=os.fsencode(str(ROOT/'build/gba'))
   self.callbacks=[ENV(self.env),VIDEO(self.video),AUDIO(lambda l,r:None),BATCH(self.batch),POLL(lambda:None),INPUT(lambda p,d,i,b:int(p==0 and d==1 and b in self.keys))]
@@ -31,8 +31,8 @@ class Emulator:
    fn=getattr(self.core,'retro_set_'+name);fn.argtypes=[type(cb)];fn(cb)
   self.core.retro_get_memory_data.argtypes=[c.c_uint];self.core.retro_get_memory_data.restype=c.c_void_p
   self.core.retro_load_game.argtypes=[c.POINTER(Info)];self.core.retro_load_game.restype=c.c_bool
-  self.core.retro_init();rom=ROOT/'build/gba/pole.gba';self.buf=c.create_string_buffer(rom.read_bytes());self.info=Info(os.fsencode(str(rom)),c.cast(self.buf,c.c_void_p),len(rom.read_bytes()),None);assert self.core.retro_load_game(c.byref(self.info))
-  self.ram=self.core.retro_get_memory_data(2);self.sym=symbols();self.game_address=self.sym['game'];self.ramgame=self.ram+self.game_address-0x02000000
+  self.core.retro_init();rom=Path(rom_path or ROOT/'build/gba/pole.gba');data=rom.read_bytes();self.buf=c.create_string_buffer(data);self.info=Info(os.fsencode(str(rom)),c.cast(self.buf,c.c_void_p),len(data),None);assert self.core.retro_load_game(c.byref(self.info))
+  self.ram=self.core.retro_get_memory_data(2);self.sym=symbols(elf_path);self.game_address=self.sym['game'];self.ramgame=self.ram+self.game_address-0x02000000
   av=AVInfo();self.core.retro_get_system_av_info.argtypes=[c.POINTER(AVInfo)];self.core.retro_get_system_av_info(c.byref(av));self.rate=int(av.timing.rate);self.fps=av.timing.fps
  def env(self,cmd,data):
   try:

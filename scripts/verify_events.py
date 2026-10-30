@@ -126,7 +126,7 @@ for player in (0,1,2):
    e.until(lambda s:s[3]!=18)
    check(f'AI {player} answer lasts two seconds for {name}',read('video_ticks')-start>=120)
   check(f'assistant opens final {name} letter for player {player}',e.state()[3]==16 and e.state()[9+player]==100)
-  check(f'last {name} letter first gets ordinary correct-letter reply for player {player}',(message(),message('message2'))==(dos_message(0xe77),dos_message(0xe65)))
+  check(f'Plus has no ordinary letter reaction for player {player}' if sector==0 else f'last {name} letter first gets ordinary correct-letter reply for player {player}',(message(),message('message2'))==((b'',b'') if sector==0 else (dos_message(0xe77),dos_message(0xe65))))
   if player==2 and sector==3:e.run(12);preview('round-last-letter.png')
   e.run(25);e.tap(8);e.run(15)
   expected=100+(word.count(128+letter)*10) if sector==3 else 200 if sector==12 else 400 if sector==10 else 100
@@ -155,7 +155,9 @@ offers=[e.state()[83]]
 for i in range(3):e.tap(8);offers.append(e.state()[83])
 check('cash amounts match all four original spoken offers',offers==[100,1000,100000,1000000])
 e.run(24);preview('prize-million.png');e.tap(6);e.run(24);preview('prize-money.png');e.tap(8)
-check('accepted Prize ends game without letter or assistant',e.state()[3]==10 and e.state()[82]==5)
+check('accepted cash enters dedicated scene without letter or assistant',e.state()[3]==21 and e.state()[82]==5)
+e.tap(8);e.until(lambda s:read('cash')==read('cash',4));e.run(20)
+check('cash skip holds completed picture',e.state()[3]==21)
 e.tap(8);e.run(20)
 farewell=('К сожалению Вы'.encode('cp866'),'покидаете игру..'.encode('cp866'))
 check('cash Prize followed by original farewell',(message(),message('message2'))==farewell)
@@ -190,10 +192,13 @@ meta=json.loads((ROOT/'assets/sprites.json').read_text());sw=round(meta[23]['wid
 standing=rom[e.sym['small_data_23']-0x08000000:e.sym['small_data_23']-0x08000000+sw*sh]
 for sector,name in ((3,'ordinary'),(0,'plus')):
  select_reveal(sector);e.run(12);pixels=ppu()
- check(f'{name} assistant is already on-screen during host reaction',e.state()[3]==16 and read('scene')-read('scene',12)<90 and all(pixels[(12+y)*240+32+x]==palette[v] for y in range(sh) for x in range(sw) if (v:=standing[y*sw+x])!=2))
+ if sector==0:
+  check('Plus starts walking immediately without ordinary host reaction',e.state()[3]==16 and read('scene',44)>32 and (message(),message('message2'))==(b'',b''))
+ else:
+  check(f'{name} assistant is already on-screen during host reaction',e.state()[3]==16 and read('scene')-read('scene',12)<90 and all(pixels[(12+y)*240+32+x]==palette[v] for y in range(sh) for x in range(sw) if (v:=standing[y*sw+x])!=2))
  check(f'{name} waiting assistant has not opened cells early',not any(e.state()[18:38]))
  preview(f'assistant-waiting-{name}.png');e.tap(8)
- check(f'{name} new A still skips the visible waiting assistant',e.state()[3]==6 and all(e.state()[18+i] for i in matches))
+ check(f'{name} new A still skips the visible assistant',e.state()[3]==(1 if sector==0 else 6) and all(e.state()[18+i] for i in matches))
 
 # Check the moment each cell turns in the real PPU, not only the final RAM mask.
 for sector,name in ((3,'ordinary'),(0,'plus')):
@@ -213,10 +218,10 @@ for sector,name in ((3,'ordinary'),(0,'plus')):
 
 for sector in (3,0):
  select_reveal(sector);e.tap(8);e.run(16)
- check(f'immediate second A skips assistant in sector {sector}',e.state()[3]==6 and all(e.state()[18+i] for i in matches) and e.state()[11]==(130 if sector==3 else 100))
+ check(f'immediate second A skips assistant in sector {sector}',e.state()[3]==(1 if sector==0 else 6) and all(e.state()[18+i] for i in matches) and e.state()[11]==(130 if sector==3 else 100))
  check(f'immediate A exposes all PPU glyphs in sector {sector}',all(visible_cell(i) for i in matches))
  select_reveal(sector);e.until(lambda s:s[18+matches[0]]!=0);e.tap(8);e.run(16)
- check(f'A during walk opens remaining matches in sector {sector}',e.state()[3]==6 and all(visible_cell(i) for i in matches))
+ check(f'A during walk opens remaining matches in sector {sector}',e.state()[3]==(1 if sector==0 else 6) and all(visible_cell(i) for i in matches))
 fixture(3);e.poke(38+8,0);e.poke(70,8);e.run(6);e.run(45,(8,))
 check('holding selection A does not also skip assistant',e.state()[3]==16 and not any(e.state()[18:38]))
 e.run(6);e.tap(8)

@@ -40,7 +40,7 @@ def reset_turn(sector=12):
  e.run(12)
  for i in range(20):e.poke(18+i,0)
  for i in range(32):e.poke(38+i,0)
- for i,v in {3:1,4:0,5:2,6:0,7:sector,11:0,70:0,71:0,72:0,76:0,79:0,82:0}.items():e.poke(i,v)
+ for i,v in {3:1,4:0,5:2,6:0,7:sector,11:0,70:0,71:0,72:0,76:0,79:0,81:1,82:0}.items():e.poke(i,v)
 
 # A complete genuine reveal, including the partial frame behind the right wall.
 reset_turn()
@@ -83,7 +83,10 @@ e.until(lambda s:s[3]!=16)
 # Check complete glyph cells: the old code overprinted 2 or 3 over a printed 1.
 reset_turn();write_scene(4,0);e.run(150)
 for round_no in range(3):
- e.poke(4,round_no);e.run(24);pixels=region(e.raw,186,35,24,8);text=f'{round_no+1}/3'.encode()
+ # A RAM fixture bypasses new_round()/set_mode(); request the redraw that
+ # a real round transition already performs. No idle polling redraw now.
+ e.poke(4,round_no);c.memmove(e.ram+e.sym['dirty']-0x02000000,struct.pack('<I',1),4)
+ e.run(24);pixels=region(e.raw,186,35,24,8);text=f'{round_no+1}/3'.encode()
  expected=tuple(palette[0 if font8[ch*8+y]&(128>>x) else 7] for y in range(8) for ch in text for x in range(8))
  check(f'turn {round_no+1}/3 is a clean native glyph without overprinting',pixels==expected)
  preview(f'turn-counter-{round_no+1}.png')

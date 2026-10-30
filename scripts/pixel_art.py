@@ -6,6 +6,49 @@ Only colours already present in the original image can appear in the result.
 """
 import math
 
+def title_logo_resize(raw,w,h,nw,nh,resource):
+    """Repair only identified hairline cuts, then reduce the original ink mask.
+
+    The narrow loop in the capital and the counters/letter separations stay
+    untouched. These small source regions contain copying seams in the lower
+    joins and the cap of the last letter, not intentional letter counters.
+    """
+    seams={46:((189,138,195,143),),
+           47:((233,85,240,94),(149,137,155,142),
+               (187,137,193,142),(227,137,233,142))}
+    repaired=bytearray(raw)
+    for x0,y0,x1,y1 in seams[resource]:
+        for y in range(y0,y1+1):
+            x=x0
+            while x<=x1:
+                if raw[y*w+x]!=7:
+                    x+=1
+                    continue
+                start=x
+                while x<w and raw[y*w+x]==7:x+=1
+                if x<=x1+1 and x-start<=3 and raw[y*w+start-1]==1 and raw[y*w+x]==1:
+                    repaired[y*w+start:y*w+x]=bytes([1])*(x-start)
+    # One area-based reduction avoids the two nearest-neighbour passes that
+    # turn source hairlines into isolated background pixels on the GBA.
+    return symbol_resize(repaired,w,h,nw,nh,7)
+
+def wheel_symbol(raw,w,h,nw,nh,resource):
+    """Hinted numeral masks; other DOS symbols keep their existing reduction."""
+    import json
+    from pathlib import Path
+    spec=json.loads((Path(__file__).resolve().parents[1]/'assets/wheel-digits.json').read_text())
+    label=spec['labels'].get(str(resource))
+    if label is None:return symbol_resize(raw,w,h,nw,nh,7,outline=resource==13)
+    assert nh==12 and nw==label['width']
+    rows=['']*nh
+    for digit in label['text']:
+        glyph=spec['glyphs'][digit]
+        assert len(glyph)==nh and len(set(map(len,glyph)))==1
+        for y,row in enumerate(glyph):rows[y]+=('.'*label['gap'] if rows[y] else '')+row
+    assert len(rows[0])<=nw and label['ink'] in raw
+    left=(nw-len(rows[0]))//2
+    return bytes(label['ink'] if c=='#' else 7 for row in rows for c in '.'*left+row+'.'*(nw-left-len(row)))
+
 def symbol_resize(raw,w,h,nw,nh,transparent=7,outline=False):
     """Area-voted palette masks, optionally retaining a source black perimeter."""
     result=bytearray([transparent]*(nw*nh));area=w*h/(nw*nh)

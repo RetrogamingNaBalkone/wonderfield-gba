@@ -19,10 +19,16 @@ try {
  if($LASTEXITCODE) {throw 'mGBA final, bonus and input verification failed'}
  & $PythonExe scripts/verify_stage.py
  if($LASTEXITCODE) {throw 'mGBA stage, spin and RNG audit failed'}
+ & $PythonExe scripts/verify_v11.py --long
+ if($LASTEXITCODE) {throw 'mGBA 1.1 controls, digits and full cash playback verification failed'}
+ & $PythonExe scripts/verify_performance.py
+ if($LASTEXITCODE) {throw 'mGBA idle rendering, animation clocks and speaker equivalence verification failed'}
+ & $PythonExe scripts/verify_records.py
+ if($LASTEXITCODE) {throw 'mGBA top-eight qualification and high-score SRAM verification failed'}
  & $PythonExe scripts/contact.py
  if($LASTEXITCODE) {throw 'Resource contact sheet failed'}
  New-Item -ItemType Directory -Force -Path dist,docs/media,docs/reports | Out-Null
- Copy-Item -LiteralPath build/gba/pole.gba -Destination dist/pole.gba
+ Copy-Item -LiteralPath build/gba/pole.gba -Destination 'dist/pole 1.1.gba'
  Copy-Item -LiteralPath build/qa/report.json -Destination docs/reports/verification.json
  Copy-Item -LiteralPath build/qa/layout-fixed.png -Destination docs/media/gameplay.png
  Copy-Item -LiteralPath build/qa/keyboard.png -Destination docs/media/keyboard.png
@@ -31,6 +37,15 @@ try {
  Copy-Item -LiteralPath build/qa/events-report.json -Destination docs/reports/events-verification.json
  Copy-Item -LiteralPath build/qa/flows-report.json -Destination docs/reports/flows-verification.json
  Copy-Item -LiteralPath build/qa/stage-report.json -Destination docs/reports/stage-verification.json
+ Copy-Item -LiteralPath build/qa/v11-report.json -Destination docs/reports/v11-verification.json
+ Copy-Item -LiteralPath build/qa/performance-report.json -Destination docs/reports/performance-verification.json
+ Copy-Item -LiteralPath build/qa/records-report.json -Destination docs/reports/records-verification.json
+ Copy-Item -LiteralPath build/qa/audit-idle-profile.json -Destination docs/reports/performance-audit-profile.json
+ Copy-Item -LiteralPath build/reference/dos-cash-timing.json -Destination docs/reports/dos-cash-timing.json
+ Copy-Item -LiteralPath build/reference/original-cash-complete.png -Destination docs/media/cash-dos-reference.png
+ foreach($taskMedia in @('title-v11.png','turn-menu-v11.png','turn-menu-solve-v11.png','solve-fixed-v11.png','wheel-native-v11.png','wheel-phases-v11.png','cash-screen-v11.png','cash-filled-v11.png','cash-natural-v11.png','cash-v11.gif','cash-v11.wav')) {
+  Copy-Item -LiteralPath "build/qa/$taskMedia" -Destination "docs/media/$taskMedia"
+ }
  Copy-Item -LiteralPath build/qa/assistant-left-wall.png -Destination docs/media/assistant-entry.png
  Copy-Item -LiteralPath build/qa/assistant-right-wall.png -Destination docs/media/assistant-exit.png
  Copy-Item -LiteralPath build/qa/turn-counter-2.png -Destination docs/media/turn-2.png
@@ -54,11 +69,12 @@ try {
  Copy-Item -LiteralPath build/qa/speech.png -Destination docs/media/speech.png
  Copy-Item -LiteralPath build/qa/layout-preview.png -Destination docs/media/layout-preview.png
  Copy-Item -LiteralPath build/qa/title-preview.png -Destination docs/media/title.png
+ Copy-Item -LiteralPath build/qa/title-preview.png -Destination docs/media/title-clean.png
  Copy-Item -LiteralPath build/qa/score-spacing.png -Destination docs/media/score-spacing.png
  Copy-Item -LiteralPath build/qa/short-i.png -Destination docs/media/short-i.png
  Copy-Item -LiteralPath assets/generated/blue-stone-extension.png -Destination docs/media/stone-texture.png
  Copy-Item -LiteralPath assets/generated/blue-stone-extension.prompt.txt -Destination docs/media/stone-texture.prompt.txt
  & $PythonExe scripts/package_release.py
  if($LASTEXITCODE) {throw 'Release packaging failed'}
- Write-Output "Release: dist/pole.gba; archive: build/release/pole-gba.zip"
+ Write-Output "Release: dist/pole 1.1.gba; archive: build/release/pole-gba-1.1.zip"
 } finally {$env:PYTHONDONTWRITEBYTECODE=$taskBytecode; Pop-Location}

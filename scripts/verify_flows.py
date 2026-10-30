@@ -117,7 +117,8 @@ def pick(letter):
  else:
   while e.state()[70]!=target:e.tap(7)
  e.tap(8);check('correct keypad letter invokes assistant',e.state()[3]==16)
- e.tap(8);check('assistant skip retains reaction screen',e.state()[3]==6)
+ plus=e.state()[8]==100;e.tap(8)
+ check('Plus assistant continues straight to turn' if plus else 'assistant skip retains reaction screen',e.state()[3]==(1 if plus else 6))
 
 # Three actual successful turns: never inject a nonzero streak counter.
 for with_plus,choice in ((False,0),(False,1),(True,1)):
@@ -126,7 +127,7 @@ for with_plus,choice in ((False,0),(False,1),(True,1)):
   spin_to(sector);pick(letter)
   last=index==len(turns)-1
   check(f'bonus progression plus={with_plus}, choice={choice}, hit={index+1}',e.state()[77]==(8 if last else 1))
-  e.tap(8)
+  if e.state()[3]==6:e.tap(8)
  check('three successful ordinary turns open two chests',e.state()[3]==8)
  e.run(24);preview('three-letters-chests.png')
  if choice:e.tap(7)

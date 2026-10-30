@@ -6,8 +6,14 @@ static Note notes[256];
 static unsigned count,index,remaining,phase,increment,buffer,enabled=1;
 static unsigned fifo[8] __attribute__((aligned(4)));
 volatile struct {unsigned irqs,samples,transitions,hz;} speaker_diag;
+volatile unsigned speaker_silent_buffers;
 extern unsigned pole_udiv(unsigned,unsigned);
-static void fill(void){signed char*p=(signed char*)&fifo[buffer*4];for(unsigned i=0;i<16;i++){
+static void fill(void){
+ if(!remaining&&index>=count){
+  unsigned*p=&fifo[buffer*4];p[0]=p[1]=p[2]=p[3]=0;increment=0;
+  speaker_diag.samples+=16;speaker_silent_buffers++;return;
+ }
+ signed char*p=(signed char*)&fifo[buffer*4];for(unsigned i=0;i<16;i++){
  if(!remaining){if(index<count){Note n=notes[index++];remaining=pole_udiv((unsigned)n.ms*32768+500,1000);if(!remaining)remaining=1;unsigned hz=n.hz;if(hz>18){unsigned pit=pole_udiv(1193181,hz);hz=pole_udiv(1193181,pit);increment=(hz*1024+pole_udiv((1193181-hz*pit)*1024,pit))*128;}else increment=0;speaker_diag.hz=hz;speaker_diag.transitions++;}else increment=0;}
  if(remaining)remaining--;phase+=increment;p[i]=(enabled&&increment)?(phase&0x80000000?64:-64):0;speaker_diag.samples++;
 }}
@@ -17,6 +23,12 @@ void speaker_irq(unsigned flags){if(flags&0x200){fill();buffer^=1;arm();speaker_
 void speaker_enable(int on){enabled=on;}
 static void add(unsigned hz,unsigned ms){if(ms&&count<256)notes[count++]=(Note){hz,ms};}
 void speaker_tone(unsigned hz,unsigned ms){unsigned short old=R16(0x04000208);R16(0x04000208)=0;count=index=remaining=0;add(hz,ms);R16(0x04000208)=old;}
+void speaker_queue_tone(unsigned hz,unsigned ms){
+ unsigned short old=R16(0x04000208);R16(0x04000208)=0;
+ if(index==count)index=count=0;
+ else if(count==256&&index){unsigned used=index;for(unsigned i=used;i<count;i++)notes[i-used]=notes[i];count-=used;index=0;}
+ add(hz,ms);R16(0x04000208)=old;
+}
 void speaker_effect(unsigned effect,unsigned random_seed){unsigned short old=R16(0x04000208);R16(0x04000208)=0;count=index=remaining=0;
  /* Each sequence is taken from the Sound/Delay/NoSound calls at these addresses.
   * Delay is Turbo Pascal milliseconds; scheduling no longer depends on PC CPU. */

@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "count": 74,
+  "count": 73,
   "checks": [
     "introduction is a distinct scene",
     "round title uses individual middle-row cells",
@@ -74,14 +74,13 @@
     "Prize black contour visible in actual PPU phase 29",
     "Prize black contour visible in actual PPU phase 30",
     "Prize black contour visible in actual PPU phase 31",
-    "Prize contour checked in all 32 moving wheel phases",
-    "emulated capture stays within original palette"
+    "Prize contour checked in all 32 moving wheel phases"
   ],
-  "rom_sha256": "c5dd60e30d9e546073417e2907665ae85de6c191993cc554209666bc1a068b24",
+  "rom_sha256": "7d35169988e8becfe0c55e6606a6b49ccf3fc069939782d0217a4485fa66fb30",
   "source_reference": "build/reference/original-*.png",
   "native_glyph_height": 14,
   "sign_height": 12,
-  "sign_strokes_checked": 18496,
+  "sign_strokes_checked": 16320,
   "host_x": 185,
   "host_y": 56,
   "score_panel_y": 138,

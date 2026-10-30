@@ -177,7 +177,7 @@
     "bonus progression plus=True, choice=1, hit=1",
     "keypad spin reaches sector 0",
     "correct keypad letter invokes assistant",
-    "assistant skip retains reaction screen",
+    "Plus assistant continues straight to turn",
     "bonus progression plus=True, choice=1, hit=2",
     "keypad spin reaches sector 3",
     "correct keypad letter invokes assistant",
@@ -217,5 +217,5 @@
   ],
   "certificate_glyphs_checked": 5353,
   "reference": "Original Pascal literals from POLE.EXE; native font-14.bin; actual mGBA PPU",
-  "rom_sha256": "c5dd60e30d9e546073417e2907665ae85de6c191993cc554209666bc1a068b24"
+  "rom_sha256": "7d35169988e8becfe0c55e6606a6b49ccf3fc069939782d0217a4485fa66fb30"
 }
