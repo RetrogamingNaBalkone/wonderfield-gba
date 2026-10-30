@@ -61,11 +61,14 @@ Ghidra импортирует исходный MZ-файл, анализируе
 
 [Аудит вычислений и отрисовки](performance-audit.md) содержит замеры неподвижных экранов и приоритеты оптимизации. Профиль можно повторить командой `python scripts/audit_idle.py`.
 
+`verify_ai_chests.py` проверяет оба ответа и оба исхода для каждого соперника, независимость выбора от кнопок, паузу и пиксели реплик и открытых шкатулок. Для сравнения производительности с конкретной предыдущей сборкой можно указать `python scripts/verify_performance.py --baseline-dir build/before-ai-chests`, где лежат её ROM и ELF.
+
 ```powershell
 python scripts/verify.py
 python scripts/verify_scene.py
 python scripts/verify_events.py
 python scripts/verify_flows.py
+python scripts/verify_ai_chests.py
 python scripts/verify_stage.py
 python scripts/verify_v11.py --long
 python scripts/verify_performance.py

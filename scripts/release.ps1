@@ -17,6 +17,8 @@ try {
  if($LASTEXITCODE) {throw 'mGBA event verification failed'}
  & $PythonExe scripts/verify_flows.py
  if($LASTEXITCODE) {throw 'mGBA final, bonus and input verification failed'}
+ & $PythonExe scripts/verify_ai_chests.py
+ if($LASTEXITCODE) {throw 'mGBA AI chest dialogue and choice verification failed'}
  & $PythonExe scripts/verify_stage.py
  if($LASTEXITCODE) {throw 'mGBA stage, spin and RNG audit failed'}
  & $PythonExe scripts/verify_v11.py --long
@@ -36,6 +38,10 @@ try {
  Copy-Item -LiteralPath build/qa/visual-report.json -Destination docs/reports/visual-verification.json
  Copy-Item -LiteralPath build/qa/events-report.json -Destination docs/reports/events-verification.json
  Copy-Item -LiteralPath build/qa/flows-report.json -Destination docs/reports/flows-verification.json
+ Copy-Item -LiteralPath build/qa/ai-chests-report.json -Destination docs/reports/ai-chests-verification.json
+ foreach($taskChest in @('ai-chest-0-0.png','ai-chest-0-1.png','ai-chest-1-0.png','ai-chest-1-1.png')) {
+  Copy-Item -LiteralPath "build/qa/$taskChest" -Destination "docs/media/$taskChest"
+ }
  Copy-Item -LiteralPath build/qa/stage-report.json -Destination docs/reports/stage-verification.json
  Copy-Item -LiteralPath build/qa/v11-report.json -Destination docs/reports/v11-verification.json
  Copy-Item -LiteralPath build/qa/performance-report.json -Destination docs/reports/performance-verification.json

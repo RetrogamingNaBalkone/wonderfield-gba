@@ -59,7 +59,7 @@ static void score_badge(int player,int x,int y){
  rect(x,y,44,10,5);border(x,y,44,10,0);number(x+2,y+1,value,1,0);
 }
 static int host_visible(void){
- if(!scene.host_active||!speech_visible()||game.mode==AI_ANSWER)return 0;
+ if(!scene.host_active||!speech_visible()||game.mode==AI_ANSWER||game.mode==AI_CHEST)return 0;
  if(game.mode==TITLE||game.mode==HELP||game.mode==RECORDS||game.mode==GALLERY||game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES)return 0;
  if(game.mode==CASH&&cash.ready)return 0;
  if(game.mode==CREDITS&&scene.now-scene.start>=26)return 0;
@@ -105,7 +105,7 @@ static void speech_strip(const Sprite*s,int x,int y,int width,int top,int height
 }
 static void speech(void){
  if(!speech_visible())return;
- if(game.mode==AI_ANSWER){
+ if(game.mode==AI_ANSWER||game.mode==AI_CHEST){
   const Sprite*s=&sprites[39];int x=game.player?141:1,w=98;
   speech_strip(s,x,35,w,0,s->h,2);
   label_center(x+3,44,w-6,message1,0,0);return;
@@ -182,6 +182,7 @@ static void footer(void){
  if(game.mode==REVEAL)t="A: пропустить помощницу";
  if(game.mode==SPIN)t="A: пропустить вращение";
  if(game.mode==PRIZE||game.mode==CHEST)t="ВЛЕВО/ВПРАВО: выбор  A: OK";
+ if((game.mode==CHEST&&game.player!=2)||game.mode==AI_CHEST)t="START: пауза";
  if(game.mode==GAME_OVER)t="A: главное меню";
  if(game.mode==CASH)t=cash.drawn<cash.total?"A: пропустить выдачу денег":"A: продолжить";
  centered(152,t,1,0);
@@ -266,10 +267,11 @@ static void render(void){
    if(px>=15&&px<225&&color!=2)pixel(px,12+y,color);
   }
  }
- if(game.mode==CHEST){
+ if(game.mode==CHEST||game.mode==AI_CHEST){
   int phase=(scene.now-scene.speech_at)/6;
-  int animate=scene.now-scene.speech_at<90;
-  image(&sprites[animate&&!(phase&1)?37:36],18,96,7);image(&sprites[animate&&(phase&1)?37:36],115,96,7);border(game.choice?113:16,94,40,42,14);
+  int animate=game.mode==CHEST&&scene.now-scene.speech_at<90;
+  image(&sprites[animate&&!(phase&1)?37:36],18,96,7);image(&sprites[animate&&(phase&1)?37:36],115,96,7);
+  if(game.player==2||game.mode==AI_CHEST)border(game.choice?113:16,94,40,42,14);
  }
  if(game.mode==RESULT&&scene.now<scene.chest_until){
   image(&sprites[scene.chest_money?38:37],game.choice?115:18,96,7);image(&sprites[36],game.choice?18:115,96,7);

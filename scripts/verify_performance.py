@@ -3,7 +3,8 @@
 If build/performance-baseline contains the previous ROM/ELF, compare settled
 PPU frames against that actual cartridge as well as checking idle draw counts.
 """
-import contextlib,ctypes as c,hashlib,io,json,struct,zlib
+import argparse,contextlib,ctypes as c,hashlib,io,json,struct,zlib
+from pathlib import Path
 from emulator import Emulator,ROOT
 from audit_idle import profile
 from measure_pacing import measure as measure_pacing
@@ -20,7 +21,9 @@ for row in current['results']:
  check(row['name']+' polls the main loop every VBlank',row['main_updates']>=299)
  check(row['name']+' takes the empty-audio fast path',row['fast_silent_buffers']>=row['audio_irqs']-1)
 
-baseline=None;directory=ROOT/'build/performance-baseline'
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--baseline-dir',type=Path,default=ROOT/'build/performance-baseline')
+baseline=None;directory=parser.parse_args().baseline_dir
 if (directory/'pole.gba').exists() and (directory/'pole.elf').exists():
  with contextlib.redirect_stdout(io.StringIO()):
   baseline=profile(directory/'pole.gba',directory/'pole.elf',directory/'idle-profile-normalized.json')
@@ -124,12 +127,14 @@ e.run(20);reward=zlib.crc32(e.raw);e.run(90)
 check('reward chest disappears at its deadline',zlib.crc32(e.raw)!=reward)
 draws=read('rendered_frames');e.run(180);check('expired reward remains static',read('rendered_frames')==draws)
 
-# Preserve the measured old AI chest wait: 41 render-bound updates * 8 VBlank.
+# AI chests now have a host prompt, an opponent reply, then automatic opening.
 fixture(6);e.poke(5,0);e.poke(77,8);e.poke(78,0);e.tap(8);e.until(lambda s:s[3]==8)
-entered=read('scene',4);e.run(250)
-check('AI chest waits instead of accelerating with the main loop',e.state()[3]==8)
-e.until(lambda s:s[3]!=8);elapsed=read('video_ticks')-entered
-check('AI chest decision retains approximately 5.5 seconds',328<=elapsed<=340)
+entered=read('scene',4);e.until(lambda s:s[3]!=8)
+check('AI chest prompt lasts about 2.5 seconds',e.state()[3]==22 and 150<=read('video_ticks')-entered<=162)
+answered=read('scene',4);e.run(45);draws=read('rendered_frames');e.run(20)
+check('AI chest reply remains static and readable',e.state()[3]==22 and read('rendered_frames')==draws)
+e.until(lambda s:s[3]!=22);elapsed=read('video_ticks')-entered
+check('AI chest reply lasts about 1.5 seconds before opening',e.state()[3]==6 and 90<=read('video_ticks')-answered<=102)
 
 # Pause retains visual deadlines, not just game.mode.
 fixture(8);write('scene',read('video_ticks'),4);e.run(25);e.tap(3);check('START pauses animated chest',e.state()[3]==11)

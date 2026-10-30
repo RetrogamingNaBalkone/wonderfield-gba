@@ -14,7 +14,8 @@ names=['records-verification.json','performance-verification.json','performance-
        'title.png','title-clean.png','score-spacing.png','short-i.png','keyboard.png','speech.png','assistant.png','assistant-plus.png','assistant-waiting.png',
        'ai-answer.png','ai-score.png','prize.png','prize-outline.png','round-last-letter.png','round-winner.png','farewell.png','studio-demo.gif',
        'speaker-demo.wav','stone-texture.png','stone-texture.prompt.txt']
-for name in ('verification.json','visual-verification.json','events-verification.json','flows-verification.json','stage-verification.json','v11-verification.json','performance-verification.json','records-verification.json'):
+names+=['ai-chests-verification.json','ai-chest-0-0.png','ai-chest-0-1.png','ai-chest-1-0.png','ai-chest-1-1.png']
+for name in ('verification.json','visual-verification.json','events-verification.json','flows-verification.json','ai-chests-verification.json','stage-verification.json','v11-verification.json','performance-verification.json','records-verification.json'):
     report=json.loads((root/'docs/reports'/name).read_text(encoding='utf-8'))
     assert report['status']=='passed' and report['rom_sha256']==digest,name
 temporary=release/(archive_name+'.tmp')

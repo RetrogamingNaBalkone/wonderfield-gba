@@ -16,7 +16,7 @@ typedef unsigned int u32;
 #define DOWN 128
 #define R 256
 #define L 512
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,GALLERY,NAME,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,GALLERY,NAME,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST};
 /* Read-only diagnostic state is also used by the emulator integration checks. */
 typedef struct {
  u32 magic,frame,rng; int mode,round,player,word_id,sector,sector_value;
@@ -191,6 +191,11 @@ static void start_spin(void){
  say(msg_da9,"");scene.host_active=0;
 }
 static void end_result(void){int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(game.player!=2)game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==FINAL_RECORDS)final_records();else set_mode(next);}
+static void open_chest(void){
+ int reward=random_n(2)==(unsigned)game.choice?100:0;
+ game.score[game.player]+=reward;scene.chest_until=scene.now+120;scene.chest_money=reward!=0;
+ result(reward?msg_ef1:msg_f07,reward?msg_efa:msg_f10,TURN,game.player);
+}
 static int fixed_letter(int letter){return (solve_fixed>>letter)&1;}
 static void solve_advance(void){while(game.solve_pos<len(word())&&game.revealed[game.solve_pos])game.solve_pos++;}
 static void solve_word(void){set_mode(SOLVE);game.solve_pos=0;solve_fixed=0;int n=len(word());for(int i=0;i<21;i++){game.answer[i]=i<n&&game.revealed[i]?word()[i]:0;if(i<n&&game.revealed[i])solve_fixed|=1u<<((u8)word()[i]-128);}solve_advance();game.cursor=0;while(game.cursor<31&&fixed_letter(game.cursor))game.cursor++;game.keyboard=1;say(msg_f20,"");}
@@ -254,7 +259,17 @@ static void update(u16 pressed,u16 repeat){
   if(repeat&(LEFT|RIGHT)){int delta=repeat&RIGHT?1:n-1;do{game.cursor=(game.cursor+delta)%n;}while(game.revealed[game.cursor]);dirty=1;}
   if(pressed&A)choose_letter((u8)word()[game.cursor]-128);return;
  }
- if(game.mode==CHEST){if(repeat&(LEFT|RIGHT)){game.choice=1-game.choice;dirty=1;}if(pressed&A||(game.player!=2&&scene.now-scene.speech_at>=328)){int reward=random_n(2)==(unsigned)game.choice?100:0;game.score[game.player]+=reward;scene.chest_until=scene.now+120;scene.chest_money=reward!=0;result(reward?msg_ef1:msg_f07,reward?msg_efa:msg_f10,TURN,game.player);}return;}
+ if(game.mode==CHEST){
+  if(game.player!=2){
+   /* Let the chests settle and the host finish, then give the opponent
+    * its own readable answer. Keypad input never chooses for the AI. */
+   if(scene.now-scene.speech_at>=150){game.choice=random_n(2);set_mode(AI_CHEST);say(game.choice?"Правая!":"Левая!","");scene.host_active=0;}
+   return;
+  }
+  if(repeat&(LEFT|RIGHT)){game.choice=1-game.choice;dirty=1;}
+  if(pressed&A)open_chest();return;
+ }
+ if(game.mode==AI_CHEST){if(scene.now-scene.speech_at>=90)open_chest();return;}
  if(game.mode==PRIZE){
   if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}
   if(pressed&A){
