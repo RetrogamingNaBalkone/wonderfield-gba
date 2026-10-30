@@ -64,7 +64,7 @@ for frame in range(2000):
 else:raise AssertionError('assistant never exits')
 check('both walls stay in front throughout assistant walk',wall_ok)
 check('assistant is partially hidden at right wall before exit',partial_seen)
-check('assistant finishes behind wall at x225, never screen edge x240',e.state()[3]==6 and max_actor==225)
+check('assistant finishes behind wall at x225 and continues directly to turn',e.state()[3]==1 and max_actor==225)
 check('wall exit still opens all three matching cells',sum(e.state()[18:38])==3 and e.state()[11]==30)
 
 # The final cell of the longest word must open before the assistant vanishes.

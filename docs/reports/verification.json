@@ -19,11 +19,14 @@
     "first round human turn",
     "wheel stops",
     "numeric sector uses original table",
-    "B hides keyboard",
-    "B restores keyboard",
+    "B keeps letter keyboard open without selecting a letter",
+    "letter navigation remains available immediately after B",
+    "repeated B keeps keyboard and cursor visible",
+    "START pauses letter selection",
+    "pause resumes directly into letter selection",
     "all repeated letters revealed",
     "points per occurrence",
-    "hit retains turn",
+    "hit continues directly to same player turn",
     "x4 sector value",
     "x4 multiplies score once",
     "x2 multiplies score once",
@@ -57,9 +60,10 @@
     "round 3 solved",
     "three different original questions",
     "three-round win reaches original gift text",
-    "gift text precedes final congratulations",
-    "three-round game reaches winner records",
-    "highscore name entry follows gift screens",
+    "three-round gift goes directly to winner records",
+    "winner records return to title",
+    "highscore name entry follows gift screens directly",
+    "B still erases a typed name character",
     "record table after name",
     "SRAM signature",
     "SRAM score stored",
@@ -67,19 +71,19 @@
     "wrong full word rejected",
     "wrong full word eliminates human"
   ],
-  "count": 65,
+  "count": 69,
   "emulator": "mGBA 0.10.5 libretro",
   "normal_keypad_rounds": [
-    228,
-    352,
-    332
+    129,
+    373,
+    457
   ],
   "rare_branch_tests": "Explicit RAM fixtures in scripts/verify.py",
   "speaker": {
-    "irqs": 116386,
-    "samples": 1862240,
-    "transitions": 485,
+    "irqs": 117551,
+    "samples": 1880880,
+    "transitions": 529,
     "measured_test_hz": 440.11970788008784
   },
-  "rom_sha256": "3940ebda812a4c7cc63d2b54277f3e964523390986fbff02686bdc8c4e8c004d"
+  "rom_sha256": "a930b04c0a96ac585a49b34238141218d6888543b8681b11a6d1131a679a8f4e"
 }

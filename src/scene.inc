@@ -24,7 +24,11 @@ static void complete_reveal(void){
  scene.host_active=0;
  int pending=scene.pending_mode,wait=scene.pending_wait;
  if(pending==ROUND_END){finish_round();return;}
- if(pending==TURN){begin_turn();return;}
+ /* The ordinary letter reaction already played before the walk. */
+ if(pending==TURN||(pending==RESULT&&game.next_mode==TURN)){begin_turn();return;}
+ /* The third hit gets the ordinary letter reaction during the reveal.
+  * Announce its bonus once, only after the cells and score have settled. */
+ if(pending==RESULT&&game.next_mode==CHEST){result(msg_eb5,msg_ec8,CHEST,game.player);return;}
  set_mode(pending);game.wait=wait;scene.speech_at=video_ticks;
 }
 static unsigned cash_random(unsigned n){cash.rng=cash.rng*134775813u+1;return (cash.rng>>16)%n;}

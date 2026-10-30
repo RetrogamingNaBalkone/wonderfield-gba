@@ -73,14 +73,11 @@ pixels=ppu()
 check('capital short-I breve is visible below keyboard border',all(pixels[103*240+x]==palette[0] for x in (47,48,49)))
 check('capital I has no accidental keyboard-border breve',all(pixels[103*240+x]!=palette[0] for x in (19,20,21)))
 e.poke(70,8);e.tap(8);check('successful letter starts assistant animation',e.state()[3]==16)
-before=sum(e.state()[18:38]);capture(10)
+before=sum(e.state()[18:38]);capture(10);e.screenshot('speech.png')
 check('letters are not exposed before assistant reaches board',sum(e.state()[18:38])==before)
-e.run(40);capture(36);e.screenshot('assistant-reveal.png')
-e.until(lambda s:s[3]!=16);e.run(12);capture(6);e.screenshot('speech.png')
-check('assistant exposes all three matching letters',sum(e.state()[18:38])==3)
 # Every black source-font stroke of the second spoken line must survive layers.
 b=(ROOT/'originals/Wonderfield/POLE.EXE').read_bytes();header=struct.unpack_from('<H',b,8)[0]*16;p=header+0xe65
-text=b[p+1:p+1+b[p]];font=(ROOT/'assets/font-14.bin').read_bytes();x=(240-len(text)*8)//2
+text=b[p+1:p+1+b[p]];font=(ROOT/'assets/font-14.bin').read_bytes();x=50+(186-len(text)*8)//2
 actual=[v&0xffffff if e.format==1 else v for v, in struct.iter_unpack('<I' if e.format==1 else '<H',e.raw)];mask=[]
 for i,ch in enumerate(text):
  for yy in range(14):
@@ -88,6 +85,9 @@ for i,ch in enumerate(text):
    if font[ch*14+yy]&(128>>xx):mask.append(actual[(53+yy)*240+x+i*8+xx]==0)
 check('entire spoken second line survives wheel and portraits',all(mask))
 check('speech uses all 14 original font rows',len(mask)>200)
+e.run(40);capture(36);e.screenshot('assistant-reveal.png')
+e.until(lambda s:s[3]!=16);e.run(12);capture(6)
+check('assistant exposes all three matching letters and returns straight to turn',sum(e.state()[18:38])==3 and e.state()[3]==1)
 # 16 stopped-wheel views retain the actual DOS sector artwork at native height.
 check('unmodified source icons are retained',all(meta[i]['height']==16 for i in range(4,16)))
 labels=json.loads((ROOT/'build/generated/wheel-labels.json').read_text())
@@ -111,7 +111,7 @@ for i in range(16):
 check('all sixteen stopped sectors render',True)
 check('all black and white sign strokes survive in sixteen PPU frames',sign_strokes>10000 and sign_errors==0)
 # Actual closed/open cell colours, frame width, raised portrait and score spacing.
-e.poke(6,0);e.poke(11,0);e.poke(12,2);e.poke(13,0);e.poke(7,12)
+e.poke(6,0);e.poke(9,0);e.poke(10,0);e.poke(11,0);e.poke(12,2);e.poke(13,0);e.poke(7,12)
 for i in range(20):e.poke(18+i,0)
 store_u32(e,'dirty',1);e.run(15);pixels=ppu();n=len(json.loads((ROOT/'assets/words.json').read_text(encoding='utf-8'))[0]['word']);left=30+((20-n)//2)*9
 check('closed word cells use original dark grey fill',all(pixels[12*240+left+i*9+4]==palette[8] for i in range(n)))
@@ -121,12 +121,15 @@ stone=(ROOT/'assets/generated/blue-stone-extension.bin').read_bytes()
 check('drawn blue stone course stays continuous behind wheel',all(pixels[44*240+x]==palette[stone[52*192+x%192]] for x in range(15,225)))
 check('drawn stone course uses only original masonry colours',set(stone)=={0,1,7,9})
 check('raised portrait has six clear rows before score panel',all(pixels[y*240+x]==palette[7] for y in range(132,138) for x in range(185,240)))
-check('YOU label has a clear gap and no vertical separator',all(pixels[y*240+x]==palette[5] for y in range(140,148) for x in range(184,198)))
+snickers=rom[e.sym['small_data_28']-0x08000000:e.sym['small_data_28']-0x08000000+34*9]
+check('all three players show the same Snickers at zero',all(pixels[(by+y)*240+bx+5+x]==palette[v] for bx,by in ((1,73),(141,73),(164,138)) for y in range(9) for x in range(34) if (v:=snickers[y*34+x])!=7))
+check('human zero badge has no YOU label or extra panel',all(pixels[y*240+x]==palette[7] for y in range(138,148) for x in range(185,240) if not(169<=x<203 and y<147)))
 e.screenshot('layout-fixed.png')
 preview('layout-preview.png')
 e.poke(11,30000);e.poke(18,1);store_u32(e,'dirty',1);e.run(15);pixels=ppu();e.screenshot('score-spacing.png')
 check('revealed cells restore original light grey',pixels[12*240+left+8]==palette[7])
-check('five-digit score remains separated from YOU',all(pixels[y*240+x]==palette[5] for y in range(140,148) for x in range(190,198)))
+font8=(ROOT/'assets/font-8.bin').read_bytes()
+check('human five-digit score fits the shared badge',all(pixels[(139+y)*240+166+i*8+x]==palette[0 if font8[ch*8+y]&(128>>x) else 5] for i,ch in enumerate(b'30000') for y in range(8) for x in range(8)))
 # Longest question is tested at native font size, with every letter visible.
 words=json.loads((ROOT/'assets/words.json').read_text(encoding='utf-8'));longest=max(range(len(words)),key=lambda i:len(words[i]['word']))
 e.poke(6,longest)

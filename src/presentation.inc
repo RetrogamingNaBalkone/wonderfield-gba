@@ -32,7 +32,7 @@ static void board(void){
   for(int i=0;i<n;i++){
    rect(x+i*cw+1,11,cw-1,15,game.revealed[i]?7:8);
    if(game.revealed[i])glyph(x+i*cw+1,11,(u8)word()[i],0,0);
-   if(game.mode==PLUS&&game.cursor==i)line(x+i*cw+1,25,cw-1,14);
+   if(game.mode==PLUS&&game.player==2&&game.cursor==i)line(x+i*cw+1,25,cw-1,14);
   }
  }
  for(int x=30;x<=210;x+=9)rect(x,2,1,33,0);
@@ -93,11 +93,7 @@ static void people(void){
  int face,eyes,eye_y;host_pose(&face,&eyes,&eye_y);
  half_image(face,196,57,-1);
  if(eyes>=0)half_image(eyes,204,eye_y,-1);
- rect(164,138,76,12,5);border(164,138,76,12,0);
- text(168,140,"ВЫ",1,0);
- int value=game.score[2],digits=1;unsigned v=value<0?-value:value;
- while(v>=10){v/=10;digits++;}if(value<0)digits++;
- number(238-digits*8,140,value,1,0);
+ score_badge(2,164,138);
 }
 static void speech_strip(const Sprite*s,int x,int y,int width,int top,int height,int transparent){
  /* Resolve columns once; division per pixel stalls ARM7 during speech. */
@@ -168,7 +164,7 @@ static void help(void){
  rect(0,0,240,160,1);centered(3,"УПРАВЛЕНИЕ",0,14);
  text(4,24,"A: подтвердить / далее",1,15);
  text(4,37,"Крестовина: выбор",1,15);
- text(4,50,"B: скрыть / стереть",1,15);
+ text(4,50,"B: стереть при вводе",1,15);
  text(4,63,"START: пауза / продолжить",1,15);
  text(4,76,"При вводе SELECT: пауза",1,15);
  text(4,89,"При вводе START: OK",1,15);
@@ -181,7 +177,7 @@ static void footer(void){
  rect(0,152,240,8,7);
  const char*t="A: далее   START: пауза";
  if(game.mode==TURN&&game.player==2)t="ВЛЕВО/ВПРАВО: выбор  A: OK";
- if(game.mode==LETTER)t=game.keyboard?"A: буква  B: скрыть":"A / B: выбрать букву";
+ if(game.mode==LETTER)t=game.player==2?"Крестовина: выбор  A: буква":"START: пауза";
  if(game.mode==SOLVE)t="A: буква B: стереть START: OK";
  if(game.mode==REVEAL)t="A: пропустить помощницу";
  if(game.mode==SPIN)t="A: пропустить вращение";

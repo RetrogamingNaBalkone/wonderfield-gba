@@ -106,6 +106,34 @@ start=read('scene',4);e.until(lambda s:s[3]==2)
 elapsed=read('video_ticks')-start
 check('AI starts wheel within one second',30<=elapsed<=60)
 
+# DOS Plus branches on player before reading the keyboard (1fd6 -> 226d).
+# Replay the same seed with early human input: it must not select for the AI.
+def ai_plus(player,seed,interfere):
+ fixture(0,player)
+ e.poke(2,seed)
+ for i in range(len(word)):e.poke(18+i,int(i%3==0))
+ before=e.state();cursor=before[70]
+ for key in (7,6,8):
+  e.run(8,(key,) if interfere else ())
+  e.run(1)
+  check(f'AI {player} Plus seed {seed}: early {key} leaves choice pending ({interfere})',e.state()[3]==4 and e.state()[70]==cursor and e.state()[18:70]==before[18:70] and e.state()[9:12]==before[9:12])
+ pixels=ppu();left=30+((20-len(word))//2)*9
+ check(f'AI {player} Plus has no human selection marker ({interfere})',all(pixels[25*240+left+i*9+1+x]!=palette[14] for i in range(len(word)) for x in range(8)))
+ e.until(lambda s:s[3]==18)
+ position=e.state()[70];letter=word[position]-128
+ check(f'AI {player} Plus announces a hidden position ({interfere})',not before[18+position] and message()==str(position+1).encode()+dos_message(0x1fc6) and read('scene',144)==letter)
+ choice=(position,letter,e.state()[2],message())
+ e.run(30);e.tap(8)
+ check(f'AI {player} Plus reveals only its announced letter ({interfere})',e.state()[3]==16 and all(read('scene',64+i*4)==int(bool(before[18+i]) or word[i]==word[position]) for i in range(len(word))))
+ e.tap(8)
+ check(f'AI {player} Plus keeps score and turn ({interfere})',e.state()[3]==1 and e.state()[5]==player and e.state()[9:12]==before[9:12] and all(e.state()[18+i]==int(bool(before[18+i]) or word[i]==word[position]) for i in range(len(word))))
+ return choice
+
+for player in (0,1):
+ for seed in (1,12345,999999):
+  natural=ai_plus(player,seed,False)
+  check(f'AI {player} Plus seed {seed}: keypad cannot change random choice',ai_plus(player,seed,True)==natural)
+
 # DOS 1000:1698 has one gameplay call: successful letter/Plus for any player.
 # This includes multipliers, declined Prize and the last hidden letter.
 for player in (0,1,2):
@@ -198,7 +226,7 @@ for sector,name in ((3,'ordinary'),(0,'plus')):
   check(f'{name} assistant is already on-screen during host reaction',e.state()[3]==16 and read('scene')-read('scene',12)<90 and all(pixels[(12+y)*240+32+x]==palette[v] for y in range(sh) for x in range(sw) if (v:=standing[y*sw+x])!=2))
  check(f'{name} waiting assistant has not opened cells early',not any(e.state()[18:38]))
  preview(f'assistant-waiting-{name}.png');e.tap(8)
- check(f'{name} new A still skips the visible assistant',e.state()[3]==(1 if sector==0 else 6) and all(e.state()[18+i] for i in matches))
+ check(f'{name} new A skips the visible assistant straight to turn',e.state()[3]==1 and all(e.state()[18+i] for i in matches))
 
 # Check the moment each cell turns in the real PPU, not only the final RAM mask.
 for sector,name in ((3,'ordinary'),(0,'plus')):
@@ -218,14 +246,14 @@ for sector,name in ((3,'ordinary'),(0,'plus')):
 
 for sector in (3,0):
  select_reveal(sector);e.tap(8);e.run(16)
- check(f'immediate second A skips assistant in sector {sector}',e.state()[3]==(1 if sector==0 else 6) and all(e.state()[18+i] for i in matches) and e.state()[11]==(130 if sector==3 else 100))
+ check(f'immediate second A skips assistant in sector {sector}',e.state()[3]==1 and all(e.state()[18+i] for i in matches) and e.state()[11]==(130 if sector==3 else 100))
  check(f'immediate A exposes all PPU glyphs in sector {sector}',all(visible_cell(i) for i in matches))
  select_reveal(sector);e.until(lambda s:s[18+matches[0]]!=0);e.tap(8);e.run(16)
- check(f'A during walk opens remaining matches in sector {sector}',e.state()[3]==(1 if sector==0 else 6) and all(visible_cell(i) for i in matches))
+ check(f'A during walk opens remaining matches in sector {sector}',e.state()[3]==1 and all(visible_cell(i) for i in matches))
 fixture(3);e.poke(38+8,0);e.poke(70,8);e.run(6);e.run(45,(8,))
 check('holding selection A does not also skip assistant',e.state()[3]==16 and not any(e.state()[18:38]))
 e.run(6);e.tap(8)
-check('fresh A skips held-key reveal without advancing dialogue',e.state()[3]==6 and sum(e.state()[18:38])==3)
+check('fresh A skips held-key reveal directly to turn without starting spin',e.state()[3]==1 and sum(e.state()[18:38])==3)
 
 # Feet touch the upper floor edge immediately below the board, not the players.
 fixture(3);e.poke(70,letter);e.tap(8)

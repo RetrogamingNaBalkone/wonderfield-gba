@@ -22,6 +22,19 @@ for i in range(10):
  p=header+0xc790+0x19a+i*25;gifts.append(exe[p+1:p+1+exe[p]])
 def read_scene(off):return struct.unpack('<I',c.string_at(e.ram+e.sym['scene']-0x02000000+off,4))[0]
 def write_scene(off,value):c.memmove(e.ram+e.sym['scene']-0x02000000+off,struct.pack('<I',value),4)
+
+def messages():
+ out=[]
+ for name in ('message1','message2'):
+  address=struct.unpack('<I',c.string_at(e.ram+e.sym[name]-0x02000000,4))[0]
+  if 0x02000000<=address<0x02040000:out.append(c.string_at(e.ram+address-0x02000000))
+  else:
+   address-=0x08000000
+   out.append(rom[address:rom.index(0,address)])
+ return tuple(out)
+
+reaction=(literal(0xe77),literal(0xe65))
+bonus=(literal(0xeb5),literal(0xec8))
 def ppu():
  out=[]
  for v, in struct.iter_unpack('<I' if e.format==1 else '<H',e.raw):
@@ -84,9 +97,9 @@ for gift in range(10):
    e.tap(0);e.run(24);certificate(True,0,gift,score);e.tap(8);e.run(24)
    check(f'backtracking does not reroll gift {gift}',e.state()[83]==gift and e.state()[2]==rng)
   e.tap(8);e.run(24)
- check(f'gift {gift} pages precede final congratulations and records',e.state()[3]==6 and e.state()[77]==20)
+ check(f'gift {gift} pages lead directly to name entry without studio return',e.state()[3]==14)
  if gift==0:
-  e.tap(8);check('winning score reaches name only after gift and congratulations',e.state()[3]==14)
+  check('winning score reaches name only after gift and congratulations',e.state()[3]==14)
 
 # The same original gift instructions also occur when choosing sector Prize.
 for i,v in {3:7,4:0,5:2,6:0,81:1,82:1,83:100}.items():e.poke(i,v)
@@ -104,40 +117,79 @@ def start_fixture():
  e.run(12)
  for i in range(20):e.poke(18+i,0)
  for i in range(32):e.poke(38+i,0)
- for i,v in {3:1,4:0,5:2,6:0,7:12,11:0,70:0,71:0,72:0,76:0,79:0,82:0}.items():e.poke(i,v)
+ for i,v in {3:1,4:0,5:2,6:0,7:12,11:0,70:0,71:0,72:0,76:0,79:0,81:1,82:0}.items():e.poke(i,v)
 def spin_to(sector):
  initial=e.state()[7]
  seed=next(s for s in range(1000) if (initial-64-((next_rng(s)>>16)%32))&15==sector)
  e.poke(2,seed);e.tap(8);e.tap(8)
  check(f'keypad spin reaches sector {sector}',e.state()[3]==(4 if sector==0 else 3))
-def pick(letter):
+def finish_assistant(skip):
+ if skip:e.tap(8)
+ else:
+  before=e.state()[18:38]
+  e.until(lambda s:s[18:38]!=before)
+  check('natural assistant opens letter before bonus announcement',e.state()[3]==16 and messages()==reaction)
+  e.until(lambda s:s[3]!=16)
+
+def pick(letter,skip=True):
  target=letter.encode('cp866')[0]-128
  if e.state()[3]==4:
   while word[e.state()[70]]!=128+target:e.tap(7)
  else:
   while e.state()[70]!=target:e.tap(7)
+ before=e.state()[18:38];score=e.state()[11]
  e.tap(8);check('correct keypad letter invokes assistant',e.state()[3]==16)
- plus=e.state()[8]==100;e.tap(8)
- check('Plus assistant continues straight to turn' if plus else 'assistant skip retains reaction screen',e.state()[3]==(1 if plus else 6))
+ plus=e.state()[8]==100
+ check('Plus has no letter reaction' if plus else 'correct letter reaction precedes opening, including third hit',messages()==((b'',b'') if plus else reaction))
+ check('reaction keeps new cells closed and score pending',e.state()[18:38]==before and e.state()[11]==score)
+ finish_assistant(skip)
+ chest=not plus and e.state()[77]==8
+ check('bonus follows assistant' if chest else 'assistant continues straight to turn without repeated result',e.state()[3]==(6 if chest else 1))
+ check('bonus announcement starts only after opening' if chest else 'correct letter reaction is not repeated after opening',messages()==bonus if chest else messages()!=reaction)
 
 # Three actual successful turns: never inject a nonzero streak counter.
-for with_plus,choice in ((False,0),(False,1),(True,1)):
+for with_plus,choice,skip,money in ((False,0,True,True),(False,1,True,True),(True,1,True,True),(False,0,False,True),(False,0,True,False),(False,1,True,False)):
  start_fixture();turns=[('Б',3),('И',0 if with_plus else 3),('Л',3)]+([('О',3)] if with_plus else [])
  for index,(letter,sector) in enumerate(turns):
-  spin_to(sector);pick(letter)
+  spin_to(sector);pick(letter,skip)
   last=index==len(turns)-1
   check(f'bonus progression plus={with_plus}, choice={choice}, hit={index+1}',e.state()[77]==(8 if last else 1))
   if e.state()[3]==6:e.tap(8)
  check('three successful ordinary turns open two chests',e.state()[3]==8)
+ check('bonus announcement advances to chest selection without repeating',messages()==(literal(0xeda),literal(0xee6)))
  e.run(24);preview('three-letters-chests.png')
  if choice:e.tap(7)
  check(f'chest {choice} selectable',e.state()[81]==choice)
- seed=next(s for s in range(100) if (next_rng(s)>>16)%2==choice);e.poke(2,seed)
+ seed=next(s for s in range(100) if ((next_rng(s)>>16)%2==choice)==money);e.poke(2,seed)
  before=e.state()[11];e.tap(8)
- check(f'chest {choice} awards original 100 points once',e.state()[11]==before+100 and e.state()[77]==1 and e.state()[72]==0)
- e.tap(8);check('continuing chest reward does not add twice',e.state()[11]==before+100 and e.state()[3]==1)
+ reward=100 if money else 0
+ check(f'chest {choice} awards {reward} points once',e.state()[11]==before+reward and e.state()[77]==1 and e.state()[72]==0)
+ check('chest outcome uses the matching original reply',messages()==((literal(0xef1),literal(0xefa)) if money else (literal(0xf07),literal(0xf10))))
+ e.tap(8);check('continuing chest reward does not add twice',e.state()[11]==before+reward and e.state()[3]==1)
 start_fixture();spin_to(3);pick('И')
 check('three occurrences of one guessed letter count as one turn',sum(e.state()[18:38])==3 and e.state()[72]==1 and e.state()[77]==1)
+
+# AI ordinary hits continue directly; a third hit retains the bonus result.
+for skip in (False,True):
+ start_fixture()
+ for i,v in {3:18,5:0,8:10,9:100,72:1}.items():e.poke(i,v)
+ write_scene(144,8);write_scene(4,0)
+ e.until(lambda s:s[3]==16)
+ check('AI ordinary hit reacts before opening',messages()==reaction and not any(e.state()[18:38]))
+ finish_assistant(skip)
+ check('AI ordinary hit continues without repeated reaction or result delay',e.state()[3]==1 and e.state()[5]==0 and messages()!=reaction and e.state()[9]==130 and sum(e.state()[18:38])==3)
+
+# AI third-hit fixtures exercise both reveal exits and the automatic result timer.
+for skip in (False,True):
+ start_fixture()
+ for i,v in {3:18,5:0,8:10,9:100,72:3}.items():e.poke(i,v)
+ write_scene(144,8);write_scene(4,0)
+ e.until(lambda s:s[3]==16)
+ check('AI third hit reacts before opening',messages()==reaction and not any(e.state()[18:38]))
+ finish_assistant(skip)
+ check('AI bonus follows completed reveal with settled score',e.state()[3]==6 and e.state()[77]==8 and messages()==bonus and e.state()[9]==130 and sum(e.state()[18:38])==3)
+ e.until(lambda s:s[3]!=6)
+ check('AI bonus automatically advances to chest selection once',e.state()[3]==8 and messages()==(literal(0xeda),literal(0xee6)))
 
 # VBlank input: one-frame taps during keyboard drawing, not long tap() holds.
 def keyboard_fixture():
@@ -154,14 +206,19 @@ check('quick Right then A preserves event order and selects Б',e.state()[3]==16
 check('queued selection A is not replayed as assistant skip',not any(e.state()[18:38]))
 
 # Winning by the last ordinary letter must take the same certificate route.
-start_fixture();e.poke(4,2);e.poke(11,100)
+start_fixture();e.poke(4,2);e.poke(11,100);e.poke(72,2)
 for i,ch in enumerate(word):e.poke(18+i,int(ch!=136))
 spin_to(3)
 while e.state()[70]!=8:e.tap(7)
 e.tap(8);check('last final letter still invokes assistant',e.state()[3]==16)
+check('third successful hit that solves word keeps letter reaction',messages()==reaction)
 e.tap(8);check('last final letter settles score before winning screen',e.state()[3]==9 and e.state()[11]==130)
+check('final congratulations appear in studio before gift',messages()==(literal(0xf7b),literal(0xf8a)))
 e.tap(8);e.run(24);check('letter-based final win reaches gift screens',e.state()[3]==19)
 certificate(True,0,e.state()[83],130)
+for page in range(3):e.tap(8)
+check('letter-based final gift goes directly to records for nonqualifying score',e.state()[3]==12)
+e.tap(8);check('final records return to title',e.state()[3]==0)
 
 e.close()
 report=dict(status='passed',count=len(checks),checks=checks,certificate_glyphs_checked=glyphs_checked,reference='Original Pascal literals from POLE.EXE; native font-14.bin; actual mGBA PPU',rom_sha256=hashlib.sha256(rom).hexdigest())

@@ -6,7 +6,7 @@
     "left wall is not painted over by waiting assistant",
     "both walls stay in front throughout assistant walk",
     "assistant is partially hidden at right wall before exit",
-    "assistant finishes behind wall at x225, never screen edge x240",
+    "assistant finishes behind wall at x225 and continues directly to turn",
     "wall exit still opens all three matching cells",
     "last cell of longest word opens visibly before right wall",
     "turn 1/3 is a clean native glyph without overprinting",
@@ -658,7 +658,7 @@
     "all ten original gifts occur in actual RNG stream",
     "revisiting gift page never issues a second award or rerolls"
   ],
-  "rom_sha256": "3940ebda812a4c7cc63d2b54277f3e964523390986fbff02686bdc8c4e8c004d",
+  "rom_sha256": "a930b04c0a96ac585a49b34238141218d6888543b8681b11a6d1131a679a8f4e",
   "spin_audit": {
     "natural_spins": 64,
     "skip_comparisons": 384,

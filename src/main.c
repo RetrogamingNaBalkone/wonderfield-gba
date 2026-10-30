@@ -115,7 +115,18 @@ static void begin_turn(void){set_mode(TURN);game.choice=1;const char*a=game.play
 static void new_round(void){int duplicate;do{game.word_id=random_n(495);duplicate=0;for(int i=0;i<game.round;i++)if(selected_words[i]==game.word_id)duplicate=1;}while(duplicate);selected_words[game.round]=game.word_id;for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;game.score[0]=game.score[1]=0;game.player=2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
 static void new_game(void){game.round=0;game.score[2]=0;game.sector=12;for(int i=0;i<6;i++)game.opponent[i]=i;for(int i=0;i<20;i++){int a=random_n(6),b=random_n(6),t=game.opponent[a];game.opponent[a]=game.opponent[b];game.opponent[b]=t;}new_round();}
 static int hidden(void){int n=0;for(int i=0;word()[i];i++)if(!game.revealed[i])n++;return n;}
-static void finish_round(void){for(int i=0;word()[i];i++)game.revealed[i]=1;game.solved=1;set_mode(ROUND_END);const char*a=game.player==2?msg_d9a:game.player==0?msg_d8c:msg_d93;int p=0;while(a[p]){turn_line[p]=a[p];p++;}for(int i=0;msg_e9f[i];i++)turn_line[p++]=msg_e9f[i];turn_line[p]=0;say(turn_line,msg_ea6);effect(3);}
+static void finish_round(void){
+ for(int i=0;word()[i];i++)game.revealed[i]=1;
+ game.solved=1;set_mode(ROUND_END);
+ if(game.player==2&&game.round==2)say(msg_f7b,msg_f8a);
+ else{
+  const char*a=game.player==2?msg_d9a:game.player==0?msg_d8c:msg_d93;
+  int p=0;while(a[p]){turn_line[p]=a[p];p++;}
+  for(int i=0;msg_e9f[i];i++)turn_line[p++]=msg_e9f[i];
+  turn_line[p]=0;say(turn_line,msg_ea6);
+ }
+ effect(3);
+}
 static void gift_begin(int final){
  scene.gift_final=final;scene.gift_page=0;scene.host_active=0;game.keyboard=0;
  if(final){game.prize=random_n(10);game.deal=0;}
@@ -144,7 +155,7 @@ static void award_letter(int letter){
    set_mode(hidden()?TURN:ROUND_END);return;
   }
   if(!hidden()){set_mode(ROUND_END);say(msg_e77,msg_e65);return;}
-  if(game.streak==3){game.streak=0;result(msg_eb5,msg_ec8,CHEST,game.player);return;}
+  if(game.streak==3){game.streak=0;result(msg_e77,msg_e65,CHEST,game.player);return;}
   result(msg_e77,msg_e65,TURN,game.player);
  }else{effect(0);game.streak=0;result(msg_e7f,msg_e90,TURN,nextplayer());}
 }
@@ -212,7 +223,7 @@ static void update(u16 pressed,u16 repeat){
  if(scene_tick(pressed))return;
  if(game.mode==GIFT_PAGES){
   if((pressed&B)&&scene.gift_page>0){scene.gift_page--;dirty=1;}
-  else if(pressed&A){if(scene.gift_page<2){scene.gift_page++;dirty=1;}else if(scene.gift_final)result(msg_f7b,msg_f8a,FINAL_RECORDS,2);else farewell();}
+  else if(pressed&A){if(scene.gift_page<2){scene.gift_page++;dirty=1;}else if(scene.gift_final)final_records();else farewell();}
   return;
  }
  if(game.mode==TURN){if(game.player!=2){if(scene.now-scene.speech_at>=40)start_spin();}else{if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}if(pressed&A){if(game.choice)start_spin();else solve_word();}}return;}
@@ -227,12 +238,22 @@ static void update(u16 pressed,u16 repeat){
  }
  if(game.mode==AI_ANSWER){if(scene.now-scene.speech_at>=120||((pressed&A)&&scene.now-scene.speech_at>=24))choose_letter(scene.ai_letter);return;}
  if(game.mode==RESULT){if(pressed&A || (game.player!=2&&scene.now-scene.speech_at>=80))end_result();return;}
- if(game.mode==LETTER||game.mode==SOLVE){if(game.player!=2){if(scene.now-scene.speech_at>=40)ai_letter();return;}if(game.mode==LETTER&&(pressed&B)){game.keyboard=!game.keyboard;dirty=1;return;}if(!game.keyboard){if(pressed&A){game.keyboard=1;dirty=1;}return;}if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;if(repeat&(UP|DOWN|LEFT|RIGHT))dirty=1;if(game.mode==SOLVE){
+ if(game.mode==LETTER||game.mode==SOLVE){if(game.player!=2){if(scene.now-scene.speech_at>=40)ai_letter();return;}if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;if(repeat&(UP|DOWN|LEFT|RIGHT))dirty=1;if(game.mode==SOLVE){
   if(pressed&B){int p=game.solve_pos;do{p--;}while(p>=0&&game.revealed[p]);if(p>=0){game.solve_pos=p;game.answer[p]=0;dirty=1;}}
   if(pressed&A){if(fixed_letter(game.cursor))beep(110,10);else if(game.solve_pos<len(word())){game.answer[game.solve_pos++]=128+game.cursor;solve_advance();dirty=1;}}
   if((pressed&START)&&game.solve_pos==len(word()))confirm_word();
  }else if(pressed&A){if(!game.used[game.cursor])choose_letter(game.cursor);else beep(110,10);}return;}
- if(game.mode==PLUS){int n=len(word());if(game.player!=2&&scene.now-scene.speech_at>=40){do{game.cursor=random_n(n);}while(game.revealed[game.cursor]);ai_announce((u8)word()[game.cursor]-128,game.cursor+1);return;}if(repeat&(LEFT|RIGHT)){int delta=repeat&RIGHT?1:n-1;do{game.cursor=(game.cursor+delta)%n;}while(game.revealed[game.cursor]);dirty=1;}if(pressed&A)choose_letter((u8)word()[game.cursor]-128);return;}
+ if(game.mode==PLUS){
+  int n=len(word());
+  /* DOS 1000:1fd6/226d: only the human enters the position selector.
+   * AI chooses one hidden position independently of keypad input. */
+  if(game.player!=2){
+   if(scene.now-scene.speech_at>=40){do{game.cursor=random_n(n);}while(game.revealed[game.cursor]);ai_announce((u8)word()[game.cursor]-128,game.cursor+1);}
+   return;
+  }
+  if(repeat&(LEFT|RIGHT)){int delta=repeat&RIGHT?1:n-1;do{game.cursor=(game.cursor+delta)%n;}while(game.revealed[game.cursor]);dirty=1;}
+  if(pressed&A)choose_letter((u8)word()[game.cursor]-128);return;
+ }
  if(game.mode==CHEST){if(repeat&(LEFT|RIGHT)){game.choice=1-game.choice;dirty=1;}if(pressed&A||(game.player!=2&&scene.now-scene.speech_at>=328)){int reward=random_n(2)==(unsigned)game.choice?100:0;game.score[game.player]+=reward;scene.chest_until=scene.now+120;scene.chest_money=reward!=0;result(reward?msg_ef1:msg_f07,reward?msg_efa:msg_f10,TURN,game.player);}return;}
  if(game.mode==PRIZE){
   if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}
