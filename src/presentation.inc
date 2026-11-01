@@ -162,14 +162,14 @@ static void title(void){
   for(int y=0;y<s->h;y++)for(int x=0;x<s->w;x++)
    if(s->data[y*s->w+x]!=7)pixel(left+x,23+y,s->data[y*s->w+x]);
  }
- if(age>=100)text(40,124,"КАПИТАЛ-ШОУ",1,0);centered(139,"A / START: играть",1,1);
+ if(age>=100)text(40,124,"КАПИТАЛ-ШОУ",1,0);centered(139,"A / START: Играть",1,1);
  if(age>=100){
   /* The original compact font fits wholly inside the final grid cell. */
   const char*version="1.1";
   for(int i=0;i<3;i++)for(int y=0;y<6;y++)for(int x=0;x<4;x++)
    if(font6[(u8)version[i]*6+y]&(128>>x))pixel(218+i*4+x,122+y,0);
  }
- centered(151,"SELECT: меню",1,0);
+ centered(151,"SELECT: Меню",1,0);
 }
 static void menu(void){
  const char*title_items[4]={"Играть","Справка","Рекорды","Об авторах"};
@@ -181,13 +181,13 @@ static void menu(void){
   rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
   centered(y,ui.origin==TITLE?title_items[i]:pause_items[i],0,selected?15:0);
  }
- centered(151,"A: подтвердить B/SELECT: назад",1,0);
+ centered(151,"A: Подтвердить B/SELECT: Назад",1,0);
 }
 static void help(void){
- static const char*commands[7]={"Крестовина: перемещение","A: подтвердить / далее","B: назад / стереть","SELECT: меню / пауза","L: включить/выключить звук","Имя: R - пробел","Имя: START - сохранить"};
+ static const char*commands[7]={"Крестовина: Перемещение","A: Подтвердить / далее","B: Назад / стереть","SELECT: Меню / пауза","L: Включить/выключить звук","Имя: R - пробел","Имя: START - сохранить"};
  rect(0,0,240,160,7);border(3,3,234,143,0);centered(5,"УПРАВЛЕНИЕ",0,0);
  for(int i=0;i<7;i++)text(8,25+i*16,commands[i],0,0);
- centered(151,"B / SELECT: назад",1,0);
+ centered(151,"B / SELECT: Назад",1,0);
 }
 static void restart_confirm(void){
  const char*items[2]={"Вернуться в меню","Начать заново"};
@@ -199,14 +199,14 @@ static void restart_confirm(void){
   rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
   centered(y,items[i],0,selected?15:0);
  }
- centered(151,"A: подтвердить B/SELECT: назад",1,0);
+ centered(151,"A: Подтвердить B/SELECT: Назад",1,0);
 }
 static void footer(void){
  rect(0,152,240,8,7);
  const char*t=0;
- if(game.mode==LETTER&&game.player==2)t="Крестовина: выбор  A: буква";
- if(game.mode==PLUS&&game.player==2)t="ВЛЕВО/ВПРАВО: клетка A: открыть";
- if(game.mode==SOLVE)t=game.solve_pos==len(word())?"A: Назвать слово  B: Стереть":"A: буква  B: Стереть";
+ if(game.mode==LETTER&&game.player==2)t="Крестовина: Выбор  A: Буква";
+ if(game.mode==PLUS&&game.player==2)t="ВЛЕВО/ВПРАВО: Клетка A: Открыть";
+ if(game.mode==SOLVE)t=game.solve_pos==len(word())?"A: Назвать слово  B: Стереть":"A: Буква  B: Стереть";
  if(t)centered(152,t,1,0);
 }
 static void mute_icon(void){
@@ -248,7 +248,7 @@ static void gba_author(void){
  centered(140,"t.me/RetroGamingNaBalkone",1,0);
 }
 static void page_footer(int page,int total){
- rect(0,151,240,9,7);text(4,152,"A: далее  B: назад",1,0);
+ rect(0,151,240,9,7);text(4,152,"A: Далее  B: Назад",1,0);
  glyph(208,152,'1'+page,1,0);glyph(216,152,'/',1,0);glyph(224,152,'0'+total,1,0);
 }
 static void authors(void){
@@ -294,9 +294,9 @@ static void render(void){
  if(game.mode==RECORDS){
   rect(0,0,240,160,7);centered(0,msg_478c,0,1);centered(14,msg_479e,0,1);
   for(int i=0;i<8;i++){number(8,32+i*15,i+1,1,1);text(28,32+i*15,record_names[i],1,0);number(152,32+i*15,record_scores[i],1,0);}
-  centered(148,"A / B: назад",1,1);return;
+  centered(148,"A / B: Назад",1,1);return;
  }
- if(game.mode==NAME){rect(0,0,240,160,7);centered(5,"8 лучших игроков",0,1);centered(29,"Ваше имя:",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: пробел  START: сохранить",1,0);keyboard();centered(151,"A: буква  B: стереть",1,0);return;}
+ if(game.mode==NAME){rect(0,0,240,160,7);centered(5,"8 лучших игроков",0,1);centered(29,"Ваше имя:",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: Пробел  START: Сохранить",1,0);keyboard();centered(151,"A: Буква  B: Стереть",1,0);return;}
  if(game.mode==SOLVE){rect(0,0,240,160,0);centered(8,msg_f20,0,15);keyboard();footer();return;}
  /* While the credits enter, the uncovered stage is still visible. Once
   * they fill the display, no hidden stage objects need to be drawn. */
