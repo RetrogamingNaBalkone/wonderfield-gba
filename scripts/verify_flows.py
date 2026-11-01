@@ -15,11 +15,27 @@ rom=(ROOT/'build/gba/pole.gba').read_bytes();exe=(ROOT/'originals/Wonderfield/PO
 header=struct.unpack_from('<H',exe,8)[0]*16
 palette=struct.unpack_from('<16H',rom,e.sym['palette']-0x08000000)
 font=(ROOT/'assets/font-14.bin').read_bytes();font8=(ROOT/'assets/font-8.bin').read_bytes()
+original_hash=hashlib.sha256(exe).hexdigest()
+manifest=json.loads((ROOT/'analysis/originals.json').read_text())
+check('DOS EXE matches the recorded original SHA-256',original_hash==manifest['POLE.EXE']['sha256'])
+original_font=(ROOT/'originals/Wonderfield/POLE.FNT').read_bytes()
+for height,start in ((8,256*6),(14,256*(6+8))):
+ reference=original_font[start:start+256*height]
+ pos=e.sym[f'font{height}']-0x08000000
+ check(f'certificate font {height} in ROM matches original FNT byte for byte',rom[pos:pos+len(reference)]==reference)
+ check(f'certificate font {height} reference matches original FNT',
+       (font8 if height==8 else font)==reference)
 def literal(off):
  p=header+off;return exe[p+1:p+1+exe[p]]
 gifts=[]
 for i in range(10):
- p=header+0xc790+0x19a+i*25;gifts.append(exe[p+1:p+1+exe[p]])
+ p=header+0xc790+0x19a+i*25
+ check(f'DOS gift {i} is a valid Pascal string[24]',0<exe[p]<=24)
+ gifts.append(exe[p+1:p+1+exe[p]])
+ pointer=struct.unpack_from('<I',rom,e.sym['gift_names']-0x08000000+i*4)[0]
+ pos=pointer-0x08000000
+ check(f'ROM gift {i} matches original CP866 bytes and table order',
+       0<=pos<len(rom) and rom[pos:rom.index(0,pos)]==gifts[-1])
 def read_scene(off):return struct.unpack('<I',c.string_at(e.ram+e.sym['scene']-0x02000000+off,4))[0]
 def write_scene(off,value):c.memmove(e.ram+e.sym['scene']-0x02000000+off,struct.pack('<I',value),4)
 
@@ -101,16 +117,25 @@ for gift in range(10):
  if gift==0:
   check('winning score reaches name only after gift and congratulations',e.state()[3]==14)
 
-# The same original gift instructions also occur when choosing sector Prize.
-for i,v in {3:7,4:0,5:2,6:0,81:1,82:1,83:100}.items():e.poke(i,v)
-for i in range(4):e.tap(8)
-gift=e.state()[83];check('refusing all cash offers chooses an original Prize gift',e.state()[3]==10 and e.state()[82]==6)
-e.tap(8);e.run(24)
-for page in range(3):
- certificate(False,page,gift,e.state()[11])
- if page==0:preview('prize-gift-text.png')
+# Reach every gift through the real four-refusal branch as well as the final.
+# Only seeds select rare outcomes; the gift index is never injected into RAM.
+for gift in range(10):
+ for i,v in {3:7,4:0,5:2,6:0,81:1,82:1,83:100}.items():e.poke(i,v)
+ for i in range(3):e.tap(8)
+ seed=next(seed for seed in range(1000) if (next_rng(seed)>>16)%10==gift)
+ e.poke(2,seed);e.tap(8)
+ check(f'four cash refusals draw original Prize gift {gift}',
+       e.state()[3]==10 and e.state()[82]==6 and e.state()[83]==gift)
  e.tap(8);e.run(24)
-check('Prize certificate finishes with farewell, without winner records',e.state()[3]==10 and e.state()[82]==0)
+ rng=e.state()[2]
+ for page in range(3):
+  certificate(False,page,gift,e.state()[11])
+  if gift==0 and page==0:preview('prize-gift-text.png')
+  if page==1:
+   e.tap(0);e.run(24);certificate(False,0,gift,e.state()[11]);e.tap(8);e.run(24)
+   check(f'Prize backtracking does not reroll gift {gift}',e.state()[83]==gift and e.state()[2]==rng)
+  e.tap(8);e.run(24)
+ check(f'Prize gift {gift} finishes with farewell, without winner records',e.state()[3]==10 and e.state()[82]==0)
 
 words=json.loads((ROOT/'assets/words.json').read_text(encoding='utf8'));word=bytes.fromhex(words[0]['word_hex'])
 def start_fixture():
@@ -222,5 +247,10 @@ e.tap(8);check('final records return to title',e.state()[3]==0)
 
 e.close()
 report=dict(status='passed',count=len(checks),checks=checks,certificate_glyphs_checked=glyphs_checked,reference='Original Pascal literals from POLE.EXE; native font-14.bin; actual mGBA PPU',rom_sha256=hashlib.sha256(rom).hexdigest())
+report.update(original_exe_sha256=original_hash,
+              gift_table_address='1c79:019a',gift_table_file_offset=header+0xc790+0x19a,
+              gift_award_paths_checked=20,gift_unique_pages_checked=60,
+              gifts=[dict(index=i,name=gift.decode('cp866'),cp866_hex=gift.hex(),
+                          final_certificate='passed',prize_certificate='passed') for i,gift in enumerate(gifts)])
 (ROOT/'build/qa/flows-report.json').write_text(json.dumps(report,indent=2))
 print(json.dumps(report))
