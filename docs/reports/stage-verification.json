@@ -658,7 +658,7 @@
     "all ten original gifts occur in actual RNG stream",
     "revisiting gift page never issues a second award or rerolls"
   ],
-  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b",
+  "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0",
   "spin_audit": {
     "natural_spins": 64,
     "skip_comparisons": 384,

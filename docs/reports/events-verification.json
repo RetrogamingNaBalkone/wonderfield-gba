@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "count": 365,
+  "count": 404,
   "checks": [
     "A skip preserves sector 0, half 0",
     "A skip preserves sector 0, half 1",
@@ -366,7 +366,46 @@
     "host keeps mouth closed while wheel spins",
     "keypad selects repeated letter in sector 3",
     "host does not replay speech while assistant walks",
-    "balloon transparency leaves no blue stripe below speech"
+    "msg_f3f: host balloon has fixed right edge and fitted width",
+    "msg_f3f: every original font stroke remains centered and readable",
+    "msg_f3f: top and side outlines are uninterrupted",
+    "msg_f3f: tail outline is continuous and joins body without seam",
+    "msg_f3f: tail stays beside host and preserves face below body",
+    "msg_f3f: transparency below speech preserves studio",
+    "msg_f3f: short speech leaves stopped sector visible",
+    "msg_e77: host balloon has fixed right edge and fitted width",
+    "msg_e77: every original font stroke remains centered and readable",
+    "msg_e77: top and side outlines are uninterrupted",
+    "msg_e77: tail outline is continuous and joins body without seam",
+    "msg_e77: tail stays beside host and preserves face below body",
+    "msg_e77: transparency below speech preserves studio",
+    "msg_e77: short speech leaves stopped sector visible",
+    "msg_e77: host balloon has fixed right edge and fitted width",
+    "msg_e77: every original font stroke remains centered and readable",
+    "msg_e77: top and side outlines are uninterrupted",
+    "msg_e77: tail outline is continuous and joins body without seam",
+    "msg_e77: tail stays beside host and preserves face below body",
+    "msg_e77: transparency below speech preserves studio",
+    "msg_da9: host balloon has fixed right edge and fitted width",
+    "msg_da9: every original font stroke remains centered and readable",
+    "msg_da9: top and side outlines are uninterrupted",
+    "msg_da9: tail outline is continuous and joins body without seam",
+    "msg_da9: tail stays beside host and preserves face below body",
+    "msg_da9: transparency below speech preserves studio",
+    "msg_539e: host balloon has fixed right edge and fitted width",
+    "msg_539e: every original font stroke remains centered and readable",
+    "msg_539e: top and side outlines are uninterrupted",
+    "msg_539e: tail outline is continuous and joins body without seam",
+    "msg_539e: tail stays beside host and preserves face below body",
+    "msg_539e: transparency below speech preserves studio",
+    "msg_539e: short speech leaves stopped sector visible",
+    "msg_dfe: host balloon has fixed right edge and fitted width",
+    "msg_dfe: every original font stroke remains centered and readable",
+    "msg_dfe: top and side outlines are uninterrupted",
+    "msg_dfe: tail outline is continuous and joins body without seam",
+    "msg_dfe: tail stays beside host and preserves face below body",
+    "msg_dfe: transparency below speech preserves studio",
+    "longest balloon remains inside screen with original glyph size"
   ],
   "early_wheel_phases": [
     0,
@@ -399,5 +438,5 @@
     100000,
     1000000
   ],
-  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b"
+  "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0"
 }

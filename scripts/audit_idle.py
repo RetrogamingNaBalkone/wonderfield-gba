@@ -37,6 +37,7 @@ def profile(rom_path=None,elf_path=None,destination=None):
         scheduled=0
         hashes=set()
         title_hashes=set()
+        cash_hashes=set()
         irqs=read('speaker_diag');samples=read('speaker_diag',4)
         draws=read('rendered_frames') if 'rendered_frames' in em.sym else None
         silent=read('speaker_silent_buffers') if 'speaker_silent_buffers' in em.sym else 0
@@ -51,6 +52,17 @@ def profile(rom_path=None,elf_path=None,destination=None):
                 masked=bytearray(em.raw);size=4 if em.format==1 else 2
                 for y in range(120,134):masked[(y*240+206)*size:(y*240+234)*size]=bytes(28*size)
                 title_hashes.add(zlib.crc32(masked))
+            if name=='cash-completed':
+                # The persistent host balloon changed in 1.1; compare every
+                # pixel outside the union of its old and fitted bounds.
+                lengths=[]
+                for key in ('msg_ffa','msg_1004'):
+                    offset=em.sym[key]-0x08000000
+                    lengths.append(loaded_rom.index(0,offset)-offset)
+                left=min(104,236-max(64,min(232,max(lengths)*8+12)))
+                masked=bytearray(em.raw);size=4 if em.format==1 else 2
+                for y in range(35,81):masked[(y*240+left)*size:(y*240+236)*size]=bytes((236-left)*size)
+                cash_hashes.add(zlib.crc32(masked))
         main_updates=em.state()[1]-initial
         redraws=read('rendered_frames')-draws if draws is not None else main_updates if em.state()[3]==13 else scheduled
         result=dict(name=name,mode=em.state()[3],vblanks=300,main_updates=main_updates,
@@ -58,6 +70,7 @@ def profile(rom_path=None,elf_path=None,destination=None):
                     draw_counter='rendered_frames' if draws is not None else 'legacy scheduling',
                     unique_ppu_frames=len(hashes),ppu_crc32=sorted(hashes),
                     title_without_version_crc32=sorted(title_hashes),
+                    cash_without_speech_crc32=sorted(cash_hashes),
                     audio_irqs=read('speaker_diag')-irqs,
                     audio_samples=read('speaker_diag',4)-samples,
                     fast_silent_buffers=read('speaker_silent_buffers')-silent if 'speaker_silent_buffers' in em.sym else 0)

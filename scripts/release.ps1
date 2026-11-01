@@ -1,6 +1,7 @@
 param(
  [string]$ZigExe="$env:LOCALAPPDATA/Programs/Zig/0.13.0/zig.exe",
- [string]$PythonExe='C:/Users/dspev/AppData/Local/Python/bin/python.exe'
+ [string]$PythonExe='C:/Users/dspev/AppData/Local/Python/bin/python.exe',
+ [string]$PerformanceBaselineDir="$PSScriptRoot/../build/performance-baseline"
 )
 $ErrorActionPreference='Stop'
 $taskRoot=Split-Path $PSScriptRoot -Parent
@@ -23,7 +24,7 @@ try {
  if($LASTEXITCODE) {throw 'mGBA stage, spin and RNG audit failed'}
  & $PythonExe scripts/verify_v11.py --long
  if($LASTEXITCODE) {throw 'mGBA 1.1 controls, digits and full cash playback verification failed'}
- & $PythonExe scripts/verify_performance.py
+ & $PythonExe scripts/verify_performance.py --baseline-dir $PerformanceBaselineDir
  if($LASTEXITCODE) {throw 'mGBA idle rendering, animation clocks and speaker equivalence verification failed'}
  & $PythonExe scripts/verify_records.py
  if($LASTEXITCODE) {throw 'mGBA top-eight qualification and high-score SRAM verification failed'}

@@ -58,6 +58,11 @@ def reply_pixels(player,choice):
  check('complete reply uses original readable font in opponent balloon',all(
   p[(44+yy)*240+x+i*8+xx]==(0 if font[ch*14+yy]&(128>>xx) else 14)
   for i,ch in enumerate(data) for yy in range(14) for xx in range(8)))
+ w,h,address=struct.unpack_from('<III',rom,e.sym['sprites']-0x08000000+39*12)
+ sprite=rom[address-0x08000000:address-0x08000000+w*h]
+ mask={(xx,yy) for yy in range(h) for xx in range(98) if sprite[yy*w+xx*w//98]!=2}
+ contour={(xx,yy) for xx,yy in mask if any((xx+dx,yy+dy) not in mask for dx,dy in ((-1,0),(1,0),(0,-1),(0,1)))}
+ check('opponent balloon has complete black outline including tail',all(p[(35+yy)*240+(141 if player else 1)+xx]==0 for xx,yy in contour))
  left=113 if choice else 16;other=16 if choice else 113
  check('announced chest alone has selection frame',all(p[94*240+x]==14 for x in range(left,left+40)) and not any(p[94*240+x]==14 for x in range(other,other+40)))
  check('host rests while opponent answers',read('scene',168)==0)

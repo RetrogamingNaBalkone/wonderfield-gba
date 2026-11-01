@@ -514,24 +514,24 @@
   "cash_timings": [
     {
       "banknotes": 100,
-      "vblanks": 38,
-      "seconds": 0.6362228356706809
+      "vblanks": 36,
+      "seconds": 0.6027374232669609
     },
     {
       "banknotes": 100000,
-      "seconds": 567.7116818926697
+      "seconds": 567.7284245988716
     }
   ],
   "cash_skip_timings": [
     {
       "rubles": 100000,
-      "vblanks": 8
+      "vblanks": 6
     },
     {
       "rubles": 1000000,
-      "vblanks": 8
+      "vblanks": 6
     }
   ],
   "long_cash": true,
-  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b"
+  "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0"
 }

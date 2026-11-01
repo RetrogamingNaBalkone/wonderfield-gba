@@ -30,6 +30,8 @@ if (directory/'pole.gba').exists() and (directory/'pole.elf').exists():
  for old,new in zip(baseline['results'],current['results']):
   if new['name']=='title-settled':
    check('baseline and current title fixtures agree',old['name']==new['name'])
+  elif new['name']=='cash-completed':
+   check('completed cash differs only inside approved host balloon bounds',old['name']==new['name'] and old['cash_without_speech_crc32']==new['cash_without_speech_crc32'])
   else:check(new['name']+' has identical pixels to previous ROM',old['name']==new['name'] and old['ppu_crc32']==new['ppu_crc32'])
  # Compare actual PPU pixels: only the smaller version caption and blue ink
  # in the two large logo bounds may differ. Background/grid pixels must match

@@ -209,16 +209,16 @@
   "count": 204,
   "emulator": "mGBA 0.10.5 libretro",
   "normal_keypad_rounds": [
-    32,
-    484,
-    79
+    26,
+    188,
+    121
   ],
   "rare_branch_tests": "Explicit RAM fixtures in scripts/verify.py",
   "speaker": {
-    "irqs": 119129,
-    "samples": 1906128,
+    "irqs": 119883,
+    "samples": 1918192,
     "transitions": 536,
     "measured_test_hz": 440.14218590398366
   },
-  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b"
+  "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0"
 }

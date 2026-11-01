@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "count": 152,
+  "count": 160,
   "checks": [
     "bonus enters normal chest prompt",
     "prompt offers no human selection frame for AI",
@@ -8,6 +8,7 @@
     "host prompt completes before AI reply",
     "AI chooses seeded side and says matching phrase",
     "complete reply uses original readable font in opponent balloon",
+    "opponent balloon has complete black outline including tail",
     "announced chest alone has selection frame",
     "host rests while opponent answers",
     "buttons cannot change or prematurely accept AI reply",
@@ -23,6 +24,7 @@
     "host prompt completes before AI reply",
     "AI chooses seeded side and says matching phrase",
     "complete reply uses original readable font in opponent balloon",
+    "opponent balloon has complete black outline including tail",
     "announced chest alone has selection frame",
     "host rests while opponent answers",
     "buttons cannot change or prematurely accept AI reply",
@@ -38,6 +40,7 @@
     "host prompt completes before AI reply",
     "AI chooses seeded side and says matching phrase",
     "complete reply uses original readable font in opponent balloon",
+    "opponent balloon has complete black outline including tail",
     "announced chest alone has selection frame",
     "host rests while opponent answers",
     "buttons cannot change or prematurely accept AI reply",
@@ -53,6 +56,7 @@
     "host prompt completes before AI reply",
     "AI chooses seeded side and says matching phrase",
     "complete reply uses original readable font in opponent balloon",
+    "opponent balloon has complete black outline including tail",
     "announced chest alone has selection frame",
     "host rests while opponent answers",
     "buttons cannot change or prematurely accept AI reply",
@@ -68,6 +72,7 @@
     "host prompt completes before AI reply",
     "AI chooses seeded side and says matching phrase",
     "complete reply uses original readable font in opponent balloon",
+    "opponent balloon has complete black outline including tail",
     "announced chest alone has selection frame",
     "host rests while opponent answers",
     "buttons cannot change or prematurely accept AI reply",
@@ -83,6 +88,7 @@
     "host prompt completes before AI reply",
     "AI chooses seeded side and says matching phrase",
     "complete reply uses original readable font in opponent balloon",
+    "opponent balloon has complete black outline including tail",
     "announced chest alone has selection frame",
     "host rests while opponent answers",
     "buttons cannot change or prematurely accept AI reply",
@@ -98,6 +104,7 @@
     "host prompt completes before AI reply",
     "AI chooses seeded side and says matching phrase",
     "complete reply uses original readable font in opponent balloon",
+    "opponent balloon has complete black outline including tail",
     "announced chest alone has selection frame",
     "host rests while opponent answers",
     "buttons cannot change or prematurely accept AI reply",
@@ -113,6 +120,7 @@
     "host prompt completes before AI reply",
     "AI chooses seeded side and says matching phrase",
     "complete reply uses original readable font in opponent balloon",
+    "opponent balloon has complete black outline including tail",
     "announced chest alone has selection frame",
     "host rests while opponent answers",
     "buttons cannot change or prematurely accept AI reply",
@@ -155,5 +163,5 @@
     "resuming retains phase, selection and remaining deadline",
     "resumed AI chest advances automatically"
   ],
-  "rom_sha256": "383e06244558e95845942b791215a43c53ec15c3ea4fefd1245a489baa427b9b"
+  "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0"
 }

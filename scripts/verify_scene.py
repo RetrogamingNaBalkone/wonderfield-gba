@@ -44,7 +44,13 @@ check('round title uses individual middle-row cells',all(pixels[(11+y)*240+left+
 for i in range(5):
  e.tap(8);capture(12 if i<2 else 5)
  if i==1:
-  pixels=ppu();check('short-I breve remains visible in original host speech',all(pixels[40*240+x]==palette[0] for x in (114,115,116)))
+  pixels=ppu();lines=[]
+  for name in ('message1','message2'):
+   address=struct.unpack('<I',c.string_at(e.ram+e.sym[name]-0x02000000,4))[0]
+   lines.append(rom[address-0x08000000:].split(b'\0',1)[0])
+  width=max(64,min(232,max(map(len,lines))*8+12))
+  check('short-I breve remains visible in original host speech',all(pixels[(37+row*16+yy)*240+236-width+(width-len(line)*8)//2+i*8+xx]==palette[0]
+   for row,line in enumerate(lines) for i,ch in enumerate(line) for yy in range(14) for xx in range(8) if native_font[ch*14+yy]&(128>>xx)))
 e.tap(8);e.run(150);e.screenshot('studio.png');capture(6)
 check('introduction returns to normal turn',e.state()[3]==1)
 # All six original contestants fit before the fixed portrait of Yakubovich.
@@ -77,7 +83,7 @@ before=sum(e.state()[18:38]);capture(10);e.screenshot('speech.png')
 check('letters are not exposed before assistant reaches board',sum(e.state()[18:38])==before)
 # Every black source-font stroke of the second spoken line must survive layers.
 b=(ROOT/'originals/Wonderfield/POLE.EXE').read_bytes();header=struct.unpack_from('<H',b,8)[0]*16;p=header+0xe65
-text=b[p+1:p+1+b[p]];font=(ROOT/'assets/font-14.bin').read_bytes();x=50+(186-len(text)*8)//2
+text=b[p+1:p+1+b[p]];font=(ROOT/'assets/font-14.bin').read_bytes();width=max(64,min(232,len(text)*8+12));x=236-width+(width-len(text)*8)//2
 actual=[v&0xffffff if e.format==1 else v for v, in struct.iter_unpack('<I' if e.format==1 else '<H',e.raw)];mask=[]
 for i,ch in enumerate(text):
  for yy in range(14):

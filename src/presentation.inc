@@ -95,31 +95,44 @@ static void people(void){
  if(eyes>=0)half_image(eyes,204,eye_y,-1);
  score_badge(2,164,138);
 }
-static void speech_strip(const Sprite*s,int x,int y,int width,int top,int height,int transparent){
- /* Resolve columns once; division per pixel stalls ARM7 during speech. */
- int columns[240],sx=0,remainder=0;
- for(int xx=0;xx<width;xx++){columns[xx]=sx;remainder+=s->w;while(remainder>=width){remainder-=width;sx++;}}
- for(int yy=0;yy<height;yy++)for(int xx=0;xx<width;xx++){
-  u8 c=s->data[(top+yy)*s->w+columns[xx]];if(c!=transparent)pixel(x+xx,y+yy,c);
+static void speech_shape(int x,int y,const int*left,const int*right,int height){
+ /* Outline the final silhouette, so no black stroke is lost to resampling. */
+ for(int yy=0;yy<height;yy++)for(int xx=left[yy];xx<=right[yy];xx++){
+  int edge=xx==left[yy]||xx==right[yy]||yy==0||yy==height-1;
+  if(!edge)edge=xx<left[yy-1]||xx>right[yy-1]||xx<left[yy+1]||xx>right[yy+1];
+  pixel(x+xx,y+yy,edge?0:14);
  }
+}
+static void speech_strip(const Sprite*s,int x,int y,int width,int transparent){
+ int left[160],right[160],columns[240],sx=0,remainder=0;
+ for(int xx=0;xx<width;xx++){columns[xx]=sx;remainder+=s->w;while(remainder>=width){remainder-=width;sx++;}}
+ for(int yy=0;yy<s->h;yy++){
+  left[yy]=width;right[yy]=-1;
+  for(int xx=0;xx<width;xx++)if(s->data[yy*s->w+columns[xx]]!=transparent){
+   if(left[yy]==width)left[yy]=xx;right[yy]=xx;
+  }
+ }
+ speech_shape(x,y,left,right,s->h);
 }
 static void speech(void){
  if(!speech_visible())return;
  if(game.mode==AI_ANSWER||game.mode==AI_CHEST){
   const Sprite*s=&sprites[39];int x=game.player?141:1,w=98;
-  speech_strip(s,x,35,w,0,s->h,2);
+  speech_strip(s,x,35,w,2);
   label_center(x+3,44,w-6,message1,0,0);return;
  }
- /* DOS colour 1 is transparent. Stretch only the body, keep the tail local. */
- /* Leave the waiting assistant visible beside the host's reaction balloon. */
- const Sprite*s=&sprites[35];int x=game.mode==CASH?104:game.mode==REVEAL?50:4,w=236-x,h=36,y=35;
- for(int yy=0;yy<h;yy++)for(int xx=0;xx<w;xx++){
-  int sx=xx<8?xx:xx>=w-8?s->w-(w-xx):s->w/2;
-  int sy=yy<3?yy:yy>=h-3?27+yy-(h-3):15;
-  u8 c=s->data[sy*s->w+sx];if(c!=1)pixel(x+xx,y+yy,c);
+ int n=len(message1),n2=message2?len(message2):0;if(n2>n)n=n2;
+ int w=n*8+12;if(w<64)w=64;if(w>232)w=232;
+ int x=236-w,h=36,y=35,left[46],right[46];
+ for(int yy=0;yy<h;yy++){
+  int d=yy<h/2?yy:h-1-yy,inset=d==0?4:d==1?2:d==2?1:0;
+  left[yy]=inset;right[yy]=w-1-inset;
  }
- /* The shrinking lower curve and tail must never be tiled across the screen. */
- speech_strip(s,x,y+h,w,30,s->h-30,1);
+ /* A fixed tail beside the left cheek never scales across the host's face. */
+ for(int yy=h;yy<46;yy++){
+  int radius=45-yy;left[yy]=194-x-radius;right[yy]=194-x+radius;
+ }
+ speech_shape(x,y,left,right,46);
  label_center(x+3,y+2,w-6,message1,0,0);
  if(message2&&*message2)label_center(x+3,y+18,w-6,message2,0,0);
 }

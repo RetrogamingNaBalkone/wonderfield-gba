@@ -298,11 +298,28 @@ walking=[]
 for frame in range(60):e.run(1);walking.append(face_frame())
 check('host does not replay speech while assistant walks',set(walking)=={45})
 
-# Transparency below the host balloon must preserve the underlying stage.
-e.poke(3,1);e.poke(5,2);write('scene',0,4);e.run(150);base=ppu()
-e.poke(3,6);write('message1',e.sym['msg_e77']);write('message2',e.sym['msg_e65']);write('scene',read('video_ticks'),4);write('dirty',1);e.run(24);pixels=ppu()
-sprite=rom[e.sym['sprite_data_35']-0x08000000:e.sym['sprite_data_35']-0x08000000+117*40]
-check('balloon transparency leaves no blue stripe below speech',all(pixels[(71+y)*240+4+x]==(palette[sprite[(30+y)*117+x*117//232]] if sprite[(30+y)*117+x*117//232]!=1 else base[(71+y)*240+4+x]) for y in range(10) for x in range(181)))
+# Compare real PPU frames against the same studio without speech.
+e.poke(3,6);e.poke(5,2);write('scene',0,168);write('message1',0);write('message2',0);write('dirty',1);e.run(24);base=ppu()
+font=(ROOT/'assets/font-14.bin').read_bytes()
+for first,second in (('msg_f3f',None),('msg_e77',None),('msg_e77','msg_e65'),('msg_da9','msg_dca'),('msg_539e','msg_53ab'),('msg_dfe','msg_dea')):
+ write('message1',e.sym[first]);write('message2',e.sym[second] if second else 0);write('dirty',1);e.run(24);pixels=ppu()
+ lines=[message(),message('message2') if second else b''];width=max(64,min(232,max(map(len,lines))*8+12));left=236-width
+ check(f'{first}: host balloon has fixed right edge and fitted width',pixels[50*240+left]==palette[0] and pixels[50*240+235]==palette[0] and pixels[50*240+234]==palette[14])
+ check(f'{first}: every original font stroke remains centered and readable',all(pixels[(37+row*16+yy)*240+left+(width-len(line)*8)//2+i*8+xx]==palette[0]
+  for row,line in enumerate(lines) for i,ch in enumerate(line) for yy in range(14) for xx in range(8) if font[ch*14+yy]&(128>>xx)))
+ check(f'{first}: top and side outlines are uninterrupted',all(pixels[35*240+x]==palette[0] for x in range(left+4,232)) and all(pixels[y*240+x]==palette[0] for y in range(38,68) for x in (left,235)))
+ check(f'{first}: tail outline is continuous and joins body without seam',all(pixels[y*240+x]==palette[0] for y in range(71,81) for x in (194-(80-y),194+(80-y))) and pixels[70*240+194]==palette[14] and pixels[71*240+194]==palette[14])
+ check(f'{first}: tail stays beside host and preserves face below body',pixels[80*240+194]==palette[0] and all(pixels[y*240+x]==base[y*240+x] for y in range(71,81) for x in range(204,240)))
+ check(f'{first}: transparency below speech preserves studio',all(pixels[y*240+x]==base[y*240+x] for y in range(71,81) for x in range(185)))
+ if width<=128:
+  check(f'{first}: short speech leaves stopped sector visible',all(pixels[y*240+x]==base[y*240+x] for y in range(57,73) for x in range(76,112)))
+ e.screenshot(f'bubble-{first}.png')
+# Exercise the maximum width with a full line at the unchanged native font size.
+c.memmove(e.ram+e.sym['turn_line']-0x02000000,b'A'*28+b'\0',29)
+write('message1',e.sym['turn_line']);write('message2',0);write('dirty',1);e.run(24);pixels=ppu()
+check('longest balloon remains inside screen with original glyph size',pixels[50*240+4]==palette[0] and pixels[50*240+235]==palette[0] and all(pixels[(37+yy)*240+8+i*8+xx]==palette[0] for i in range(28) for yy in range(14) for xx in range(8) if font[ord('A')*14+yy]&(128>>xx)))
+e.screenshot('bubble-maximum.png')
+write('message1',e.sym['msg_e77']);write('message2',e.sym['msg_e65']);write('dirty',1);e.run(24)
 preview('speech-clean.png')
 
 e.close()
