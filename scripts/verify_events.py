@@ -71,7 +71,7 @@ check('second A press shows predetermined result',e.state()[3]!=2 and e.state()[
 # Outcome and RNG must match natural playback at every skip time.
 def replay_start(seed):
  fixture(3);e.run(24)
- e.poke(3,1);e.poke(2,seed);e.poke(7,11);e.run(6);e.tap(8)
+ e.poke(3,1);e.poke(7,11);e.run(6);e.tap_seeded(8,seed)
  check(f'replay {seed} starts through keypad',e.state()[3]==2)
  return read('scene',156)
 different_current=False

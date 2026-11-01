@@ -1,0 +1,172 @@
+{
+  "status": "passed",
+  "count": 49,
+  "checks": [
+    "early A after 4 VBlank starts game",
+    "early A after 5 VBlank starts game",
+    "early A after 6 VBlank starts game",
+    "early A after 7 VBlank starts game",
+    "early A after 8 VBlank starts game",
+    "early A after 9 VBlank starts game",
+    "early A after 10 VBlank starts game",
+    "early A after 11 VBlank starts game",
+    "early A after 12 VBlank starts game",
+    "early inputs include multiple frames in the same old loop bucket",
+    "different early input frames have distinct seeds within each loop bucket",
+    "game starts with invalid SRAM filled with 0",
+    "input seeding does not write SRAM filled with 0",
+    "game starts with invalid SRAM filled with 255",
+    "input seeding does not write SRAM filled with 255",
+    "idle title does not advance the game RNG",
+    "held A collects no repeated input edges",
+    "waiting 0 VBlank before spin leaves draw state unchanged",
+    "timed human spin 0 starts",
+    "waiting 1 VBlank before spin leaves draw state unchanged",
+    "timed human spin 1 starts",
+    "waiting 2 VBlank before spin leaves draw state unchanged",
+    "timed human spin 2 starts",
+    "waiting 3 VBlank before spin leaves draw state unchanged",
+    "timed human spin 3 starts",
+    "waiting 4 VBlank before spin leaves draw state unchanged",
+    "timed human spin 4 starts",
+    "waiting 5 VBlank before spin leaves draw state unchanged",
+    "timed human spin 5 starts",
+    "waiting 6 VBlank before spin leaves draw state unchanged",
+    "timed human spin 6 starts",
+    "waiting 7 VBlank before spin leaves draw state unchanged",
+    "timed human spin 7 starts",
+    "later human input timings change the RNG",
+    "timed human spins can select different sectors",
+    "skip test 0 is still spinning",
+    "skip at 0 captures its own input time",
+    "skip at 0 keeps the natural sector, value and RNG",
+    "skip test 7 is still spinning",
+    "skip at 7 captures its own input time",
+    "skip at 7 keeps the natural sector, value and RNG",
+    "skip test 30 is still spinning",
+    "skip at 30 captures its own input time",
+    "skip at 30 keeps the natural sector, value and RNG",
+    "skip test 75 is still spinning",
+    "skip at 75 captures its own input time",
+    "skip at 75 keeps the natural sector, value and RNG",
+    "complete emulator replay remains deterministic",
+    "additional input contributes to later RNG state"
+  ],
+  "rom_sha256": "0d772e6ac2860867e23007a95ab8b1a63b69469c3df9fbee8b2834883715606e",
+  "early_boots": [
+    {
+      "delay": 4,
+      "loop_before": 1,
+      "word": 314,
+      "rng": 3908939639,
+      "entropy": 1273514125
+    },
+    {
+      "delay": 5,
+      "loop_before": 1,
+      "word": 147,
+      "rng": 1061433531,
+      "entropy": 498049121
+    },
+    {
+      "delay": 6,
+      "loop_before": 1,
+      "word": 59,
+      "rng": 1391174664,
+      "entropy": 766303168
+    },
+    {
+      "delay": 7,
+      "loop_before": 1,
+      "word": 471,
+      "rng": 1762743186,
+      "entropy": 1392458034
+    },
+    {
+      "delay": 8,
+      "loop_before": 2,
+      "word": 158,
+      "rng": 1848486681,
+      "entropy": 4106468215
+    },
+    {
+      "delay": 9,
+      "loop_before": 2,
+      "word": 114,
+      "rng": 1930305062,
+      "entropy": 2232442262
+    },
+    {
+      "delay": 10,
+      "loop_before": 2,
+      "word": 252,
+      "rng": 546855597,
+      "entropy": 251541723
+    },
+    {
+      "delay": 11,
+      "loop_before": 3,
+      "word": 53,
+      "rng": 2146492910,
+      "entropy": 383241086
+    },
+    {
+      "delay": 12,
+      "loop_before": 3,
+      "word": 361,
+      "rng": 317368450,
+      "entropy": 534797282
+    }
+  ],
+  "later_input_timings": [
+    {
+      "delay": 0,
+      "rng": 1978394552,
+      "entropy": 2757589880,
+      "target": 5
+    },
+    {
+      "delay": 1,
+      "rng": 1172046259,
+      "entropy": 787679281,
+      "target": 8
+    },
+    {
+      "delay": 2,
+      "rng": 3053447033,
+      "entropy": 315423903,
+      "target": 7
+    },
+    {
+      "delay": 3,
+      "rng": 2541866977,
+      "entropy": 1285068695,
+      "target": 12
+    },
+    {
+      "delay": 4,
+      "rng": 896631605,
+      "entropy": 12268779,
+      "target": 9
+    },
+    {
+      "delay": 5,
+      "rng": 1781271519,
+      "entropy": 3959213661,
+      "target": 0
+    },
+    {
+      "delay": 6,
+      "rng": 2344486984,
+      "entropy": 1787025448,
+      "target": 8
+    },
+    {
+      "delay": 7,
+      "rng": 2177910137,
+      "entropy": 3011859103,
+      "target": 4
+    }
+  ],
+  "limitation": "Identical complete emulator state and cycle-identical inputs remain reproducible; presses before the first input poll can coalesce."
+}

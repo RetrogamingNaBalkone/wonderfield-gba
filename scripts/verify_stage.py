@@ -103,11 +103,11 @@ wheel=struct.unpack_from('<16h',rom,e.sym['wheel_sectors']-0x08000000)
 values=struct.unpack_from('<12h',rom,e.sym['sector_values']-0x08000000)
 trials=[];durations=[];target_counts=collections.Counter();sample_saved=False
 for trial in range(64):
- reset_turn(trial&15);seed=(97531+trial*2654435761)&0xffffffff;poke_rng(seed);e.tap(8)
+ reset_turn(trial&15);seed=(97531+trial*2654435761)&0xffffffff;e.tap_seeded(8,seed)
  check(f'audit spin {trial} starts normally',e.state()[3]==2)
  target=scene(156);target_counts[target]+=1;points=[];invariant=True;total=e.state()[74]
  reference=((trial&15)-64-((((seed*134775813+1)&0xffffffff)>>16)%32))&15
- check(f'audit spin {trial} preserves pre-optimization random outcome',target==reference)
+ check(f'audit spin {trial} retains original draw formula after input seeding',target==reference)
  thresholds=[total-2,total*4//5,total*3//5,total*2//5,total//5,1]
  for frame in range(5000):
   if e.state()[3]!=2:break
@@ -122,7 +122,7 @@ for trial in range(64):
  e.run(16);natural=(e.state()[7],e.state()[8],e.state()[2]);durations.append(frame)
  reference_rng=seed
  for step in range(13):reference_rng=(reference_rng*134775813+1)&0xffffffff
- check(f'audit spin {trial} preserves pre-optimization RNG state',natural[2]&0xffffffff==reference_rng)
+ check(f'audit spin {trial} retains original RNG steps after input seeding',natural[2]&0xffffffff==reference_rng)
  check(f'audit spin {trial} keeps target invariant to natural stop',invariant and natural[0]==target and len(points)==6)
  for delay,phase,checkpoint,display in points:
   data=c.create_string_buffer(checkpoint,len(checkpoint));assert e.core.retro_unserialize(data,len(checkpoint))

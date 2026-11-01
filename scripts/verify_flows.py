@@ -150,7 +150,7 @@ def start_fixture():
 def spin_to(sector):
  initial=e.state()[7]
  seed=next(s for s in range(1000) if (initial-64-((next_rng(s)>>16)%32))&15==sector)
- e.poke(2,seed);e.tap(8);e.tap(8)
+ e.tap_seeded(8,seed);e.tap(8)
  check(f'keypad spin reaches sector {sector}',e.state()[3]==(4 if sector==0 else 3))
 def finish_assistant(skip):
  if skip:e.tap(8)

@@ -1,0 +1,146 @@
+{
+  "status": "passed",
+  "rom_sha256": "0d772e6ac2860867e23007a95ab8b1a63b69469c3df9fbee8b2834883715606e",
+  "original_sha256": "37c2a9d340206687b4200412080be5ef56f7dbedfd01c6ebc443b0957e899bb4",
+  "dos_rng_instruction_comparisons": 65536,
+  "word_output_space": {
+    "records": 495,
+    "high_word_values": 65536,
+    "quotient": 132,
+    "remainder": 196,
+    "favored_record_ids": [
+      0,
+      195
+    ],
+    "min_count": 132,
+    "max_count": 133,
+    "duplicate_spellings": {
+      "ПЛЕТЕНЕВ": [
+        386,
+        416
+      ]
+    }
+  },
+  "gba_sector_output_space": {
+    "counts": [
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096,
+      4096
+    ],
+    "probability_per_position": 0.0625
+  },
+  "dos_spin": {
+    "model": "1000:2c6a..2fa2, initial even phase; counts are relative sector displacements",
+    "ideal_independent_duration_combinations": 20000,
+    "ideal_counts": [
+      2000,
+      2000,
+      2000,
+      1997,
+      1900,
+      1463,
+      745,
+      186,
+      9,
+      3,
+      100,
+      537,
+      1255,
+      1814,
+      1991,
+      2000
+    ],
+    "lcg_entry_states": 100000,
+    "lcg_counts": [
+      9947,
+      10022,
+      9991,
+      9994,
+      9564,
+      7267,
+      3710,
+      928,
+      50,
+      16,
+      475,
+      2700,
+      6296,
+      9070,
+      9913,
+      10057
+    ]
+  },
+  "cartridge_checks": {
+    "first_word_draws": 512,
+    "spin_targets": 512,
+    "distinct_first_records": 337,
+    "sector_counts": [
+      32,
+      31,
+      31,
+      32,
+      32,
+      32,
+      32,
+      33,
+      32,
+      32,
+      33,
+      32,
+      32,
+      31,
+      32,
+      33
+    ],
+    "natural_vs_skip": [
+      {
+        "seed": 1,
+        "sector": 4,
+        "value": 25,
+        "skip_matches": true
+      },
+      {
+        "seed": 12345,
+        "sector": 6,
+        "value": 300,
+        "skip_matches": true
+      },
+      {
+        "seed": 999999,
+        "sector": 0,
+        "value": 100,
+        "skip_matches": true
+      }
+    ],
+    "cold_boots": [
+      {
+        "vblanks_before_A": 220,
+        "word_id": 369,
+        "rng": 549143970
+      },
+      {
+        "vblanks_before_A": 220,
+        "word_id": 369,
+        "rng": 549143970
+      },
+      {
+        "vblanks_before_A": 221,
+        "word_id": 148,
+        "rng": 3528477298
+      }
+    ]
+  }
+}

@@ -70,6 +70,33 @@ class Emulator:
    if self.state()[1]!=previous:break
   else:raise AssertionError('CPU stopped while releasing button')
  def poke(self,index,value):c.memmove(self.ramgame+index*4,struct.pack('<i',value),4)
+ def checkpoint(self):
+  self.core.retro_serialize_size.restype=c.c_size_t
+  self.core.retro_serialize.argtypes=[c.c_void_p,c.c_size_t];self.core.retro_serialize.restype=c.c_bool
+  size=self.core.retro_serialize_size();data=c.create_string_buffer(size)
+  assert self.core.retro_serialize(data,size)
+  return data.raw,self.raw,set(self.keys)
+ def restore(self,checkpoint):
+  data,raw,keys=checkpoint;buffer=c.create_string_buffer(data,len(data))
+  self.core.retro_unserialize.argtypes=[c.c_void_p,c.c_size_t];self.core.retro_unserialize.restype=c.c_bool
+  assert self.core.retro_unserialize(buffer,len(data))
+  self.raw=raw;self.keys=set(keys)
+ def tap_seeded(self,button,seed):
+  """RAM seed fixture at the draw boundary, retaining real timed key input.
+
+  Replay the same full core state to measure the captured timing salt, then
+  compensate the pre-input seed. Production input mixing stays enabled.
+  Use only for TITLE/new-game or human TURN/spin draws that mix input once.
+  """
+  if 'input_entropy' not in self.sym: # Archived ROMs used by pacing comparisons.
+   value=seed&0xffffffff;self.poke(2,value if value<0x80000000 else value-0x100000000)
+   self.tap(button);return
+  checkpoint=self.checkpoint();self.tap(button)
+  salt=struct.unpack('<I',c.string_at(self.ram+self.sym['input_entropy']-0x02000000,4))[0]
+  self.restore(checkpoint)
+  value=(seed&0xffffffff)^salt;self.poke(2,value if value<0x80000000 else value-0x100000000)
+  self.tap(button)
+  assert struct.unpack('<I',c.string_at(self.ram+self.sym['input_entropy']-0x02000000,4))[0]==salt
  def until(self,predicate,limit=5000):
   for i in range(limit):
    if predicate(self.state()):return

@@ -48,9 +48,24 @@ static void reveal_begin(void);
 static int scene_tick(u16 pressed);
 static volatile u16 input_events[32],input_keys;
 static volatile u8 input_read,input_write;
+static volatile u32 input_entropy;
+static u32 mix_input(u32 value){
+ value^=value>>16;value*=0x7feb352du;value^=value>>15;value*=0x846ca68bu;return value^(value>>16);
+}
+static u32 input_clock(void){
+ /* Timers 0/1 belong to audio. Timer 2 counts CPU clocks, 3 its overflows. */
+ u16 high,low;do{high=REG16(0x0400010c);low=REG16(0x04000108);}while(high!=REG16(0x0400010c));
+ return ((u32)high<<16)|low;
+}
+static void seed_from_input(void){game.rng^=input_entropy;}
 static void capture_keys(void){
  u16 keys=(~REG16(0x04000130))&1023,pressed=keys&~input_keys;input_keys=keys;
- if(pressed){u8 next=(input_write+1)&31;if(next!=input_read){input_events[input_write]=pressed;input_write=next;}}
+ if(pressed){
+  /* Capture at the input edge, including taps queued during rendering.
+   * Keep timing separate until a new draw: pause/skip cannot reroll a spin. */
+  input_entropy=mix_input(input_entropy^input_clock()^((u32)pressed<<16)^video_ticks);
+  u8 next=(input_write+1)&31;if(next!=input_read){input_events[input_write]=pressed;input_write=next;}
+ }
 }
 void game_irq(unsigned flags){if(flags&1){video_ticks++;capture_keys();}speaker_irq(flags);}
 
@@ -120,11 +135,11 @@ static void farewell(void){set_mode(GAME_OVER);game.keyboard=0;game.deal=0;say(m
 static void result(const char*a,const char*b,int next,int player){say(a,b);set_mode(RESULT);game.next_mode=next;game.next_player=player;game.wait=game.player==2?0:65;}
 static int nextplayer(void){return (game.player+1)%3;}
 static void begin_turn(void){set_mode(TURN);game.choice=1;const char*a=game.player==2?msg_d9a:game.player==0?msg_d8c:msg_d93;int p=0;while(a[p]){turn_line[p]=a[p];p++;}for(int i=0;msg_da1[i];i++)turn_line[p++]=msg_da1[i];turn_line[p]=0;say(turn_line,msg_da9);if(game.player!=2)game.wait=65;}
-static void new_round(void){int duplicate;do{game.word_id=random_n(495);duplicate=0;for(int i=0;i<game.round;i++)if(selected_words[i]==game.word_id)duplicate=1;}while(duplicate);selected_words[game.round]=game.word_id;for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;
+static void new_round(void){if(game.round)seed_from_input();int duplicate;do{game.word_id=random_n(495);duplicate=0;for(int i=0;i<game.round;i++)if(selected_words[i]==game.word_id)duplicate=1;}while(duplicate);selected_words[game.round]=game.word_id;for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;
  /* DOS 1000:5799..57d4: each opponent starts with round * (Random(4)*15+5). */
  for(int i=0;i<2;i++)game.score[i]=game.round*(random_n(4)*15+5);
  game.player=2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
-static void new_game(void){game.round=0;game.score[2]=0;game.sector=12;for(int i=0;i<6;i++)game.opponent[i]=i;for(int i=0;i<20;i++){int a=random_n(6),b=random_n(6),t=game.opponent[a];game.opponent[a]=game.opponent[b];game.opponent[b]=t;}new_round();}
+static void new_game(void){seed_from_input();game.round=0;game.score[2]=0;game.sector=12;for(int i=0;i<6;i++)game.opponent[i]=i;for(int i=0;i<20;i++){int a=random_n(6),b=random_n(6),t=game.opponent[a];game.opponent[a]=game.opponent[b];game.opponent[b]=t;}new_round();}
 static int hidden(void){int n=0;for(int i=0;word()[i];i++)if(!game.revealed[i])n++;return n;}
 static void finish_round(void){
  for(int i=0;word()[i];i++)game.revealed[i]=1;
@@ -198,6 +213,7 @@ static void prize_offer(void){
 static void open_letter(void){set_mode(LETTER);game.cursor=0;game.keyboard=game.player==2;if(game.sector_value<100){int p=0;while(msg_dbb[p]){sector_message[p]=msg_dbb[p];p++;}int v=game.sector_value;if(v>=10)sector_message[p++]='0'+v/10;sector_message[p++]='0'+v%10;for(int i=0;msg_dc2[i];i++)sector_message[p++]=msg_dc2[i];sector_message[p]=0;say(sector_message,msg_dca);}else say(game.sector_value==300?msg_e47:msg_e12,msg_dca);if(game.player!=2)game.wait=55;}
 static void stop_spin(void){int sector=game.sector;game.sector_value=sector_values[wheel_sectors[sector]-4];if(game.sector_value!=100)game.streak++;if(game.sector_value<0){game.streak=0;game.score[game.player]=0;result_reason=BANKRUPT;result(msg_dfe,msg_dea,TURN,nextplayer());}else if(!game.sector_value){game.streak=0;result_reason=ZERO;result(msg_dda,msg_dea,TURN,nextplayer());}else if(game.sector_value==100){set_mode(PLUS);game.cursor=0;while(game.revealed[game.cursor])game.cursor++;say(msg_e26,msg_e33);if(game.player!=2)game.wait=60;}else if(game.sector_value==300&&game.player==2){set_mode(PRIZE);game.choice=1;game.deal=0;game.prize=10;say(msg_e47,msg_e54);}else{open_letter();}}
 static void start_spin(void){
+ if(game.player==2)seed_from_input();
  set_mode(SPIN);int draw=64+random_n(32);
  scene.spin_target=(game.sector-draw)&15;
  /* Keep the same draw/RNG, animate only the equivalent one to two turns. */
@@ -345,6 +361,9 @@ static void update(u16 pressed,u16 repeat){
  if(game.mode==GAME_OVER){if((pressed&A)||(game.deal==6&&scene.now-scene.speech_at>=180)){if(game.deal==6)gift_begin(0);else if(game.deal==5)farewell();else set_mode(TITLE);}return;}
 }
 void gba_main(void){
+ REG16(0x0400010a)=0;REG16(0x0400010e)=0;
+ REG16(0x04000108)=0;REG16(0x0400010c)=0;
+ REG16(0x0400010e)=0x84;REG16(0x0400010a)=0x80;
  extern void gba_irq(void);REG32(0x03007ffc)=(u32)gba_irq;game.magic=0x504f4c45;game.rng=1;game.word_id=-1;game.best=load();REG16(0x04000204)=0x4317;REG16(0x04000000)=0x0404;for(int i=0;i<16;i++)((volatile u16*)0x05000000)[i]=palette[i];speaker_init();REG16(0x04000200)|=1;REG16(0x04000004)|=8;set_mode(TITLE);
  for(;;){
   /* VBlank queues taps even while a bitmap is being drawn. Drain in order. */
@@ -356,7 +375,7 @@ void gba_main(void){
   u32 now=video_ticks;
   if(keys!=oldkeys||(pressed&(UP|DOWN|LEFT|RIGHT)))repeat_at=now+18;
   else if((keys&(UP|DOWN|LEFT|RIGHT))&&(int)(now-repeat_at)>=0){repeat|=keys&(UP|DOWN|LEFT|RIGHT);repeat_at=now+5;}
-  oldkeys=keys;game.frame++;if(game.mode==TITLE)game.rng+=game.frame;update(pressed,repeat);
+  oldkeys=keys;game.frame++;update(pressed,repeat);
   scene.now=video_ticks;visual_tick();u32 key=visual_key();if(key!=rendered_key)dirty=1;
   if(dirty){scene.last_redraw=scene.now;render();mute_icon();present();rendered_key=key;rendered_frames++;dirty=0;}else vblank();
  }

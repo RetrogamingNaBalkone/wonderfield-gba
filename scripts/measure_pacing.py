@@ -22,7 +22,7 @@ def measure(rom_path=None,elf_path=None):
  try:
   spins=[]
   for seed in (0,1,2,5,17,31):
-   fixture();e.poke(2,seed);e.tap(8);start=read('scene',4);last=None;trace=[]
+   fixture();e.tap_seeded(8,seed);start=read('scene',4);last=None;trace=[]
    while e.state()[3]==2:
     s=e.state();state=(s[7],read('scene',152),s[74],s[75])
     if state!=last:trace.append([read('video_ticks')-start,*state]);last=state
