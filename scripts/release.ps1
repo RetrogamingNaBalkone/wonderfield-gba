@@ -28,6 +28,10 @@ try {
  if($LASTEXITCODE) {throw 'mGBA idle rendering, animation clocks and speaker equivalence verification failed'}
  & $PythonExe scripts/verify_records.py
  if($LASTEXITCODE) {throw 'mGBA top-eight qualification and high-score SRAM verification failed'}
+ & $PythonExe scripts/verify_controls.py
+ if($LASTEXITCODE) {throw 'mGBA menus, help, result deadlines and hardware mute verification failed'}
+ & $PythonExe scripts/verify_authors.py
+ if($LASTEXITCODE) {throw 'mGBA gray UI, author navigation, QR decoding and early AI skip verification failed'}
  & $PythonExe scripts/contact.py
  if($LASTEXITCODE) {throw 'Resource contact sheet failed'}
  New-Item -ItemType Directory -Force -Path dist,docs/media,docs/reports | Out-Null
@@ -47,6 +51,14 @@ try {
  Copy-Item -LiteralPath build/qa/v11-report.json -Destination docs/reports/v11-verification.json
  Copy-Item -LiteralPath build/qa/performance-report.json -Destination docs/reports/performance-verification.json
  Copy-Item -LiteralPath build/qa/records-report.json -Destination docs/reports/records-verification.json
+ Copy-Item -LiteralPath build/qa/controls-report.json -Destination docs/reports/controls-verification.json
+ Copy-Item -LiteralPath build/qa/authors-report.json -Destination docs/reports/authors-verification.json
+ foreach($taskAuthor in @('authors-dos-v11.png','authors-gba-v11.png','authors-gba-muted-v11.png')) {
+  Copy-Item -LiteralPath "build/qa/$taskAuthor" -Destination "docs/media/$taskAuthor"
+ }
+ foreach($taskControls in @('menu-title-v11.png','menu-pause-v11.png','help-v11.png','game-muted-v11.png','help-muted-v11.png','name-controls-v11.png','restart-confirm-v11.png')) {
+  Copy-Item -LiteralPath "build/qa/$taskControls" -Destination "docs/media/$taskControls"
+ }
  Copy-Item -LiteralPath build/qa/audit-idle-profile.json -Destination docs/reports/performance-audit-profile.json
  Copy-Item -LiteralPath build/reference/dos-cash-timing.json -Destination docs/reports/dos-cash-timing.json
  Copy-Item -LiteralPath build/reference/original-cash-complete.png -Destination docs/media/cash-dos-reference.png
@@ -60,6 +72,7 @@ try {
  Copy-Item -LiteralPath build/qa/finale-page-1.png -Destination docs/media/finale-1.png
  Copy-Item -LiteralPath build/qa/finale-page-2.png -Destination docs/media/finale-2.png
  Copy-Item -LiteralPath build/qa/finale-page-3.png -Destination docs/media/finale-3.png
+ Copy-Item -LiteralPath build/qa/finale-page-4.png -Destination docs/media/finale-4.png
  Copy-Item -LiteralPath build/qa/prize-gift-text.png -Destination docs/media/prize-gift.png
  Copy-Item -LiteralPath build/qa/three-letters-chests.png -Destination docs/media/chests.png
  Copy-Item -LiteralPath build/qa/ai-answer-0.png -Destination docs/media/ai-answer.png

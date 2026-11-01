@@ -94,7 +94,7 @@ def certificate(final,page,gift,score):
    glyphs_checked+=len(data);y+=16
   y+=2
  check(f'{"final" if final else "Prize"} gift {gift}, page {page+1}: complete original text in PPU',not clipped and errors==0)
- check(f'page counter {page+1}/3 has no overprinted digit',all(pixels[(152+y)*240+208+i*8+x]==palette[0 if font8[ch*8+y]&(128>>x) else 7] for i,ch in enumerate(f'{page+1}/3'.encode()) for y in range(8) for x in range(8)))
+ check(f'page counter {page+1}/4 has no overprinted digit',all(pixels[(152+y)*240+208+i*8+x]==palette[0 if font8[ch*8+y]&(128>>x) else 7] for i,ch in enumerate(f'{page+1}/4'.encode()) for y in range(8) for x in range(8)))
 
 def next_rng(seed):return (seed*134775813+1)&0xffffffff
 for gift in range(10):
@@ -113,6 +113,8 @@ for gift in range(10):
    e.tap(0);e.run(24);certificate(True,0,gift,score);e.tap(8);e.run(24)
    check(f'backtracking does not reroll gift {gift}',e.state()[83]==gift and e.state()[2]==rng)
   e.tap(8);e.run(24)
+ check(f'gift {gift} includes the GBA author page after DOS credits',e.state()[3]==19 and read_scene(184)==3)
+ e.tap(8);e.run(24)
  check(f'gift {gift} pages lead directly to name entry without studio return',e.state()[3]==14)
  if gift==0:
   check('winning score reaches name only after gift and congratulations',e.state()[3]==14)
@@ -135,6 +137,8 @@ for gift in range(10):
    e.tap(0);e.run(24);certificate(False,0,gift,e.state()[11]);e.tap(8);e.run(24)
    check(f'Prize backtracking does not reroll gift {gift}',e.state()[83]==gift and e.state()[2]==rng)
   e.tap(8);e.run(24)
+ check(f'Prize gift {gift} includes GBA attribution',e.state()[3]==19 and read_scene(184)==3)
+ e.tap(8);e.run(24)
  check(f'Prize gift {gift} finishes with farewell, without winner records',e.state()[3]==10 and e.state()[82]==0)
 
 words=json.loads((ROOT/'assets/words.json').read_text(encoding='utf8'));word=bytes.fromhex(words[0]['word_hex'])
@@ -241,7 +245,7 @@ e.tap(8);check('last final letter settles score before winning screen',e.state()
 check('final congratulations appear in studio before gift',messages()==(literal(0xf7b),literal(0xf8a)))
 e.tap(8);e.run(24);check('letter-based final win reaches gift screens',e.state()[3]==19)
 certificate(True,0,e.state()[83],130)
-for page in range(3):e.tap(8)
+for page in range(4):e.tap(8)
 check('letter-based final gift goes directly to records for nonqualifying score',e.state()[3]==12)
 e.tap(8);check('final records return to title',e.state()[3]==0)
 

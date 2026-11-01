@@ -28,7 +28,7 @@ static void complete_reveal(void){
  if(pending==TURN||(pending==RESULT&&game.next_mode==TURN)){begin_turn();return;}
  /* The third hit gets the ordinary letter reaction during the reveal.
   * Announce its bonus once, only after the cells and score have settled. */
- if(pending==RESULT&&game.next_mode==CHEST){result(msg_eb5,msg_ec8,CHEST,game.player);return;}
+ if(pending==RESULT&&game.next_mode==CHEST){result_reason=BONUS;result(msg_eb5,msg_ec8,CHEST,game.player);return;}
  set_mode(pending);game.wait=wait;scene.speech_at=video_ticks;
 }
 static unsigned cash_random(unsigned n){cash.rng=cash.rng*134775813u+1;return (cash.rng>>16)%n;}
@@ -76,7 +76,7 @@ static void visual_tick(void){
 static u32 visual_key(void){
  u32 key=(u32)game.mode<<24,age;
  if(game.mode==TITLE){age=scene.now-scene.title_at;return key|(age<80?age:age<100?80:100);}
- if(game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES||game.mode==HELP||game.mode==RECORDS||game.mode==GALLERY)return key;
+ if(game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES||game.mode==HELP||game.mode==MENU||game.mode==RECORDS||game.mode==AUTHORS||game.mode==RESTART_CONFIRM)return key;
  if(speech_visible())key|=1;
  if(host_visible())key|=(scene.host_phase+1)<<1;
  if(game.mode==INTRO&&(scene.phase==1||scene.phase==2)){
@@ -109,7 +109,7 @@ static int scene_tick(u16 pressed){
   return 1;
  }
  if(game.mode==INTRO){
-  if((pressed&A)||(scene.now-scene.phase_at>150)){
+  if((pressed&A)||(scene.now-scene.phase_at>=MESSAGE_TICKS)){
    if(++scene.phase>=6){begin_turn();return 1;}
    scene.phase_at=scene.now;intro_phrase();
   }
@@ -121,7 +121,7 @@ static int scene_tick(u16 pressed){
  }
  if(game.mode==REVEAL){
   if(pressed&A){complete_reveal();return 1;}
-  if(game.sector_value!=100&&scene.now-scene.start<90)return 1;
+  if(game.sector_value!=100&&scene.now-scene.start<MESSAGE_TICKS)return 1;
   scene.host_active=0;
   /* Walking and each stop previously advanced once per five-VBlank
    * rendered frame. Use that cadence independently of rendering cost. */

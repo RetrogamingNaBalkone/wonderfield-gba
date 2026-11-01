@@ -32,10 +32,11 @@ if (directory/'pole.gba').exists() and (directory/'pole.elf').exists():
    check('baseline and current title fixtures agree',old['name']==new['name'])
   elif new['name']=='cash-completed':
    check('completed cash differs only inside approved host balloon bounds',old['name']==new['name'] and old['cash_without_speech_crc32']==new['cash_without_speech_crc32'])
-  else:check(new['name']+' has identical pixels to previous ROM',old['name']==new['name'] and old['ppu_crc32']==new['ppu_crc32'])
- # Compare actual PPU pixels: only the smaller version caption and blue ink
- # in the two large logo bounds may differ. Background/grid pixels must match
- # wherever neither version draws blue ink, even inside those bounds.
+  elif new['name']=='help-idle':
+   check('compact help remains a static screen',new['rendered_frames']==0 and new['unique_ppu_frames']==1)
+  else:check(new['name']+' preserves scene pixels outside approved controls UI',old['name']==new['name'] and old['scene_without_controls_crc32']==new['scene_without_controls_crc32'])
+ # Compare actual PPU pixels outside the version, menu hint and approved
+ # blue logo strokes. Preserve background/grid pixels inside logo bounds.
  def title_pixels(rom_path,elf_path):
   em=Emulator(rom_path,elf_path)
   try:
@@ -54,9 +55,10 @@ if (directory/'pole.gba').exists() and (directory/'pole.elf').exists():
  def allowed_title_change(p,a,b):
   x,y=p%240,p//240
   if 206<=x<234 and 120<=y<134:return True
+  if y>=150:return True # Title now advertises SELECT: menu.
   in_logo=(9<=x<102 and 23<=y<111) or (104<=x<213 and 23<=y<131)
   return in_logo and (a==old_blue or b==new_blue)
- check('title changes only approved blue logo strokes and version caption',
+ check('title changes only approved logo strokes, version and menu hint',
        all(a==b or allowed_title_change(p,a,b) for p,(a,b) in enumerate(zip(old_pixels,new_pixels))))
 
 reference=json.loads((ROOT/'analysis/pacing-reference.json').read_text())
@@ -64,11 +66,12 @@ pacing=measure_pacing();previous=reference['timings']
 for old,new in zip(previous['spins'],pacing['spins']):
  check(f'spin seed {new["seed"]} retains pre-optimization duration',old['seed']==new['seed'] and abs(old['vblanks']-new['vblanks'])<=2)
 for old,new in zip(previous['reveals'],pacing['reveals']):
- check(f'reveal sector {new["sector"]} retains pre-optimization walking speed',old['sector']==new['sector'] and abs(old['vblanks']-new['vblanks'])<=4)
+ reaction_extension=0 if new['sector']==0 else 90
+ check(f'reveal sector {new["sector"]} retains walking speed after the readable reaction',old['sector']==new['sector'] and abs(old['vblanks']+reaction_extension-new['vblanks'])<=4)
 check('host keeps every pre-optimization face phase',[p[1] for p in previous['host_phases']]==[p[1] for p in pacing['host_phases']])
 check('host face cadence remains within four VBlanks of previous ROM',all(abs(a[0]-b[0])<=4 for a,b in zip(previous['host_phases'],pacing['host_phases'])))
-for old,new in zip(previous['ai'],pacing['ai']):
- check('AI '+new['event']+' retains pre-optimization delay',old['event']==new['event'] and abs(old['vblanks']-new['vblanks'])<=2)
+for new in pacing['ai']:
+ check('AI '+new['event']+' uses the shared three-second timeout',180<=new['vblanks']<=192)
 
 e=Emulator();e.run(220)
 rom=(ROOT/'build/gba/pole.gba').read_bytes()
@@ -81,7 +84,7 @@ def fixture(mode):
  for i in range(20):e.poke(18+i,0)
  for i in range(32):e.poke(38+i,0)
  for i,value in {3:mode,4:0,5:2,6:0,7:12,9:0,10:0,11:0,12:0,13:1,70:0,71:0,72:0,76:0,79:0,80:0,81:1,82:0}.items():e.poke(i,value)
- write('message1',0);write('scene',0,168);write('dirty',1);e.run(16)
+ write('message1',0);write('scene',0,168);write('scene',read('video_ticks'),4);write('dirty',1);e.run(16)
 def pixel_indices():
  palette=struct.unpack('<16H',asset('palette',32));out=[]
  for v, in struct.iter_unpack('<I' if e.format==1 else '<H',e.raw):
@@ -97,11 +100,11 @@ def actor_matches(id,x,y,half=True):
  return all(pixels[(y+yy)*240+x+xx]==v for yy in range(h) for xx in range(w) if (v:=data[yy*w+xx])!=(2 if half else 7))
 
 # A held direction must use elapsed video time even with a static main loop.
-fixture(13);start=read('video_ticks');e.run(16,(7,))
-check('held Right selects once before the repeat deadline',e.state()[84]==1)
-e.run(8,(7,));check('held Right repeats after eighteen VBlanks',e.state()[84]>=2)
-e.run(1);at_release=e.state()[84];e.run(60)
-check('release cancels directional repeat',e.state()[84]==at_release)
+fixture(14);start=read('video_ticks');e.run(16,(7,))
+check('held Right selects once before the repeat deadline',e.state()[70]==1)
+e.run(8,(7,));check('held Right repeats after eighteen VBlanks',e.state()[70]>=2)
+e.run(1);at_release=e.state()[70];e.run(60)
+check('release cancels directional repeat',e.state()[70]==at_release)
 fixture(1);write('scene',0,4);e.run(140);draws=read('rendered_frames');e.run(180,(7,));e.run(1)
 check('holding the already selected menu option does not redraw',e.state()[81]==1 and read('rendered_frames')==draws)
 
@@ -124,23 +127,23 @@ for _ in range(30):e.run(2);frames.add(zlib.crc32(e.raw))
 check('chest still animates before ninety VBlanks',len(frames)>=2)
 e.run(110);check('chests settle into the original closed sprites',actor_matches(36,18,96,False) and actor_matches(36,115,96,False))
 draws=read('rendered_frames');e.run(180);check('settled chests do not redraw',read('rendered_frames')==draws)
-fixture(6);e.poke(81,0);write('scene',read('video_ticks')+60,28);write('dirty',1)
+fixture(6);e.poke(81,0);write('scene',read('video_ticks'),4);write('scene',read('video_ticks')+60,28);write('dirty',1)
 e.run(20);reward=zlib.crc32(e.raw);e.run(90)
 check('reward chest disappears at its deadline',zlib.crc32(e.raw)!=reward)
-draws=read('rendered_frames');e.run(180);check('expired reward remains static',read('rendered_frames')==draws)
+draws=read('rendered_frames');e.run(20);check('expired reward remains static until its result deadline',read('rendered_frames')==draws)
 
 # AI chests now have a host prompt, an opponent reply, then automatic opening.
 fixture(6);e.poke(5,0);e.poke(77,8);e.poke(78,0);e.tap(8);e.until(lambda s:s[3]==8)
 entered=read('scene',4);e.until(lambda s:s[3]!=8)
-check('AI chest prompt lasts about 2.5 seconds',e.state()[3]==22 and 150<=read('video_ticks')-entered<=162)
+check('AI chest prompt lasts three seconds',e.state()[3]==22 and 180<=read('video_ticks')-entered<=192)
 answered=read('scene',4);e.run(45);draws=read('rendered_frames');e.run(20)
 check('AI chest reply remains static and readable',e.state()[3]==22 and read('rendered_frames')==draws)
 e.until(lambda s:s[3]!=22);elapsed=read('video_ticks')-entered
-check('AI chest reply lasts about 1.5 seconds before opening',e.state()[3]==6 and 90<=read('video_ticks')-answered<=102)
+check('AI chest reply lasts three seconds before opening',e.state()[3]==6 and 180<=read('video_ticks')-answered<=192)
 
 # Pause retains visual deadlines, not just game.mode.
-fixture(8);write('scene',read('video_ticks'),4);e.run(25);e.tap(3);check('START pauses animated chest',e.state()[3]==11)
-clock=read('scene',4);e.run(180);e.tap(3)
+fixture(8);write('scene',read('video_ticks'),4);e.run(25);e.tap(2);check('SELECT pauses animated chest',e.state()[3]==23)
+clock=read('scene',4);e.run(180);e.tap(2)
 check('resuming shifts chest animation clock by the pause duration',e.state()[3]==8 and read('scene',4)>=clock+180)
 
 # Model the old sample loop independently, then compare all FIFO bytes and

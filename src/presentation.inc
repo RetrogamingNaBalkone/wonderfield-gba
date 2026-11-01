@@ -16,8 +16,8 @@ static void studio(void){
  dma_words((u32*)framebuffer,(const u32*)stage_background,9600);
 }
 static int speech_visible(void){
- if(!message1||!*message1||game.mode==SPIN||(game.mode==REVEAL&&scene.now-scene.start>=90))return 0;
- if(game.mode==TURN&&scene.now-scene.speech_at>120)return 0;
+ if(!message1||!*message1||game.mode==SPIN||(game.mode==REVEAL&&scene.now-scene.start>=MESSAGE_TICKS))return 0;
+ if(game.mode==TURN&&game.player==2&&scene.now-scene.speech_at>120)return 0;
  return 1;
 }
 static void board(void){
@@ -38,10 +38,8 @@ static void board(void){
  for(int x=30;x<=210;x+=9)rect(x,2,1,33,0);
  for(int y=2;y<=34;y+=8)if(y!=18)line(30,y,181,0);
  rect(30,35,181,9,7);
- if(!speech_visible()){
-  if(game.mode!=INTRO)text(30,35,words[game.word_id].topic,1,0);
-  if(len(words[game.word_id].topic)<=18){text(194,35,"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
- }
+ if(game.mode!=INTRO)text(30,35,words[game.word_id].topic,1,0);
+ if(len(words[game.word_id].topic)<=18){text(194,35,"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
  line(30,43,181,8);
 }
 static void wheel(void){
@@ -60,7 +58,7 @@ static void score_badge(int player,int x,int y){
 }
 static int host_visible(void){
  if(!scene.host_active||!speech_visible()||game.mode==AI_ANSWER||game.mode==AI_CHEST)return 0;
- if(game.mode==TITLE||game.mode==HELP||game.mode==RECORDS||game.mode==GALLERY||game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES)return 0;
+ if(game.mode==TITLE||game.mode==HELP||game.mode==MENU||game.mode==RECORDS||game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES||game.mode==AUTHORS||game.mode==RESTART_CONFIRM)return 0;
  if(game.mode==CASH&&cash.ready)return 0;
  if(game.mode==CREDITS&&scene.now-scene.start>=26)return 0;
  return 1;
@@ -123,7 +121,7 @@ static void speech(void){
  }
  int n=len(message1),n2=message2?len(message2):0;if(n2>n)n=n2;
  int w=n*8+12;if(w<64)w=64;if(w>232)w=232;
- int x=236-w,h=36,y=35,left[46],right[46];
+ int x=236-w,h=36,y=game.mode==CASH?35:26,left[46],right[46];
  for(int yy=0;yy<h;yy++){
   int d=yy<h/2?yy:h-1-yy,inset=d==0?4:d==1?2:d==2?1:0;
   left[yy]=inset;right[yy]=w-1-inset;
@@ -171,34 +169,52 @@ static void title(void){
   for(int i=0;i<3;i++)for(int y=0;y<6;y++)for(int x=0;x<4;x++)
    if(font6[(u8)version[i]*6+y]&(128>>x))pixel(218+i*4+x,122+y,0);
  }
- centered(151,"SELECT: помощь  L: рекорды",1,0);
+ centered(151,"SELECT: меню",1,0);
+}
+static void menu(void){
+ const char*title_items[4]={"Играть","Справка","Рекорды","Об авторах"};
+ const char*pause_items[4]={"Продолжить","Справка","Об авторах","Начать заново"};
+ int count=4;
+ rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,ui.origin==TITLE?"МЕНЮ":"ПАУЗА",0,0);
+ for(int i=0;i<count;i++){
+  int y=38+i*24,selected=i==ui.choice;
+  rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
+  centered(y,ui.origin==TITLE?title_items[i]:pause_items[i],0,selected?15:0);
+ }
+ centered(151,"A: подтвердить B/SELECT: назад",1,0);
 }
 static void help(void){
- rect(0,0,240,160,1);centered(3,"УПРАВЛЕНИЕ",0,14);
- text(4,24,"A: подтвердить / далее",1,15);
- text(4,37,"Крестовина: выбор",1,15);
- text(4,50,"B: стереть при вводе",1,15);
- text(4,63,"START: пауза / продолжить",1,15);
- text(4,76,"При вводе SELECT: пауза",1,15);
- text(4,89,"При вводе START: OK",1,15);
- text(4,102,"L: включить / выключить звук",1,15);
- text(4,115,"На паузе SELECT: меню",1,15);
- centered(134,"Автор игры Дима Башуров",1,14);
- centered(150,"A / B / START: назад",1,15);
+ static const char*commands[7]={"Крестовина: перемещение","A: подтвердить / далее","B: назад / стереть","SELECT: меню / пауза","L: включить/выключить звук","Имя: R - пробел","Имя: START - сохранить"};
+ rect(0,0,240,160,7);border(3,3,234,143,0);centered(5,"УПРАВЛЕНИЕ",0,0);
+ for(int i=0;i<7;i++)text(8,25+i*16,commands[i],0,0);
+ centered(151,"B / SELECT: назад",1,0);
+}
+static void restart_confirm(void){
+ const char*items[2]={"Вернуться в меню","Начать заново"};
+ rect(0,0,240,160,7);border(3,3,234,143,0);
+ centered(8,"Начать заново?",0,0);
+ centered(45,"Текущая игра будет потеряна",0,0);
+ for(int i=0;i<2;i++){
+  int y=86+i*26,selected=ui.confirm==i;
+  rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
+  centered(y,items[i],0,selected?15:0);
+ }
+ centered(151,"A: подтвердить B/SELECT: назад",1,0);
 }
 static void footer(void){
  rect(0,152,240,8,7);
- const char*t="A: далее   START: пауза";
- if(game.mode==TURN&&game.player==2)t="ВЛЕВО/ВПРАВО: выбор  A: OK";
- if(game.mode==LETTER)t=game.player==2?"Крестовина: выбор  A: буква":"START: пауза";
- if(game.mode==SOLVE)t="A: буква B: стереть START: OK";
- if(game.mode==REVEAL)t="A: пропустить помощницу";
- if(game.mode==SPIN)t="A: пропустить вращение";
- if(game.mode==PRIZE||game.mode==CHEST)t="ВЛЕВО/ВПРАВО: выбор  A: OK";
- if((game.mode==CHEST&&game.player!=2)||game.mode==AI_CHEST)t="START: пауза";
- if(game.mode==GAME_OVER)t="A: главное меню";
- if(game.mode==CASH)t=cash.drawn<cash.total?"A: пропустить выдачу денег":"A: продолжить";
- centered(152,t,1,0);
+ const char*t=0;
+ if(game.mode==LETTER&&game.player==2)t="Крестовина: выбор  A: буква";
+ if(game.mode==PLUS&&game.player==2)t="ВЛЕВО/ВПРАВО: клетка A: открыть";
+ if(game.mode==SOLVE)t=game.solve_pos==len(word())?"A: Назвать слово  B: Стереть":"A: буква  B: Стереть";
+ if(t)centered(152,t,1,0);
+}
+static void mute_icon(void){
+ if(sound_on)return;
+ /* 12x10 white speaker/slash on a contrasting 14x12 backing. */
+ rect(1,1,14,12,8);rect(2,5,3,4,15);
+ for(int i=0;i<4;i++)rect(5+i,5-i,1,4+i*2,15);
+ for(int i=0;i<10;i++){rect(12-i,2+i,3,1,8);pixel(13-i,2+i,15);}
 }
 static int certificate_paragraph(int y,const char*a,const char*b,const char*c,u8 color){
  char joined[128],rows[5][30];int length=0,count=0,pos=0;const char*parts[3]={a,b,c};
@@ -214,9 +230,35 @@ static int certificate_paragraph(int y,const char*a,const char*b,const char*c,u8
  for(int i=0;i<count;i++)centered(y+i*16,rows[i],0,color);
  return y+count*16+2;
 }
-static void gift_certificate(void){
- /* 1000:47bd / 42b4: complete DOS gift text, paged at native 8x14. */
+static void certificate_base(void){
  rect(0,0,240,160,7);sprite(46,68,0,80,7);sprite(47,125,0,64,7);line(4,47,232,1);
+}
+static void dos_author(void){
+ certificate_base();int y=certificate_paragraph(50,msg_4099,0,0,0);
+ certificate_paragraph(y,msg_40d8,0,0,0);
+}
+static void gba_author(void){
+ rect(0,0,240,160,7);
+ rect(8,24,111,111,15);
+ for(int y=0;y<29;y++)for(int x=0;x<29;x++){
+  unsigned bit=y*29+x;if(channel_qr[bit/8]&(1u<<(bit%8)))rect(20+x*3,36+y*3,3,3,0);
+ }
+ text(128,34,"GBA-версия от",0,0);
+ text(128,65,"Ретрогейминг",0,0);text(128,82,"на балконе",0,0);
+ centered(140,"t.me/RetroGamingNaBalkone",1,0);
+}
+static void page_footer(int page,int total){
+ rect(0,151,240,9,7);text(4,152,"A: далее  B: назад",1,0);
+ glyph(208,152,'1'+page,1,0);glyph(216,152,'/',1,0);glyph(224,152,'0'+total,1,0);
+}
+static void authors(void){
+ if(ui.author_page)gba_author();else dos_author();
+ page_footer(ui.author_page,2);
+}
+static void gift_certificate(void){
+ /* 1000:47bd / 42b4: original pages followed by the GBA attribution. */
+ if(scene.gift_page>=2){if(scene.gift_page==2)dos_author();else gba_author();page_footer(scene.gift_page,4);return;}
+ certificate_base();
  int y=50;
  if(scene.gift_page==0){
   if(scene.gift_final){
@@ -231,11 +273,8 @@ static void gift_certificate(void){
   y=certificate_paragraph(y,scene.gift_final?msg_4718:msg_4240,0,0,0);
   y=certificate_paragraph(y,scene.gift_final?msg_4739:msg_4261,0,0,15);
   certificate_paragraph(y,scene.gift_final?msg_475d:msg_4285,0,0,0);
- }else{
-  y=certificate_paragraph(y,msg_4099,0,0,0);
-  certificate_paragraph(y,msg_40d8,0,0,0);
  }
- rect(0,151,240,9,7);text(4,152,"A: далее  B: назад",1,0);text(216,152,"/3",1,0);glyph(208,152,'1'+scene.gift_page,1,0);
+ page_footer(scene.gift_page,4);
 }
 static void render(void){
  if(game.mode==CASH){
@@ -248,18 +287,16 @@ static void render(void){
  }
  if(game.mode==GIFT_PAGES){gift_certificate();return;}
  if(game.mode==TITLE){title();return;}
+ if(game.mode==MENU){menu();return;}
+ if(game.mode==RESTART_CONFIRM){restart_confirm();return;}
  if(game.mode==HELP){help();return;}
+ if(game.mode==AUTHORS){authors();return;}
  if(game.mode==RECORDS){
   rect(0,0,240,160,7);centered(0,msg_478c,0,1);centered(14,msg_479e,0,1);
   for(int i=0;i<8;i++){number(8,32+i*15,i+1,1,1);text(28,32+i*15,record_names[i],1,0);number(152,32+i*15,record_scores[i],1,0);}
   centered(148,"A / B: назад",1,1);return;
  }
- if(game.mode==NAME){rect(0,0,240,160,7);centered(5,"8 лучших игроков",0,1);centered(29,"Ваше имя:",0,0);text(70,60,(const char*)game.answer,0,0);keyboard();centered(151,"A: буква B: стереть START: OK",1,0);return;}
- if(game.mode==GALLERY){
-  rect(0,0,240,160,7);const Sprite*s=&sprites[game.album];int scale=256;
-  if(s->w>220)scale=divide(220*256,s->w);if((s->h*scale)>>8>120)scale=divide(120*256,s->h);
-  sprite(game.album,(240-((s->w*scale)>>8))/2,18,scale,-1);number(3,3,game.album,1,0);centered(150,"ВЛЕВО/ВПРАВО  B: назад",1,0);return;
- }
+ if(game.mode==NAME){rect(0,0,240,160,7);centered(5,"8 лучших игроков",0,1);centered(29,"Ваше имя:",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: пробел  START: сохранить",1,0);keyboard();centered(151,"A: буква  B: стереть",1,0);return;}
  if(game.mode==SOLVE){rect(0,0,240,160,0);centered(8,msg_f20,0,15);keyboard();footer();return;}
  /* While the credits enter, the uncovered stage is still visible. Once
   * they fill the display, no hidden stage objects need to be drawn. */
@@ -269,10 +306,10 @@ static void render(void){
   rect(0,top,240,160,1);
   const char*lines[10]={msg_4ebd,msg_4ecf,msg_4ee3,msg_4ef5,msg_4f08,msg_4f18,msg_4f2a,msg_4f38,msg_4f47,msg_4f5a};
   for(int i=0;i<10;i++)centered(top+4+i*14,lines[i],0,14);
-  centered(top+151,"A: продолжить",1,15);return;
+  return;
  }
  if(game.mode==REVEAL){
-  int id=(game.sector_value!=100&&scene.now-scene.start<90)||scene.actor_stop?23:((scene.now/6)%4==0?24:(scene.now/6)%4==2?25:26);
+  int id=(game.sector_value!=100&&scene.now-scene.start<MESSAGE_TICKS)||scene.actor_stop?23:((scene.now/6)%4==0?24:(scene.now/6)%4==2?25:26);
   /* Both side walls are foreground boundaries: the figure passes behind them. */
   const Sprite*s=&sprites_half[id];
   for(int y=0;y<s->h;y++)for(int x=0;x<s->w;x++){

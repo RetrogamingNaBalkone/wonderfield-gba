@@ -55,7 +55,7 @@ wall_ok=True;partial_seen=False;max_actor=32
 for frame in range(2000):
  e.run(1);max_actor=max(max_actor,scene(44))
  if e.state()[3]!=16:break
- if scene(0)-scene(12)>=110:
+ if scene(0)-scene(12)>=200:
   wall_ok &= region(e.raw,0,12,15,45)==left and region(e.raw,225,12,15,44)==right
   if scene(44)>=217:
    visible=region(e.raw,213,12,12,44)

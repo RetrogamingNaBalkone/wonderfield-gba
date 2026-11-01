@@ -1,5 +1,5 @@
 {
-  "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0",
+  "rom_sha256": "90d9eaa01f9447f1690d9493d047bc240ead35d59f19f8ae615f46f91920c0ae",
   "rom_bytes": 1048576,
   "hash_source": "retro_load_game input buffer",
   "fps": 59.727500915527344,
@@ -16,10 +16,13 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        3800471863
+        2668851959
+      ],
+      "scene_without_controls_crc32": [
+        3559933924
       ],
       "title_without_version_crc32": [
-        3976662683
+        2425546075
       ],
       "cash_without_speech_crc32": [],
       "audio_irqs": 10287,
@@ -36,7 +39,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        3410679897
+        2949810733
+      ],
+      "scene_without_controls_crc32": [
+        2596375021
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -54,7 +60,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        3410679897
+        1971018738
+      ],
+      "scene_without_controls_crc32": [
+        2596375021
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -72,7 +81,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        3298633534
+        604181527
+      ],
+      "scene_without_controls_crc32": [
+        1256277409
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -90,7 +102,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        1164672475
+        794804075
+      ],
+      "scene_without_controls_crc32": [
+        3120757388
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -108,25 +123,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        1761400240
+        605821010
       ],
-      "title_without_version_crc32": [],
-      "cash_without_speech_crc32": [],
-      "audio_irqs": 10286,
-      "audio_samples": 164576,
-      "fast_silent_buffers": 10286
-    },
-    {
-      "name": "gallery-idle",
-      "mode": 13,
-      "vblanks": 300,
-      "main_updates": 300,
-      "scheduled_redraws": 0,
-      "rendered_frames": 0,
-      "draw_counter": "rendered_frames",
-      "unique_ppu_frames": 1,
-      "ppu_crc32": [
-        190437343
+      "scene_without_controls_crc32": [
+        3526428413
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -144,7 +144,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        3773556619
+        926383538
+      ],
+      "scene_without_controls_crc32": [
+        1505763844
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -164,6 +167,9 @@
       "ppu_crc32": [
         536576372
       ],
+      "scene_without_controls_crc32": [
+        2166311167
+      ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
       "audio_irqs": 10287,
@@ -180,7 +186,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        2983715019
+        1615687405
+      ],
+      "scene_without_controls_crc32": [
+        1325740747
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -198,14 +207,17 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        178295010
+        1439970037
+      ],
+      "scene_without_controls_crc32": [
+        397976976
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [
-        784312623
+        866622557
       ],
       "audio_irqs": 10286,
-      "audio_samples": 164592,
+      "audio_samples": 164576,
       "fast_silent_buffers": 10286
     }
   ]

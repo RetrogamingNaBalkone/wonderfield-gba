@@ -12,7 +12,7 @@ def snickers_label(raw):
     A 22x7 nearest-neighbour reduction cannot retain eight distinct letters.
     Keep a five-row wordmark, its rightward slant and light-blue highlights in
     a 34x9 wrapper; the complete badge still fits inside the 44x10 score slot.
-    The extracted DOS sprite and the gallery resource remain lossless.
+    The extracted DOS sprite and the original resource remain lossless.
     """
     import json
     from pathlib import Path

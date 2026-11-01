@@ -16,13 +16,15 @@ typedef unsigned int u32;
 #define DOWN 128
 #define R 256
 #define L 512
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,GALLERY,NAME,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM};
+enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
+enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
 /* Read-only diagnostic state is also used by the emulator integration checks. */
 typedef struct {
  u32 magic,frame,rng; int mode,round,player,word_id,sector,sector_value;
  int score[3],opponent[6],revealed[20],used[32],cursor,keyboard;
  int streak,spin_ticks,spin_steps,spin_wait,wait,next_mode,next_player;
- int solved,solve_pos,choice,deal,prize,album,best,paused,return_mode;
+ int solved,solve_pos,choice,deal,prize,reserved,best,paused,return_mode;
  char answer[21];
 } Game;
 volatile Game game;
@@ -60,6 +62,11 @@ static volatile int dirty=1;
 static int sound_on=1;
 static char record_names[8][11];
 static int record_scores[8],record_entry=-1,selected_words[3];
+/* Keep UI state separate: diagnostic Game and scene offsets stay compatible. */
+static volatile struct {int active,origin,choice,viewer;u32 since;int wait,author_page,confirm;} ui;
+static int result_reason;
+static char pending_last_name[11];
+static int pending_last_score,record_pending;
 static const char save_id[] __attribute__((used,section(".rodata.save_id")))="SRAM_V113";
 static unsigned divide(unsigned a,unsigned b){unsigned q=0,r=0;for(int i=31;i>=0;i--){r=(r<<1)|((a>>i)&1);if(r>=b){r-=b;q|=1u<<i;}}return q;}
 static int len(const char *s){int n=0;while(s[n])n++;return n;}
@@ -94,6 +101,7 @@ static int load(void){
 }
 static const char*word(void){return words[game.word_id].word;}
 static void set_mode(int mode){if(mode==TITLE)scene.title_at=video_ticks;game.mode=mode;game.wait=0;dirty=1;}
+static int message_done(u16 pressed,unsigned duration){return (pressed&A)||scene.now-scene.speech_at>=duration;}
 static void say(const char*a,const char*b){
  message1=a;message2=b;scene.speech_at=scene.host_at=scene.host_phase_at=video_ticks;
  scene.host_active=1;scene.host_phase=0;effect(0);scene.host_seed=game.rng;
@@ -136,8 +144,11 @@ static void gift_begin(int final){
  set_mode(GIFT_PAGES);
 }
 static void final_records(void){
+ ui.viewer=0;
  record_entry=-1;for(int i=7;i>=0;i--)if(game.score[2]>record_scores[i])record_entry=i;
  if(record_entry<0){set_mode(RECORDS);return;}
+ for(int j=0;j<11;j++)pending_last_name[j]=record_names[7][j];
+ pending_last_score=record_scores[7];record_pending=1;
  for(int i=7;i>record_entry;i--){record_scores[i]=record_scores[i-1];for(int j=0;j<11;j++)record_names[i][j]=record_names[i-1][j];}
  record_scores[record_entry]=game.score[2];for(int j=0;j<11;j++)record_names[record_entry][j]=0;
  for(int j=0;j<21;j++)game.answer[j]=0;game.cursor=game.solve_pos=0;set_mode(NAME);
@@ -158,9 +169,9 @@ static void award_letter(int letter){
    set_mode(hidden()?TURN:ROUND_END);return;
   }
   if(!hidden()){set_mode(ROUND_END);say(msg_e77,msg_e65);return;}
-  if(game.streak==3){game.streak=0;result(msg_e77,msg_e65,CHEST,game.player);return;}
-  result(msg_e77,msg_e65,TURN,game.player);
- }else{effect(0);game.streak=0;result(msg_e7f,msg_e90,TURN,nextplayer());}
+  if(game.streak==3){game.streak=0;result_reason=REACTION;result(msg_e77,msg_e65,CHEST,game.player);return;}
+  result_reason=REACTION;result(msg_e77,msg_e65,TURN,game.player);
+ }else{effect(0);game.streak=0;result_reason=MISS;result(msg_e7f,msg_e90,TURN,nextplayer());}
 }
 
 static void choose_letter(int letter){
@@ -185,7 +196,7 @@ static void prize_offer(void){
  for(int i=0;msg_ff1[i];i++)sector_message[p++]=msg_ff1[i];sector_message[p]=0;say(msg_fe8,sector_message);
 }
 static void open_letter(void){set_mode(LETTER);game.cursor=0;game.keyboard=game.player==2;if(game.sector_value<100){int p=0;while(msg_dbb[p]){sector_message[p]=msg_dbb[p];p++;}int v=game.sector_value;if(v>=10)sector_message[p++]='0'+v/10;sector_message[p++]='0'+v%10;for(int i=0;msg_dc2[i];i++)sector_message[p++]=msg_dc2[i];sector_message[p]=0;say(sector_message,msg_dca);}else say(game.sector_value==300?msg_e47:msg_e12,msg_dca);if(game.player!=2)game.wait=55;}
-static void stop_spin(void){int sector=game.sector;game.sector_value=sector_values[wheel_sectors[sector]-4];if(game.sector_value!=100)game.streak++;if(game.sector_value<0){game.streak=0;game.score[game.player]=0;result(msg_dfe,msg_dea,TURN,nextplayer());}else if(!game.sector_value){game.streak=0;result(msg_dda,msg_dea,TURN,nextplayer());}else if(game.sector_value==100){set_mode(PLUS);game.cursor=0;while(game.revealed[game.cursor])game.cursor++;say(msg_e26,msg_e33);if(game.player!=2)game.wait=60;}else if(game.sector_value==300&&game.player==2){set_mode(PRIZE);game.choice=1;game.deal=0;game.prize=10;say(msg_e47,msg_e54);}else{open_letter();}}
+static void stop_spin(void){int sector=game.sector;game.sector_value=sector_values[wheel_sectors[sector]-4];if(game.sector_value!=100)game.streak++;if(game.sector_value<0){game.streak=0;game.score[game.player]=0;result_reason=BANKRUPT;result(msg_dfe,msg_dea,TURN,nextplayer());}else if(!game.sector_value){game.streak=0;result_reason=ZERO;result(msg_dda,msg_dea,TURN,nextplayer());}else if(game.sector_value==100){set_mode(PLUS);game.cursor=0;while(game.revealed[game.cursor])game.cursor++;say(msg_e26,msg_e33);if(game.player!=2)game.wait=60;}else if(game.sector_value==300&&game.player==2){set_mode(PRIZE);game.choice=1;game.deal=0;game.prize=10;say(msg_e47,msg_e54);}else{open_letter();}}
 static void start_spin(void){
  set_mode(SPIN);int draw=64+random_n(32);
  scene.spin_target=(game.sector-draw)&15;
@@ -196,45 +207,81 @@ static void start_spin(void){
 static void end_result(void){int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(game.player!=2)game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==FINAL_RECORDS)final_records();else set_mode(next);}
 static void open_chest(void){
  int reward=random_n(2)==(unsigned)game.choice?100:0;
- game.score[game.player]+=reward;scene.chest_until=scene.now+120;scene.chest_money=reward!=0;
+ game.score[game.player]+=reward;scene.chest_until=scene.now+180;scene.chest_money=reward!=0;
+ result_reason=CHEST_RESULT;
  result(reward?msg_ef1:msg_f07,reward?msg_efa:msg_f10,TURN,game.player);
 }
 static int fixed_letter(int letter){return (solve_fixed>>letter)&1;}
 static void solve_advance(void){while(game.solve_pos<len(word())&&game.revealed[game.solve_pos])game.solve_pos++;}
 static void solve_word(void){set_mode(SOLVE);game.solve_pos=0;solve_fixed=0;int n=len(word());for(int i=0;i<21;i++){game.answer[i]=i<n&&game.revealed[i]?word()[i]:0;if(i<n&&game.revealed[i])solve_fixed|=1u<<((u8)word()[i]-128);}solve_advance();game.cursor=0;while(game.cursor<31&&fixed_letter(game.cursor))game.cursor++;game.keyboard=1;say(msg_f20,"");}
-static void confirm_word(void){int good=1;for(int i=0;word()[i];i++)if(game.answer[i]!=word()[i])good=0;if(good)finish_round();else{game.keyboard=0;game.streak=0;result(msg_f5b,msg_f6b,GAME_OVER,game.player);}}
+static void confirm_word(void){int good=1;for(int i=0;word()[i];i++)if(game.answer[i]!=word()[i])good=0;if(good)finish_round();else{game.keyboard=0;game.streak=0;result_reason=WRONG_WORD;result(msg_f5b,msg_f6b,GAME_OVER,game.player);}}
+static void cancel_record(void){
+ if(!record_pending)return;
+ for(int i=record_entry;i<7;i++){record_scores[i]=record_scores[i+1];for(int j=0;j<11;j++)record_names[i][j]=record_names[i+1][j];}
+ record_scores[7]=pending_last_score;for(int j=0;j<11;j++)record_names[7][j]=pending_last_name[j];
+ record_pending=0;record_entry=-1;
+}
+static void menu_open(void){
+ ui.active=1;ui.origin=game.mode;ui.choice=0;ui.since=video_ticks;ui.wait=game.wait;
+ game.return_mode=game.mode;game.paused=video_ticks;
+ if(game.mode==CASH){cash.pause_at=video_ticks;speaker_tone(0,1);}
+ set_mode(MENU);
+}
+static void menu_close(void){
+ u32 duration=video_ticks-ui.since;
+ scene.speech_at+=duration;scene.start+=duration;scene.phase_at+=duration;scene.spin_at+=duration;
+ scene.title_at+=duration;scene.host_at+=duration;scene.host_phase_at+=duration;scene.chest_until+=duration;
+ if(ui.origin==CASH)cash.next_at+=duration;
+ /* Restoring the mode must not reset its clocks, wait, or input. */
+ game.mode=ui.origin;game.wait=ui.wait;ui.active=0;dirty=1;
+}
 #include "presentation.inc"
 #include "scene.inc"
 static void update(u16 pressed,u16 repeat){
  scene.now=video_ticks;
- if(game.mode==HELP){
-  if(pressed&(A|B|START)){
-   if(game.return_mode!=TITLE){
-    u32 duration=video_ticks-(u32)game.paused;
-    scene.speech_at+=duration;scene.start+=duration;scene.phase_at+=duration;scene.spin_at+=duration;
-    scene.host_at+=duration;scene.host_phase_at+=duration;scene.chest_until+=duration;
-    if(game.return_mode==CASH)cash.next_at+=duration;
-   }
-   set_mode(game.return_mode);return;
+ if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
+ if(pressed&SELECT){if(game.mode==RESTART_CONFIRM)set_mode(MENU);else if(ui.active)menu_close();else menu_open();return;}
+ if(game.mode==RESTART_CONFIRM){
+  if(pressed&B){set_mode(MENU);return;}
+  if(repeat&(UP|DOWN)){ui.confirm^=1;dirty=1;}
+  if(pressed&A){
+   if(!ui.confirm)set_mode(MENU);
+   else{cancel_record();ui.active=ui.viewer=0;set_mode(TITLE);}
   }
-  if(pressed&SELECT){set_mode(TITLE);return;}return;
+  return;
  }
- if(game.mode==TITLE){if(pressed&(A|START))new_game();else if(pressed&SELECT){game.return_mode=TITLE;set_mode(HELP);}else if(pressed&R){game.album=0;set_mode(GALLERY);}else if(pressed&L)set_mode(RECORDS);return;}
- if(game.mode==RECORDS){if(pressed&(A|B|START))set_mode(TITLE);return;}
- if(game.mode==GALLERY){if(repeat&RIGHT)game.album=(game.album+1)%57;if(repeat&LEFT)game.album=(game.album+56)%57;if(pressed&B)set_mode(TITLE);if(repeat&(LEFT|RIGHT))dirty=1;return;}
- if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);}
- if(pressed&((game.mode==SOLVE||game.mode==NAME)?SELECT:START)){
-  game.return_mode=game.mode;game.paused=video_ticks;
-  if(game.mode==CASH){cash.pause_at=video_ticks;speaker_tone(0,1);}
-  set_mode(HELP);return;
+ if(game.mode==MENU){
+  int count=4;
+  if(pressed&B){menu_close();return;}
+  if(repeat&UP){ui.choice=(ui.choice+count-1)%count;dirty=1;}
+  if(repeat&DOWN){ui.choice=(ui.choice+1)%count;dirty=1;}
+  if(pressed&A){
+   if(ui.choice==0){if(ui.origin==TITLE){ui.active=0;ui.viewer=0;new_game();}else menu_close();}
+   else if(ui.choice==1)set_mode(HELP);
+   else if((ui.origin==TITLE&&ui.choice==3)||(ui.origin!=TITLE&&ui.choice==2)){ui.author_page=0;set_mode(AUTHORS);}
+   else if(ui.origin==TITLE){ui.viewer=1;set_mode(RECORDS);}
+   else{ui.confirm=0;set_mode(RESTART_CONFIRM);}
+  }
+  return;
  }
+ if(game.mode==HELP){
+  if(pressed&B){set_mode(MENU);return;}
+  return;
+ }
+ if(game.mode==AUTHORS){
+  if(pressed&B){if(ui.author_page){ui.author_page=0;dirty=1;}else set_mode(MENU);}
+  else if(pressed&A){if(!ui.author_page){ui.author_page=1;dirty=1;}else set_mode(MENU);}
+  return;
+ }
+ if(game.mode==TITLE){if(pressed&(A|START)){ui.viewer=0;new_game();}return;}
+ if(game.mode==RECORDS){if(pressed&(A|B))set_mode(ui.viewer?MENU:TITLE);return;}
  if(scene_tick(pressed))return;
  if(game.mode==GIFT_PAGES){
   if((pressed&B)&&scene.gift_page>0){scene.gift_page--;dirty=1;}
-  else if(pressed&A){if(scene.gift_page<2){scene.gift_page++;dirty=1;}else if(scene.gift_final)final_records();else farewell();}
+  else if(pressed&A){if(scene.gift_page<3){scene.gift_page++;dirty=1;}else if(scene.gift_final)final_records();else farewell();}
   return;
  }
- if(game.mode==TURN){if(game.player!=2){if(scene.now-scene.speech_at>=40)start_spin();}else{if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}if(pressed&A){if(game.choice)start_spin();else solve_word();}}return;}
+ if(game.mode==TURN){if(game.player!=2){if(message_done(pressed,MESSAGE_TICKS))start_spin();}else{if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}if(pressed&A){if(game.choice)start_spin();else solve_word();}}return;}
  if(game.mode==SPIN){
   if(pressed&A){game.sector=scene.spin_target;game.spin_steps=0;scene.spin_half=0;stop_spin();return;}
   /* The original renderer spent five VBlank per wheel phase. Preserve
@@ -244,19 +291,21 @@ static void update(u16 pressed,u16 repeat){
    if(!scene.spin_half){game.spin_ticks++;game.sector=(game.sector+15)&15;game.spin_steps--;if(game.spin_steps<8)game.spin_wait=2+(8-game.spin_steps)*2;speaker_tone(55+(game.spin_steps%10)*10+game.spin_wait*100,1);if(game.spin_steps<=0){game.sector=scene.spin_target;stop_spin();}}
   }return;
  }
- if(game.mode==AI_ANSWER){if(scene.now-scene.speech_at>=120||((pressed&A)&&scene.now-scene.speech_at>=24))choose_letter(scene.ai_letter);return;}
- if(game.mode==RESULT){if(pressed&A || (game.player!=2&&scene.now-scene.speech_at>=80))end_result();return;}
- if(game.mode==LETTER||game.mode==SOLVE){if(game.player!=2){if(scene.now-scene.speech_at>=40)ai_letter();return;}if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;if(repeat&(UP|DOWN|LEFT|RIGHT))dirty=1;if(game.mode==SOLVE){
+ if(game.mode==AI_ANSWER){if(message_done(pressed,MESSAGE_TICKS))choose_letter(scene.ai_letter);return;}
+ if(game.mode==RESULT){
+  unsigned duration=result_reason==BANKRUPT||result_reason==WRONG_WORD?LONG_MESSAGE_TICKS:MESSAGE_TICKS;
+  if(message_done(pressed,duration))end_result();return;
+ }
+ if(game.mode==LETTER||game.mode==SOLVE){if(game.player!=2){if(message_done(pressed,MESSAGE_TICKS))ai_letter();return;}if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;if(repeat&(UP|DOWN|LEFT|RIGHT))dirty=1;if(game.mode==SOLVE){
   if(pressed&B){int p=game.solve_pos;do{p--;}while(p>=0&&game.revealed[p]);if(p>=0){game.solve_pos=p;game.answer[p]=0;dirty=1;}}
-  if(pressed&A){if(fixed_letter(game.cursor))beep(110,10);else if(game.solve_pos<len(word())){game.answer[game.solve_pos++]=128+game.cursor;solve_advance();dirty=1;}}
-  if((pressed&START)&&game.solve_pos==len(word()))confirm_word();
+  if(pressed&A){if(game.solve_pos==len(word()))confirm_word();else if(fixed_letter(game.cursor))beep(110,10);else{game.answer[game.solve_pos++]=128+game.cursor;solve_advance();dirty=1;}}
  }else if(pressed&A){if(!game.used[game.cursor])choose_letter(game.cursor);else beep(110,10);}return;}
  if(game.mode==PLUS){
   int n=len(word());
   /* DOS 1000:1fd6/226d: only the human enters the position selector.
    * AI chooses one hidden position independently of keypad input. */
   if(game.player!=2){
-   if(scene.now-scene.speech_at>=40){do{game.cursor=random_n(n);}while(game.revealed[game.cursor]);ai_announce((u8)word()[game.cursor]-128,game.cursor+1);}
+   if(message_done(pressed,MESSAGE_TICKS)){do{game.cursor=random_n(n);}while(game.revealed[game.cursor]);ai_announce((u8)word()[game.cursor]-128,game.cursor+1);}
    return;
   }
   if(repeat&(LEFT|RIGHT)){int delta=repeat&RIGHT?1:n-1;do{game.cursor=(game.cursor+delta)%n;}while(game.revealed[game.cursor]);dirty=1;}
@@ -266,13 +315,13 @@ static void update(u16 pressed,u16 repeat){
   if(game.player!=2){
    /* Let the chests settle and the host finish, then give the opponent
     * its own readable answer. Keypad input never chooses for the AI. */
-   if(scene.now-scene.speech_at>=150){game.choice=random_n(2);set_mode(AI_CHEST);say(game.choice?"Правая!":"Левая!","");scene.host_active=0;}
+   if(message_done(pressed,MESSAGE_TICKS)){game.choice=random_n(2);set_mode(AI_CHEST);say(game.choice?"Правая!":"Левая!","");scene.host_active=0;}
    return;
   }
   if(repeat&(LEFT|RIGHT)){game.choice=1-game.choice;dirty=1;}
   if(pressed&A)open_chest();return;
  }
- if(game.mode==AI_CHEST){if(scene.now-scene.speech_at>=90)open_chest();return;}
+ if(game.mode==AI_CHEST){if(message_done(pressed,MESSAGE_TICKS))open_chest();return;}
  if(game.mode==PRIZE){
   if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}
   if(pressed&A){
@@ -283,17 +332,17 @@ static void update(u16 pressed,u16 repeat){
   }return;
  }
  if(game.mode==ROUND_END&&(pressed&A)&&game.player==2&&game.round<2){credits_begin();return;}
- if(game.mode==ROUND_END){if(pressed&A){if(game.player!=2)farewell();else gift_begin(1);}return;}
+ if(game.mode==ROUND_END){if((pressed&A)||(game.player==2&&game.round==2&&scene.now-scene.speech_at>=300)){if(game.player!=2)farewell();else gift_begin(1);}return;}
  if(game.mode==NAME){
   int old_cursor=game.cursor,old_pos=game.solve_pos;
   if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;
   if((pressed&A)&&game.solve_pos<10)game.answer[game.solve_pos++]=128+game.cursor;
   if((pressed&R)&&game.solve_pos<10)game.answer[game.solve_pos++]=' ';
   if((pressed&B)&&game.solve_pos>0)game.answer[--game.solve_pos]=0;
-  if(pressed&START){const char*n=game.solve_pos?(const char*)game.answer:"ИГРОК";for(int i=0;i<11;i++)record_names[record_entry][i]=i<len(n)?n[i]:0;game.best=record_scores[0];save();set_mode(RECORDS);}
+  if(pressed&START){const char*n=game.solve_pos?(const char*)game.answer:"ИГРОК";for(int i=0;i<11;i++)record_names[record_entry][i]=i<len(n)?n[i]:0;game.best=record_scores[0];save();record_pending=0;ui.viewer=0;set_mode(RECORDS);}
   if(game.cursor!=old_cursor||game.solve_pos!=old_pos)dirty=1;return;
  }
- if(game.mode==GAME_OVER){if(pressed&A){if(game.deal==6)gift_begin(0);else if(game.deal==5)farewell();else set_mode(TITLE);}return;}
+ if(game.mode==GAME_OVER){if((pressed&A)||(game.deal==6&&scene.now-scene.speech_at>=180)){if(game.deal==6)gift_begin(0);else if(game.deal==5)farewell();else set_mode(TITLE);}return;}
 }
 void gba_main(void){
  extern void gba_irq(void);REG32(0x03007ffc)=(u32)gba_irq;game.magic=0x504f4c45;game.rng=1;game.word_id=-1;game.best=load();REG16(0x04000204)=0x4317;REG16(0x04000000)=0x0404;for(int i=0;i<16;i++)((volatile u16*)0x05000000)[i]=palette[i];speaker_init();REG16(0x04000200)|=1;REG16(0x04000004)|=8;set_mode(TITLE);
@@ -309,6 +358,6 @@ void gba_main(void){
   else if((keys&(UP|DOWN|LEFT|RIGHT))&&(int)(now-repeat_at)>=0){repeat|=keys&(UP|DOWN|LEFT|RIGHT);repeat_at=now+5;}
   oldkeys=keys;game.frame++;if(game.mode==TITLE)game.rng+=game.frame;update(pressed,repeat);
   scene.now=video_ticks;visual_tick();u32 key=visual_key();if(key!=rendered_key)dirty=1;
-  if(dirty){scene.last_redraw=scene.now;render();present();rendered_key=key;rendered_frames++;dirty=0;}else vblank();
+  if(dirty){scene.last_redraw=scene.now;render();mute_icon();present();rendered_key=key;rendered_frames++;dirty=0;}else vblank();
  }
 }

@@ -1,0 +1,5 @@
+{
+  "scripts/vendor/nayuki/qrcodegen.py": "b089855caf16185c61421ea4927c1b213cf9468940d71fa8ab11ef83662dcc84",
+  "scripts/vendor/jsqr/jsQR.js": "bc40c8a15196236b2314db0856f72ca0b49980cd5413b8c852a7349f5fee0859",
+  "scripts/vendor/jsqr/LICENSE": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08"
+}

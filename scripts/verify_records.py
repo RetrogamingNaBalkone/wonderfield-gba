@@ -23,14 +23,14 @@ def sram():return c.string_at(e.core.retro_get_memory_data(0),128)
 def finish(score):
  for index,value in {3:5,4:2,5:2,6:0,11:score,80:len(word)}.items():e.poke(index,value)
  c.memmove(e.ramgame+352,word+b'\0',len(word)+1)
- e.tap(3)
+ e.tap(8)
  check(f'{score} final solved in studio before gift',e.state()[3]==9 and e.state()[79]==1)
  for name in ('message1','message2'):
   address=struct.unpack('<I',c.string_at(e.ram+e.sym[name]-0x02000000,4))[0]
   check(f'{score} studio shows final congratulations {name}',address==e.sym['msg_f7b' if name=='message1' else 'msg_f8a'])
  e.run(100);check(f'{score} congratulations wait for confirmation',e.state()[3]==9)
  e.tap(8);check(f'{score} result shows gift before qualification',e.state()[3]==19)
- for _ in range(3):e.tap(8)
+ for _ in range(4):e.tap(8)
  check(f'{score} gift leads directly to qualification without studio return',e.state()[3] in (12,14))
  e.run(24)
 
@@ -56,11 +56,11 @@ for score in (1001,5000,9000):
 
 # A loss and a Prize exit do not accidentally use a previous winning entry.
 boot()
-for index,value in {3:6,5:2,11:9000,77:10,78:2}.items():e.poke(index,value)
+for index,value in {3:6,5:2,6:0,11:9000,77:10,78:2}.items():e.poke(index,value)
 e.tap(8);check('loss follows farewell without name input',e.state()[3]==10)
 e.tap(8);check('loss returns to title without editing records',e.state()[3]==0 and sram()==original)
 boot()
-for index,value in {3:7,5:2,81:0,82:1,83:1000000}.items():e.poke(index,value)
+for index,value in {3:7,5:2,6:0,81:0,82:1,83:1000000}.items():e.poke(index,value)
 e.tap(8);e.tap(8);e.until(lambda s:s[3]==21)
 e.tap(8);check('cash exit shows farewell rather than requesting name',e.state()[3]==10)
 e.tap(8);check('cash exit leaves high-score SRAM intact',e.state()[3]==0 and sram()==original)

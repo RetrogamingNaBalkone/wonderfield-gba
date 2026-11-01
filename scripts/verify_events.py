@@ -104,7 +104,7 @@ check('early fast wheel remains far from slowdown',e.state()[74]>20)
 e.poke(3,6);e.poke(5,2);e.poke(77,1);e.poke(78,0);e.tap(8)
 start=read('scene',4);e.until(lambda s:s[3]==2)
 elapsed=read('video_ticks')-start
-check('AI starts wheel within one second',30<=elapsed<=60)
+check('AI turn announcement lasts three seconds',180<=elapsed<=192)
 
 # DOS Plus branches on player before reading the keyboard (1fd6 -> 226d).
 # Replay the same seed with early human input: it must not select for the AI.
@@ -116,7 +116,8 @@ def ai_plus(player,seed,interfere):
  for key in (7,6,8):
   e.run(8,(key,) if interfere else ())
   e.run(1)
-  check(f'AI {player} Plus seed {seed}: early {key} leaves choice pending ({interfere})',e.state()[3]==4 and e.state()[70]==cursor and e.state()[18:70]==before[18:70] and e.state()[9:12]==before[9:12])
+  accelerated=interfere and key==8
+  check(f'AI {player} Plus seed {seed}: early {key} only accelerates on A ({interfere})',e.state()[3]==(18 if accelerated else 4) and (accelerated or e.state()[70]==cursor) and e.state()[18:70]==before[18:70] and e.state()[9:12]==before[9:12])
  pixels=ppu();left=30+((20-len(word))//2)*9
  check(f'AI {player} Plus has no human selection marker ({interfere})',all(pixels[25*240+left+i*9+1+x]!=palette[14] for i in range(len(word)) for x in range(8)))
  e.until(lambda s:s[3]==18)
@@ -152,7 +153,7 @@ for player in (0,1,2):
    if sector!=0:check(f'AI {player} names actual letter for {name}',bytes([128+letter]) in speech)
    if sector==3:preview(f'ai-answer-{player}.png')
    e.until(lambda s:s[3]!=18)
-   check(f'AI {player} answer lasts two seconds for {name}',read('video_ticks')-start>=120)
+   check(f'AI {player} answer lasts three seconds for {name}',180<=read('video_ticks')-start<=192)
   check(f'assistant opens final {name} letter for player {player}',e.state()[3]==16 and e.state()[9+player]==100)
   check(f'Plus has no ordinary letter reaction for player {player}' if sector==0 else f'last {name} letter first gets ordinary correct-letter reply for player {player}',(message(),message('message2'))==((b'',b'') if sector==0 else (dos_message(0xe77),dos_message(0xe65))))
   if player==2 and sector==3:e.run(12);preview('round-last-letter.png')
@@ -194,7 +195,7 @@ fixture(6);e.tap(6);e.tap(8)
 for i in range(4):e.tap(8)
 check('four refusals yield gift and end game',e.state()[3]==10 and e.state()[82]==6)
 e.tap(8);check('Prize gift opens original gift certificate',e.state()[3]==19)
-for page in range(3):e.tap(8)
+for page in range(4):e.tap(8)
 check('gift certificate followed by original farewell',(message(),message('message2'))==farewell)
 fixture(6);e.tap(8)
 check('declined Prize retains original reply',(message(),message('message2'))==('Если так, то'.encode('cp866'),'назовите букву.'.encode('cp866')))
@@ -202,7 +203,7 @@ e.poke(3,9);e.poke(5,0);e.tap(8)
 check('AI victory followed by original farewell',(message(),message('message2'))==farewell)
 e.poke(3,6);e.poke(77,10);e.poke(78,2);e.tap(8)
 check('wrong full word followed by original farewell',(message(),message('message2'))==farewell)
-e.poke(3,5);e.poke(5,2);e.poke(71,1);e.poke(80,len(word));c.memmove(e.ramgame+88*4,word+b'\0',len(word)+1);e.tap(3)
+e.poke(3,5);e.poke(5,2);e.poke(71,1);e.poke(80,len(word));c.memmove(e.ramgame+88*4,word+b'\0',len(word)+1);e.tap(8)
 check('full-word success bypasses assistant as in DOS',e.state()[3]==9)
 
 font14=(ROOT/'assets/font-14.bin').read_bytes()
@@ -223,7 +224,7 @@ for sector,name in ((3,'ordinary'),(0,'plus')):
  if sector==0:
   check('Plus starts walking immediately without ordinary host reaction',e.state()[3]==16 and read('scene',44)>32 and (message(),message('message2'))==(b'',b''))
  else:
-  check(f'{name} assistant is already on-screen during host reaction',e.state()[3]==16 and read('scene')-read('scene',12)<90 and all(pixels[(12+y)*240+32+x]==palette[v] for y in range(sh) for x in range(sw) if (v:=standing[y*sw+x])!=2))
+  check(f'{name} assistant is already on-screen during host reaction',e.state()[3]==16 and read('scene')-read('scene',12)<180 and all(pixels[(12+y)*240+32+x]==palette[v] for y in range(sh) for x in range(sw) if (v:=standing[y*sw+x])!=2))
  check(f'{name} waiting assistant has not opened cells early',not any(e.state()[18:38]))
  preview(f'assistant-waiting-{name}.png');e.tap(8)
  check(f'{name} new A skips the visible assistant straight to turn',e.state()[3]==1 and all(e.state()[18+i] for i in matches))
@@ -293,31 +294,32 @@ e.poke(3,1);e.poke(5,2);e.run(6);e.tap(8);e.run(12)
 spinning=[]
 for frame in range(60):e.run(1);spinning.append(face_frame())
 check('host keeps mouth closed while wheel spins',set(spinning)=={45})
-select_reveal(3);e.until(lambda s:read('scene')-read('scene',12)>=100);e.run(12)
+select_reveal(3);e.until(lambda s:read('scene')-read('scene',12)>=190);e.run(12)
 walking=[]
 for frame in range(60):e.run(1);walking.append(face_frame())
 check('host does not replay speech while assistant walks',set(walking)=={45})
 
 # Compare real PPU frames against the same studio without speech.
-e.poke(3,6);e.poke(5,2);write('scene',0,168);write('message1',0);write('message2',0);write('dirty',1);e.run(24);base=ppu()
+e.poke(3,9);e.poke(4,0);e.poke(5,2);write('scene',0,168);write('message1',0);write('message2',0);write('dirty',1);e.run(24);base=ppu()
 font=(ROOT/'assets/font-14.bin').read_bytes()
 for first,second in (('msg_f3f',None),('msg_e77',None),('msg_e77','msg_e65'),('msg_da9','msg_dca'),('msg_539e','msg_53ab'),('msg_dfe','msg_dea')):
  write('message1',e.sym[first]);write('message2',e.sym[second] if second else 0);write('dirty',1);e.run(24);pixels=ppu()
  lines=[message(),message('message2') if second else b''];width=max(64,min(232,max(map(len,lines))*8+12));left=236-width
- check(f'{first}: host balloon has fixed right edge and fitted width',pixels[50*240+left]==palette[0] and pixels[50*240+235]==palette[0] and pixels[50*240+234]==palette[14])
- check(f'{first}: every original font stroke remains centered and readable',all(pixels[(37+row*16+yy)*240+left+(width-len(line)*8)//2+i*8+xx]==palette[0]
+ check(f'{first}: host balloon has fixed right edge and fitted width',pixels[41*240+left]==palette[0] and pixels[41*240+235]==palette[0] and pixels[41*240+234]==palette[14])
+ check(f'{first}: every original font stroke remains centered and readable',all(pixels[(28+row*16+yy)*240+left+(width-len(line)*8)//2+i*8+xx]==palette[0]
   for row,line in enumerate(lines) for i,ch in enumerate(line) for yy in range(14) for xx in range(8) if font[ch*14+yy]&(128>>xx)))
- check(f'{first}: top and side outlines are uninterrupted',all(pixels[35*240+x]==palette[0] for x in range(left+4,232)) and all(pixels[y*240+x]==palette[0] for y in range(38,68) for x in (left,235)))
- check(f'{first}: tail outline is continuous and joins body without seam',all(pixels[y*240+x]==palette[0] for y in range(71,81) for x in (194-(80-y),194+(80-y))) and pixels[70*240+194]==palette[14] and pixels[71*240+194]==palette[14])
- check(f'{first}: tail stays beside host and preserves face below body',pixels[80*240+194]==palette[0] and all(pixels[y*240+x]==base[y*240+x] for y in range(71,81) for x in range(204,240)))
- check(f'{first}: transparency below speech preserves studio',all(pixels[y*240+x]==base[y*240+x] for y in range(71,81) for x in range(185)))
+ check(f'{first}: top aligns with the bottom of the letter row',all(pixels[26*240+x]==palette[0] for x in range(left+4,232)) and all(pixels[y*240+x]==palette[0] for y in range(29,59) for x in (left,235)))
+ check(f'{first}: tail outline is continuous and joins body without seam',all(pixels[y*240+x]==palette[0] for y in range(62,72) for x in (194-(71-y),194+(71-y))) and pixels[61*240+194]==palette[14] and pixels[62*240+194]==palette[14])
+ check(f'{first}: tail stays beside host and exposes more of the face',pixels[71*240+194]==palette[0] and all(pixels[y*240+x]==base[y*240+x] for y in range(62,81) for x in range(204,240)))
+ check(f'{first}: transparency below speech preserves studio',all(pixels[y*240+x]==base[y*240+x] for y in range(62,72) for x in range(185)))
+ check(f'{first}: topic is not hidden outside the balloon',all(pixels[y*240+x]==base[y*240+x] for y in range(35,43) for x in range(30,min(left,211))))
  if width<=128:
   check(f'{first}: short speech leaves stopped sector visible',all(pixels[y*240+x]==base[y*240+x] for y in range(57,73) for x in range(76,112)))
  e.screenshot(f'bubble-{first}.png')
 # Exercise the maximum width with a full line at the unchanged native font size.
 c.memmove(e.ram+e.sym['turn_line']-0x02000000,b'A'*28+b'\0',29)
 write('message1',e.sym['turn_line']);write('message2',0);write('dirty',1);e.run(24);pixels=ppu()
-check('longest balloon remains inside screen with original glyph size',pixels[50*240+4]==palette[0] and pixels[50*240+235]==palette[0] and all(pixels[(37+yy)*240+8+i*8+xx]==palette[0] for i in range(28) for yy in range(14) for xx in range(8) if font[ord('A')*14+yy]&(128>>xx)))
+check('longest balloon remains inside screen with original glyph size',pixels[41*240+4]==palette[0] and pixels[41*240+235]==palette[0] and all(pixels[(28+yy)*240+8+i*8+xx]==palette[0] for i in range(28) for yy in range(14) for xx in range(8) if font[ord('A')*14+yy]&(128>>xx)))
 e.screenshot('bubble-maximum.png')
 write('message1',e.sym['msg_e77']);write('message2',e.sym['msg_e65']);write('dirty',1);e.run(24)
 preview('speech-clean.png')

@@ -49,7 +49,7 @@ for i in range(5):
    address=struct.unpack('<I',c.string_at(e.ram+e.sym[name]-0x02000000,4))[0]
    lines.append(rom[address-0x08000000:].split(b'\0',1)[0])
   width=max(64,min(232,max(map(len,lines))*8+12))
-  check('short-I breve remains visible in original host speech',all(pixels[(37+row*16+yy)*240+236-width+(width-len(line)*8)//2+i*8+xx]==palette[0]
+check('short-I breve remains visible in original host speech',all(pixels[(28+row*16+yy)*240+236-width+(width-len(line)*8)//2+i*8+xx]==palette[0]
    for row,line in enumerate(lines) for i,ch in enumerate(line) for yy in range(14) for xx in range(8) if native_font[ch*14+yy]&(128>>xx)))
 e.tap(8);e.run(150);e.screenshot('studio.png');capture(6)
 check('introduction returns to normal turn',e.state()[3]==1)
@@ -88,7 +88,7 @@ actual=[v&0xffffff if e.format==1 else v for v, in struct.iter_unpack('<I' if e.
 for i,ch in enumerate(text):
  for yy in range(14):
   for xx in range(8):
-   if font[ch*14+yy]&(128>>xx):mask.append(actual[(53+yy)*240+x+i*8+xx]==0)
+   if font[ch*14+yy]&(128>>xx):mask.append(actual[(44+yy)*240+x+i*8+xx]==0)
 check('entire spoken second line survives wheel and portraits',all(mask))
 check('speech uses all 14 original font rows',len(mask)>200)
 e.run(40);capture(36);e.screenshot('assistant-reveal.png')

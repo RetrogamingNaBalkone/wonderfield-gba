@@ -48,7 +48,7 @@ def fixture(player,seed):
 def wait_answer(noisy=False):
  n=0
  while e.state()[3]==8:
-  e.run(1,(8,7) if noisy and n%8<4 else (6,) if noisy else ())
+  e.run(1,(7,) if noisy and n%8<4 else (6,) if noisy else ())
   n+=1
  e.run(16)
  check('AI answer has its own scene',e.state()[3]==22)
@@ -77,17 +77,17 @@ try:
     p=pixels()
     check('prompt offers no human selection frame for AI',not any(p[94*240+x]==14 for x in list(range(16,56))+list(range(113,153))))
     wait_answer();answered=read('scene',4)
-    check('host prompt completes before AI reply',150<=answered-entered<=162)
+    check('host prompt lasts three seconds before AI reply',180<=answered-entered<=192)
     check('AI chooses seeded side and says matching phrase',e.state()[81]==choice and message()==('Правая!' if choice else 'Левая!').encode('cp866'))
     e.screenshot(f'ai-chest-{player}-{choice}.png')
     reply_pixels(player,choice)
     # Reward RNG is seeded separately to cover both outcomes without luck.
     prize_seed=next(s for s in range(100) if ((next_rng(s)>>16)%2==choice)==money)
     e.poke(2,prize_seed);before=e.state()[9+player]
-    e.run(40,(8,6,7))
-    check('buttons cannot change or prematurely accept AI reply',e.state()[3]==22 and e.state()[81]==choice and e.state()[9+player]==before)
+    e.run(40,(6,7))
+    check('directions cannot choose or accept AI reply',e.state()[3]==22 and e.state()[81]==choice and e.state()[9+player]==before)
     e.run(1);e.until(lambda s:s[3]!=22)
-    check('AI reply stays readable for 1.5 seconds',90<=read('video_ticks')-answered<=102)
+    check('AI reply stays readable for three seconds',180<=read('video_ticks')-answered<=192)
     reward=100 if money else 0
     check('opening applies correct reward only to active opponent',e.state()[3]==6 and e.state()[9+player]==before+reward and e.state()[10-player]==130 and e.state()[11]==130)
     check('host receives correct original reward response',read('message1')==e.sym['msg_ef1' if money else 'msg_f07'])
@@ -113,11 +113,11 @@ try:
   fixture(1,2)
   if mode==22:wait_answer()
   else:e.run(40)
-  e.tap(3);check('START pauses AI chest phase',e.state()[3]==11)
+  e.tap(2);check('SELECT pauses AI chest phase',e.state()[3]==23)
   old=read('scene',4);age=read('video_ticks')-old;choice=e.state()[81];rng=e.state()[2]
   e.run(180)
-  check('paused AI chest cannot choose or award',e.state()[3]==11 and e.state()[81]==choice and e.state()[2]==rng and e.state()[10]==130)
-  e.tap(3)
+  check('paused AI chest cannot choose or award',e.state()[3]==23 and e.state()[81]==choice and e.state()[2]==rng and e.state()[10]==130)
+  e.tap(2)
   check('resuming retains phase, selection and remaining deadline',e.state()[3]==mode and abs((read('video_ticks')-read('scene',4))-age)<=12 and read('scene',4)>=old+180)
   e.until(lambda s:s[3]!=mode)
   check('resumed AI chest advances automatically',e.state()[3]==(22 if mode==8 else 6))

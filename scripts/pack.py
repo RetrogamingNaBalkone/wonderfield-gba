@@ -3,6 +3,7 @@ from pathlib import Path
 import json,struct,re,math
 from extract import ROOT,OUT,SRC,EGA
 from pixel_art import outlined_resize,wheel_symbol,title_logo_resize,snickers_label
+from vendor.nayuki.qrcodegen import QrCode,QrSegment
 GEN=ROOT/'build/generated'; GEN.mkdir(parents=True,exist_ok=True)
 def cstr(b):return '"'+''.join('\\%03o'%x for x in b)+'"'
 def arr(name,b):return f'const unsigned char {name}[] __attribute__((aligned(4)))={{'+','.join(map(str,b))+'};\n'
@@ -28,6 +29,15 @@ def build_stage(half):
  return bytes(stage)
 def main():
  code=['#include "assets.h"\n']; metadata=json.loads((OUT/'sprites.json').read_text()); sprites=[]; normalized=[]; half=[]; half_refs=[]
+ url='https://t.me/RetroGamingNaBalkone'
+ qr=QrCode.encode_segments([QrSegment.make_bytes(url.encode('ascii'))],QrCode.Ecc.MEDIUM,minversion=3,maxversion=3,mask=-1,boostecl=False)
+ assert qr.get_size()==29
+ bits=bytearray((29*29+7)//8)
+ for y in range(29):
+  for x in range(29):
+   if qr.get_module(x,y):bits[(y*29+x)//8]|=1<<((y*29+x)%8)
+ code.append(arr('channel_qr',bits))
+ (GEN/'channel-qr.json').write_text(json.dumps(dict(url=url,version=3,ecc='M',mask=qr.get_mask(),modules=29,quiet=4,scale=3,packed_hex=bits.hex()),indent=2))
  for s in metadata:
   w,h=s['width'],s['height']; raw=(OUT/f"sprite-{s['id']:02}.bin").read_bytes();b=raw
   # EGA 640x350 is displayed at 4:3: source pixel aspect = 35/48.
@@ -154,6 +164,7 @@ def main():
  hdr+='extern const Sprite sprites_half[57];\nextern const unsigned char wheel_bitmaps[],stage_background[];\nextern const char *const gift_names[10];\nextern const char *const initial_names[8];\nextern const unsigned short initial_scores[8];\n'
  hdr+='extern const unsigned char cash_finished_bitmap[];\n'
  hdr+='extern const Sprite title_logos[2];\n'
+ hdr+='extern const unsigned char channel_qr[106];\n'
  hdr+=''.join(f'extern const char msg_{off:x}[];\n' for off,b in literals)
  (GEN/'assets.h').write_text(hdr)
  for name in ('main.c','presentation.inc','scene.inc'):

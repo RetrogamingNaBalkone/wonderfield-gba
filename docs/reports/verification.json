@@ -13,6 +13,7 @@
     "all glyphs retained",
     "font bytes are lossless",
     "cartridge boots",
+    "SELECT opens menu",
     "help opens",
     "help returns",
     "DOS player introduction restored",
@@ -22,7 +23,7 @@
     "B keeps letter keyboard open without selecting a letter",
     "letter navigation remains available immediately after B",
     "repeated B keeps keyboard and cursor visible",
-    "START pauses letter selection",
+    "SELECT pauses letter selection",
     "pause resumes directly into letter selection",
     "all repeated letters revealed",
     "points per occurrence",
@@ -206,19 +207,19 @@
     "wrong full word rejected",
     "wrong full word eliminates human"
   ],
-  "count": 204,
+  "count": 205,
   "emulator": "mGBA 0.10.5 libretro",
   "normal_keypad_rounds": [
-    26,
-    188,
-    121
+    242,
+    116,
+    238
   ],
   "rare_branch_tests": "Explicit RAM fixtures in scripts/verify.py",
   "speaker": {
-    "irqs": 119883,
-    "samples": 1918192,
-    "transitions": 536,
-    "measured_test_hz": 440.14218590398366
+    "irqs": 131404,
+    "samples": 2102528,
+    "transitions": 533,
+    "measured_test_hz": 440.11970788008784
   },
-  "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0"
+  "rom_sha256": "90d9eaa01f9447f1690d9493d047bc240ead35d59f19f8ae615f46f91920c0ae"
 }

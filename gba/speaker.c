@@ -3,7 +3,8 @@
 #define R32(a) (*(volatile unsigned*)(a))
 typedef struct {unsigned short hz,ms;} Note;
 static Note notes[256];
-static unsigned count,index,remaining,phase,increment,buffer,enabled=1;
+static unsigned count,index,remaining,phase,increment,buffer;
+static volatile unsigned enabled=1;
 static unsigned fifo[8] __attribute__((aligned(4)));
 volatile struct {unsigned irqs,samples,transitions,hz;} speaker_diag;
 volatile unsigned speaker_silent_buffers;
@@ -19,8 +20,28 @@ static void fill(void){
 }}
 static void arm(void){R16(0x040000c6)=0;R32(0x040000bc)=(unsigned)&fifo[buffer*4];R32(0x040000c0)=0x040000a0;R16(0x040000c4)=4;R16(0x040000c6)=0xf640;}
 void speaker_init(void){R16(0x04000084)=0x80;R16(0x04000080)=0;R16(0x04000088)=0x200;R16(0x04000082)=0x0b04;buffer=0;fill();for(int i=0;i<4;i++)R32(0x040000a0)=fifo[i];fill();for(int i=0;i<4;i++)R32(0x040000a0)=fifo[i];fill();buffer=1;fill();buffer=0;arm();R16(0x04000100)=65024;R16(0x04000102)=0x80;R16(0x04000200)|=0x200;R16(0x04000208)=1;}
-void speaker_irq(unsigned flags){if(flags&0x200){fill();buffer^=1;arm();speaker_diag.irqs++;}}
-void speaker_enable(int on){enabled=on;}
+void speaker_irq(unsigned flags){
+ if(flags&0x200){fill();buffer^=1;arm();speaker_diag.irqs++;}
+ if((flags&0x10)&&!enabled){fill();buffer^=1;speaker_diag.irqs++;}
+}
+void speaker_enable(int on){
+ unsigned short old=R16(0x04000208);R16(0x04000208)=0;
+ R16(0x040000c6)=0;R16(0x04000106)=0;R16(0x04000202)=0x210;
+ enabled=on!=0;
+ /* Gate both hardware outputs as well as synthesis. Keep consuming notes
+  * while muted so re-enabling cannot replay a backlog of effects. */
+ if(enabled){
+  R16(0x04000200)&=~0x10;arm();R16(0x04000082)=0x0b04;
+ }else{
+  R16(0x04000082)=0x0004;
+  for(unsigned i=0;i<8;i++)fifo[i]=0;
+  R16(0x04000082)=0x0804;
+  /* Disconnected FIFO outputs stop requesting DMA. A cascaded timer
+   * consumes the muted queue at the same 16-sample cadence instead. */
+  R16(0x04000104)=65520;R16(0x04000200)|=0x10;R16(0x04000106)=0xc4;
+ }
+ R16(0x04000208)=old;
+}
 static void add(unsigned hz,unsigned ms){if(ms&&count<256)notes[count++]=(Note){hz,ms};}
 void speaker_tone(unsigned hz,unsigned ms){unsigned short old=R16(0x04000208);R16(0x04000208)=0;count=index=remaining=0;add(hz,ms);R16(0x04000208)=old;}
 void speaker_queue_tone(unsigned hz,unsigned ms){

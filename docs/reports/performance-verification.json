@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "count": 119,
+  "count": 114,
   "checks": [
     "title-settled has no redundant full redraws",
     "title-settled keeps exactly one PPU image",
@@ -26,10 +26,6 @@
     "gift-page-idle keeps exactly one PPU image",
     "gift-page-idle polls the main loop every VBlank",
     "gift-page-idle takes the empty-audio fast path",
-    "gallery-idle has no redundant full redraws",
-    "gallery-idle keeps exactly one PPU image",
-    "gallery-idle polls the main loop every VBlank",
-    "gallery-idle takes the empty-audio fast path",
     "help-idle has no redundant full redraws",
     "help-idle keeps exactly one PPU image",
     "help-idle polls the main loop every VBlank",
@@ -47,31 +43,30 @@
     "cash-completed polls the main loop every VBlank",
     "cash-completed takes the empty-audio fast path",
     "baseline and current title fixtures agree",
-    "human-turn-settled has identical pixels to previous ROM",
-    "human-turn-muted has identical pixels to previous ROM",
-    "solve-keyboard-idle has identical pixels to previous ROM",
-    "name-keyboard-idle has identical pixels to previous ROM",
-    "gift-page-idle has identical pixels to previous ROM",
-    "gallery-idle has identical pixels to previous ROM",
-    "help-idle has identical pixels to previous ROM",
-    "records-idle has identical pixels to previous ROM",
-    "credits-settled has identical pixels to previous ROM",
+    "human-turn-settled preserves scene pixels outside approved controls UI",
+    "human-turn-muted preserves scene pixels outside approved controls UI",
+    "solve-keyboard-idle preserves scene pixels outside approved controls UI",
+    "name-keyboard-idle preserves scene pixels outside approved controls UI",
+    "gift-page-idle preserves scene pixels outside approved controls UI",
+    "compact help remains a static screen",
+    "records-idle preserves scene pixels outside approved controls UI",
+    "credits-settled preserves scene pixels outside approved controls UI",
     "completed cash differs only inside approved host balloon bounds",
-    "title changes only approved blue logo strokes and version caption",
+    "title changes only approved logo strokes, version and menu hint",
     "spin seed 0 retains pre-optimization duration",
     "spin seed 1 retains pre-optimization duration",
     "spin seed 2 retains pre-optimization duration",
     "spin seed 5 retains pre-optimization duration",
     "spin seed 17 retains pre-optimization duration",
     "spin seed 31 retains pre-optimization duration",
-    "reveal sector 3 retains pre-optimization walking speed",
-    "reveal sector 0 retains pre-optimization walking speed",
+    "reveal sector 3 retains walking speed after the readable reaction",
+    "reveal sector 0 retains walking speed after the readable reaction",
     "host keeps every pre-optimization face phase",
     "host face cadence remains within four VBlanks of previous ROM",
-    "AI turn retains pre-optimization delay",
-    "AI letter retains pre-optimization delay",
-    "AI answer retains pre-optimization delay",
-    "AI result retains pre-optimization delay",
+    "AI turn uses the shared three-second timeout",
+    "AI letter uses the shared three-second timeout",
+    "AI answer uses the shared three-second timeout",
+    "AI result uses the shared three-second timeout",
     "held Right selects once before the repeat deadline",
     "held Right repeats after eighteen VBlanks",
     "release cancels directional repeat",
@@ -85,11 +80,11 @@
     "chests settle into the original closed sprites",
     "settled chests do not redraw",
     "reward chest disappears at its deadline",
-    "expired reward remains static",
-    "AI chest prompt lasts about 2.5 seconds",
+    "expired reward remains static until its result deadline",
+    "AI chest prompt lasts three seconds",
     "AI chest reply remains static and readable",
-    "AI chest reply lasts about 1.5 seconds before opening",
-    "START pauses animated chest",
+    "AI chest reply lasts three seconds before opening",
+    "SELECT pauses animated chest",
     "resuming shifts chest animation clock by the pause duration",
     "empty preserves every FIFO byte",
     "empty preserves queue and oscillator state",
@@ -122,10 +117,234 @@
     "muted active note preserves queue and oscillator state",
     "muted active note preserves sample/transition diagnostics"
   ],
-  "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0",
-  "ai_chest_vblanks": 240,
+  "rom_sha256": "90d9eaa01f9447f1690d9493d047bc240ead35d59f19f8ae615f46f91920c0ae",
+  "ai_chest_vblanks": 360,
   "audio_cases": 10,
   "idle_profile": {
+    "rom_sha256": "90d9eaa01f9447f1690d9493d047bc240ead35d59f19f8ae615f46f91920c0ae",
+    "rom_bytes": 1048576,
+    "hash_source": "retro_load_game input buffer",
+    "fps": 59.727500915527344,
+    "warmup_vblanks": 240,
+    "sample_vblanks": 300,
+    "results": [
+      {
+        "name": "title-settled",
+        "mode": 0,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          2668851959
+        ],
+        "scene_without_controls_crc32": [
+          3559933924
+        ],
+        "title_without_version_crc32": [
+          2425546075
+        ],
+        "cash_without_speech_crc32": [],
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
+      },
+      {
+        "name": "human-turn-settled",
+        "mode": 1,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          2949810733
+        ],
+        "scene_without_controls_crc32": [
+          2596375021
+        ],
+        "title_without_version_crc32": [],
+        "cash_without_speech_crc32": [],
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
+      },
+      {
+        "name": "human-turn-muted",
+        "mode": 1,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          1971018738
+        ],
+        "scene_without_controls_crc32": [
+          2596375021
+        ],
+        "title_without_version_crc32": [],
+        "cash_without_speech_crc32": [],
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
+      },
+      {
+        "name": "solve-keyboard-idle",
+        "mode": 5,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          604181527
+        ],
+        "scene_without_controls_crc32": [
+          1256277409
+        ],
+        "title_without_version_crc32": [],
+        "cash_without_speech_crc32": [],
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
+      },
+      {
+        "name": "name-keyboard-idle",
+        "mode": 14,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          794804075
+        ],
+        "scene_without_controls_crc32": [
+          3120757388
+        ],
+        "title_without_version_crc32": [],
+        "cash_without_speech_crc32": [],
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
+      },
+      {
+        "name": "gift-page-idle",
+        "mode": 19,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          605821010
+        ],
+        "scene_without_controls_crc32": [
+          3526428413
+        ],
+        "title_without_version_crc32": [],
+        "cash_without_speech_crc32": [],
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
+      },
+      {
+        "name": "help-idle",
+        "mode": 11,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          926383538
+        ],
+        "scene_without_controls_crc32": [
+          1505763844
+        ],
+        "title_without_version_crc32": [],
+        "cash_without_speech_crc32": [],
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
+      },
+      {
+        "name": "records-idle",
+        "mode": 12,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          536576372
+        ],
+        "scene_without_controls_crc32": [
+          2166311167
+        ],
+        "title_without_version_crc32": [],
+        "cash_without_speech_crc32": [],
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
+      },
+      {
+        "name": "credits-settled",
+        "mode": 17,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          1615687405
+        ],
+        "scene_without_controls_crc32": [
+          1325740747
+        ],
+        "title_without_version_crc32": [],
+        "cash_without_speech_crc32": [],
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
+      },
+      {
+        "name": "cash-completed",
+        "mode": 21,
+        "vblanks": 300,
+        "main_updates": 300,
+        "scheduled_redraws": 0,
+        "rendered_frames": 0,
+        "draw_counter": "rendered_frames",
+        "unique_ppu_frames": 1,
+        "ppu_crc32": [
+          1439970037
+        ],
+        "scene_without_controls_crc32": [
+          397976976
+        ],
+        "title_without_version_crc32": [],
+        "cash_without_speech_crc32": [
+          866622557
+        ],
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
+      }
+    ]
+  },
+  "baseline_profile": {
     "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0",
     "rom_bytes": 1048576,
     "hash_source": "retro_load_game input buffer",
@@ -145,6 +364,9 @@
         "ppu_crc32": [
           3800471863
         ],
+        "scene_without_controls_crc32": [
+          3559933924
+        ],
         "title_without_version_crc32": [
           3976662683
         ],
@@ -165,6 +387,9 @@
         "ppu_crc32": [
           3410679897
         ],
+        "scene_without_controls_crc32": [
+          2596375021
+        ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
         "audio_irqs": 10287,
@@ -182,6 +407,9 @@
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           3410679897
+        ],
+        "scene_without_controls_crc32": [
+          2596375021
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -201,6 +429,9 @@
         "ppu_crc32": [
           3298633534
         ],
+        "scene_without_controls_crc32": [
+          1256277409
+        ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
         "audio_irqs": 10287,
@@ -218,6 +449,9 @@
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           1164672475
+        ],
+        "scene_without_controls_crc32": [
+          3120757388
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -237,23 +471,8 @@
         "ppu_crc32": [
           1761400240
         ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10286,
-        "audio_samples": 164576,
-        "fast_silent_buffers": 10286
-      },
-      {
-        "name": "gallery-idle",
-        "mode": 13,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          190437343
+        "scene_without_controls_crc32": [
+          3526428413
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -273,6 +492,9 @@
         "ppu_crc32": [
           3773556619
         ],
+        "scene_without_controls_crc32": [
+          1786642186
+        ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
         "audio_irqs": 10287,
@@ -290,6 +512,9 @@
         "unique_ppu_frames": 1,
         "ppu_crc32": [
           536576372
+        ],
+        "scene_without_controls_crc32": [
+          2166311167
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -309,11 +534,14 @@
         "ppu_crc32": [
           2983715019
         ],
+        "scene_without_controls_crc32": [
+          1325740747
+        ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
       },
       {
         "name": "cash-completed",
@@ -327,221 +555,12 @@
         "ppu_crc32": [
           178295010
         ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [
-          784312623
-        ],
-        "audio_irqs": 10286,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10286
-      }
-    ]
-  },
-  "baseline_profile": {
-    "rom_sha256": "c343d99df2812c97df8fb3944c6c05b328ac356e1ea411558c75f6378579a256",
-    "rom_bytes": 1048576,
-    "hash_source": "retro_load_game input buffer",
-    "fps": 59.727500915527344,
-    "warmup_vblanks": 240,
-    "sample_vblanks": 300,
-    "results": [
-      {
-        "name": "title-settled",
-        "mode": 0,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          3800471863
-        ],
-        "title_without_version_crc32": [
-          3976662683
-        ],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
-      },
-      {
-        "name": "human-turn-settled",
-        "mode": 1,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          3410679897
-        ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
-      },
-      {
-        "name": "human-turn-muted",
-        "mode": 1,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          3410679897
-        ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
-      },
-      {
-        "name": "solve-keyboard-idle",
-        "mode": 5,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          3298633534
-        ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
-      },
-      {
-        "name": "name-keyboard-idle",
-        "mode": 14,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          1164672475
-        ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10286,
-        "audio_samples": 164576,
-        "fast_silent_buffers": 10286
-      },
-      {
-        "name": "gift-page-idle",
-        "mode": 19,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          1761400240
-        ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10286,
-        "audio_samples": 164576,
-        "fast_silent_buffers": 10286
-      },
-      {
-        "name": "gallery-idle",
-        "mode": 13,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          190437343
-        ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10286,
-        "audio_samples": 164576,
-        "fast_silent_buffers": 10286
-      },
-      {
-        "name": "help-idle",
-        "mode": 11,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          3773556619
-        ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
-      },
-      {
-        "name": "records-idle",
-        "mode": 12,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          536576372
-        ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
-      },
-      {
-        "name": "credits-settled",
-        "mode": 17,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          2983715019
-        ],
-        "title_without_version_crc32": [],
-        "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
-      },
-      {
-        "name": "cash-completed",
-        "mode": 21,
-        "vblanks": 300,
-        "main_updates": 300,
-        "scheduled_redraws": 0,
-        "rendered_frames": 0,
-        "draw_counter": "rendered_frames",
-        "unique_ppu_frames": 1,
-        "ppu_crc32": [
-          2732350346
+        "scene_without_controls_crc32": [
+          397976976
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [
-          784312623
+          866622557
         ],
         "audio_irqs": 10287,
         "audio_samples": 164592,
@@ -4885,7 +4904,7 @@
     "reveals": [
       {
         "sector": 3,
-        "vblanks": 425,
+        "vblanks": 510,
         "trace": [
           [
             7,
@@ -4894,397 +4913,397 @@
             0
           ],
           [
-            95,
+            180,
             36,
             0,
             0
           ],
           [
-            100,
+            185,
             40,
             0,
             0
           ],
           [
-            105,
+            190,
             44,
             0,
             0
           ],
           [
-            110,
+            195,
             48,
             0,
             0
           ],
           [
-            115,
+            200,
             52,
             0,
             0
           ],
           [
-            120,
+            205,
             56,
             0,
             0
           ],
           [
-            125,
+            210,
             60,
             0,
             0
           ],
           [
-            130,
+            215,
             64,
             0,
             0
           ],
           [
-            135,
+            220,
             68,
             0,
             0
           ],
           [
-            140,
+            225,
             72,
             0,
             0
           ],
           [
-            145,
+            230,
             76,
             0,
             0
           ],
           [
-            150,
+            235,
             80,
             0,
             0
           ],
           [
-            155,
+            240,
             84,
             6,
             0
           ],
           [
-            160,
+            245,
             84,
             5,
             0
           ],
           [
-            165,
+            250,
             84,
             4,
             0
           ],
           [
-            170,
+            255,
             84,
             3,
             1
           ],
           [
-            175,
+            260,
             84,
             2,
             1
           ],
           [
-            180,
+            265,
             84,
             1,
             1
           ],
           [
-            185,
+            270,
             84,
             0,
             1
           ],
           [
-            190,
+            275,
             88,
             0,
             1
           ],
           [
-            195,
+            280,
             92,
             0,
             1
           ],
           [
-            200,
+            285,
             96,
             0,
             1
           ],
           [
-            205,
+            290,
             100,
             0,
             1
           ],
           [
-            210,
+            295,
             104,
             0,
             1
           ],
           [
-            215,
+            300,
             108,
             0,
             1
           ],
           [
-            220,
+            305,
             111,
             6,
             1
           ],
           [
-            225,
+            310,
             111,
             5,
             1
           ],
           [
-            230,
+            315,
             111,
             4,
             1
           ],
           [
-            235,
+            320,
             111,
             3,
             2
           ],
           [
-            240,
+            325,
             111,
             2,
             2
           ],
           [
-            245,
+            330,
             111,
             1,
             2
           ],
           [
-            250,
+            335,
             111,
             0,
             2
           ],
           [
-            255,
+            340,
             115,
             0,
             2
           ],
           [
-            260,
+            345,
             119,
             0,
             2
           ],
           [
-            265,
+            350,
             123,
             0,
             2
           ],
           [
-            270,
+            355,
             127,
             0,
             2
           ],
           [
-            275,
+            360,
             131,
             0,
             2
           ],
           [
-            280,
+            365,
             135,
             0,
             2
           ],
           [
-            285,
+            370,
             139,
             0,
             2
           ],
           [
-            290,
+            375,
             143,
             0,
             2
           ],
           [
-            295,
+            380,
             147,
             0,
             2
           ],
           [
-            300,
+            385,
             151,
             0,
             2
           ],
           [
-            305,
+            390,
             155,
             0,
             2
           ],
           [
-            310,
+            395,
             159,
             0,
             2
           ],
           [
-            315,
+            400,
             163,
             0,
             2
           ],
           [
-            320,
+            405,
             165,
             6,
             2
           ],
           [
-            325,
+            410,
             165,
             5,
             2
           ],
           [
-            330,
+            415,
             165,
             4,
             2
           ],
           [
-            335,
+            420,
             165,
             3,
             3
           ],
           [
-            340,
+            425,
             165,
             2,
             3
           ],
           [
-            345,
+            430,
             165,
             1,
             3
           ],
           [
-            350,
+            435,
             165,
             0,
             3
           ],
           [
-            355,
+            440,
             169,
             0,
             3
           ],
           [
-            360,
+            445,
             173,
             0,
             3
           ],
           [
-            365,
+            450,
             177,
             0,
             3
           ],
           [
-            370,
+            455,
             181,
             0,
             3
           ],
           [
-            375,
+            460,
             185,
             0,
             3
           ],
           [
-            380,
+            465,
             189,
             0,
             3
           ],
           [
-            385,
+            470,
             193,
             0,
             3
           ],
           [
-            390,
+            475,
             197,
             0,
             3
           ],
           [
-            395,
+            480,
             201,
             0,
             3
           ],
           [
-            400,
+            485,
             205,
             0,
             3
           ],
           [
-            405,
+            490,
             209,
             0,
             3
           ],
           [
-            410,
+            495,
             213,
             0,
             3
           ],
           [
-            415,
+            500,
             217,
             0,
             3
           ],
           [
-            420,
+            505,
             221,
             0,
             3
@@ -5743,19 +5762,19 @@
     "ai": [
       {
         "event": "turn",
-        "vblanks": 40
+        "vblanks": 180
       },
       {
         "event": "letter",
-        "vblanks": 40
+        "vblanks": 180
       },
       {
         "event": "answer",
-        "vblanks": 120
+        "vblanks": 180
       },
       {
         "event": "result",
-        "vblanks": 80
+        "vblanks": 180
       }
     ]
   }

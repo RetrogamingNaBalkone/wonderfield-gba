@@ -26,7 +26,7 @@ def skip_intro():
   if e.state()[3]!=15:return
   e.tap(8)
  e.run(30)
-e.tap(2);e.run(30);e.screenshot('help.png');check('help opens',e.state()[3]==11);e.tap(0);check('help returns',e.state()[3]==0)
+e.tap(2);check('SELECT opens menu',e.state()[3]==23);e.tap(5);e.tap(8);e.run(30);e.screenshot('help.png');check('help opens',e.state()[3]==11);e.tap(2);check('help returns',e.state()[3]==0)
 e.tap(8);e.run(40);check('DOS player introduction restored',e.state()[3]==15);e.screenshot('introduction.png');skip_intro();e.screenshot('turn.png');check('first round human turn',e.state()[3:6]==(1,0,2))
 e.tap(8);e.until(lambda s:s[3] not in (1,2));e.run(30);check('wheel stops',0<=e.state()[7]<16)
 # Selected seed may produce a special sector; use deterministic rare-branch fixtures below.
@@ -50,8 +50,8 @@ e.screenshot('keyboard.png');before=e.state();e.tap(0);e.run(25)
 check('B keeps letter keyboard open without selecting a letter',e.state()[3]==3 and e.state()[71]==1 and e.state()[70]==before[70] and e.state()[38:70]==before[38:70])
 e.tap(7);check('letter navigation remains available immediately after B',e.state()[70]==(before[70]+1)%32)
 e.tap(0);check('repeated B keeps keyboard and cursor visible',e.state()[3]==3 and e.state()[71]==1 and e.state()[70]==(before[70]+1)%32)
-e.tap(3);check('START pauses letter selection',e.state()[3]==11)
-e.tap(3);check('pause resumes directly into letter selection',e.state()[3]==3 and e.state()[71]==1 and e.state()[70]==(before[70]+1)%32)
+e.tap(2);check('SELECT pauses letter selection',e.state()[3]==23)
+e.tap(2);check('pause resumes directly into letter selection',e.state()[3]==3 and e.state()[71]==1 and e.state()[70]==(before[70]+1)%32)
 select('И');check('all repeated letters revealed',sum(e.state()[18:38])==3);check('points per occurrence',e.state()[11]==130);check('hit continues directly to same player turn',e.state()[3]==1 and e.state()[5]==2)
 e.screenshot('correct-letter.png')
 fixture_sector(10);check('x4 sector value',e.state()[8]==204);select('И');check('x4 multiplies score once',e.state()[11]==400)
@@ -104,24 +104,24 @@ for round_no,allowed in ((1,{5,20,35,50}),(2,{10,40,70,100})):
  check(f'round {round_no+1}: opponents roll their banks independently',any(a!=b for a,b in pairs))
 
 # Start a fresh game using only menu and keypad; solve three original words.
-e.tap(3);e.tap(2);e.run(30);e.tap(8);e.run(30);skip_intro()
+e.tap(2);e.tap(5);e.tap(5);e.tap(5);e.tap(8);e.tap(5);e.tap(8);e.run(30);e.tap(8);e.run(30);skip_intro()
 played=[]
 for round_no in range(3):
  check(f'round {round_no+1} enters',e.state()[3]==1 and e.state()[4]==round_no)
  check(f'round {round_no+1} starts with original opponent banks',all(v in ({0},{5,20,35,50},{10,40,70,100})[round_no] for v in e.state()[9:11]))
  entry=words[e.state()[6]];played.append(entry['id']);e.tap(6);e.tap(8);check('turn menu enters full-word input',e.state()[3]==5)
  for letter in entry['word']:select(letter)
- e.screenshot(f'solve-round-{round_no+1}.png');e.tap(3);e.run(30);check(f'round {round_no+1} solved',e.state()[3]==9 and e.state()[5]==2)
+ e.screenshot(f'solve-round-{round_no+1}.png');e.tap(8);e.run(30);check(f'round {round_no+1} solved',e.state()[3]==9 and e.state()[5]==2)
  e.tap(8);e.run(30);skip_intro()
 check('three different original questions',len(set(played))==3)
 check('three-round win reaches original gift text',e.state()[3]==19)
-for page in range(3):
+for page in range(4):
  e.run(24);e.screenshot(f'final-gift-{page+1}.png');e.tap(8)
 e.run(24);check('three-round gift goes directly to winner records',e.state()[3]==12)
 e.tap(8);check('winner records return to title',e.state()[3]==0)
 # Controlled final-score fixture reaches original eight-entry name / SRAM path.
 e.poke(3,9);e.poke(4,2);e.poke(5,2);e.poke(11,30000);e.tap(8)
-for page in range(3):e.tap(8)
+for page in range(4):e.tap(8)
 check('highscore name entry follows gift screens directly',e.state()[3]==14)
 select('Я');e.tap(0);check('B still erases a typed name character',e.state()[3]==14 and e.state()[80]==0 and c.string_at(e.ramgame+352,1)==b'\0')
 select('Я');e.tap(3);e.run(30);check('record table after name',e.state()[3]==12);e.screenshot('records.png')
@@ -131,7 +131,7 @@ e.core.retro_reset();e.run(100);check('SRAM score survives console reset',e.stat
 e.tap(8);e.run(30);skip_intro();e.tap(6);e.tap(8)
 entry=words[e.state()[6]];wrong='Я' if entry['word'][0]!='Я' else 'А'
 for letter in wrong*len(entry['word']):select(letter)
-e.tap(3);e.run(30);check('wrong full word rejected',e.state()[3]==6);e.tap(8);e.run(30);check('wrong full word eliminates human',e.state()[3]==10)
+e.tap(8);e.run(30);check('wrong full word rejected',e.state()[3]==6);e.tap(8);e.run(30);check('wrong full word eliminates human',e.state()[3]==10)
 e.screenshot('game-over.png');e.close()
 report=dict(status='passed',checks=checks,count=len(checks),emulator='mGBA 0.10.5 libretro',normal_keypad_rounds=played,rare_branch_tests='Explicit RAM fixtures in scripts/verify.py',speaker=dict(irqs=diag[0],samples=diag[1],transitions=diag[2],measured_test_hz=hz),rom_sha256=hashlib.sha256((ROOT/'build/gba/pole.gba').read_bytes()).hexdigest())
 (ROOT/'build/qa/report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
