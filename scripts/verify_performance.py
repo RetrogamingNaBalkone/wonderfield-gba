@@ -55,7 +55,7 @@ if (directory/'pole.gba').exists() and (directory/'pole.elf').exists():
  def allowed_title_change(p,a,b):
   x,y=p%240,p//240
   if 206<=x<234 and 120<=y<134:return True
-  if y>=150:return True # Title now advertises SELECT: menu.
+  if y>=139:return True # Title now advertises A: play and START: menu.
   in_logo=(9<=x<102 and 23<=y<111) or (104<=x<213 and 23<=y<131)
   return in_logo and (a==old_blue or b==new_blue)
  check('title changes only approved logo strokes, version and menu hint',
@@ -142,8 +142,8 @@ e.until(lambda s:s[3]!=22);elapsed=read('video_ticks')-entered
 check('AI chest reply lasts three seconds before opening',e.state()[3]==6 and 180<=read('video_ticks')-answered<=192)
 
 # Pause retains visual deadlines, not just game.mode.
-fixture(8);write('scene',read('video_ticks'),4);e.run(25);e.tap(2);check('SELECT pauses animated chest',e.state()[3]==23)
-clock=read('scene',4);e.run(180);e.tap(2)
+fixture(8);write('scene',read('video_ticks'),4);e.run(25);e.tap(3);check('START pauses animated chest',e.state()[3]==23)
+clock=read('scene',4);e.run(180);e.tap(3)
 check('resuming shifts chest animation clock by the pause duration',e.state()[3]==8 and read('scene',4)>=clock+180)
 
 # Model the old sample loop independently, then compare all FIFO bytes and

@@ -32,7 +32,11 @@ static void board(void){
   for(int i=0;i<n;i++){
    rect(x+i*cw+1,11,cw-1,15,game.revealed[i]?7:8);
    if(game.revealed[i])glyph(x+i*cw+1,11,(u8)word()[i],0,0);
-   if(game.mode==PLUS&&game.player==2&&game.cursor==i)line(x+i*cw+1,25,cw-1,14);
+   if(game.mode==PLUS&&game.player==2&&game.cursor==i){
+    int selected_x=x+i*cw+1;
+    rect(selected_x,11,cw-1,15,14);border(selected_x,11,cw-1,15,15);
+    for(int row=0;row<3;row++)line(selected_x+1+row,5+row,6-row*2,0);
+   }
   }
  }
  for(int x=30;x<=210;x+=9)rect(x,2,1,33,0);
@@ -162,14 +166,14 @@ static void title(void){
   for(int y=0;y<s->h;y++)for(int x=0;x<s->w;x++)
    if(s->data[y*s->w+x]!=7)pixel(left+x,23+y,s->data[y*s->w+x]);
  }
- if(age>=100)text(40,124,"КАПИТАЛ-ШОУ",1,0);centered(139,"A / START: Играть",1,1);
+ if(age>=100)text(40,124,"КАПИТАЛ-ШОУ",1,0);centered(139,"A: Играть",1,1);
  if(age>=100){
   /* The original compact font fits wholly inside the final grid cell. */
   const char*version="1.1";
   for(int i=0;i<3;i++)for(int y=0;y<6;y++)for(int x=0;x<4;x++)
    if(font6[(u8)version[i]*6+y]&(128>>x))pixel(218+i*4+x,122+y,0);
  }
- centered(151,"SELECT: Меню",1,0);
+ centered(151,"START: Меню",1,0);
 }
 static void menu(void){
  const char*title_items[4]={"Играть","Справка","Рекорды","Об авторах"};
@@ -181,13 +185,13 @@ static void menu(void){
   rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
   centered(y,ui.origin==TITLE?title_items[i]:pause_items[i],0,selected?15:0);
  }
- centered(151,"A: Подтвердить B/SELECT: Назад",1,0);
+ centered(151,menu_button()==SELECT?"A: Подтвердить B/SELECT: Назад":"A: Подтвердить B/START: Назад",1,0);
 }
 static void help(void){
- static const char*commands[7]={"Крестовина: Перемещение","A: Подтвердить / далее","B: Назад / стереть","SELECT: Меню / пауза","L: Включить/выключить звук","Имя: R - пробел","Имя: START - сохранить"};
+ static const char*commands[7]={"Крестовина: Перемещение","A: Подтвердить / Далее","B: Назад / Стереть","START: Меню / Пауза","L: Включить / Выключить звук","Имя: R пробел, SELECT меню","Имя: START - сохранить"};
  rect(0,0,240,160,7);border(3,3,234,143,0);centered(5,"УПРАВЛЕНИЕ",0,0);
  for(int i=0;i<7;i++)text(8,25+i*16,commands[i],0,0);
- centered(151,"B / SELECT: Назад",1,0);
+ centered(151,menu_button()==SELECT?"B / SELECT: Назад":"B / START: Назад",1,0);
 }
 static void restart_confirm(void){
  const char*items[2]={"Вернуться в меню","Начать заново"};
@@ -199,13 +203,11 @@ static void restart_confirm(void){
   rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
   centered(y,items[i],0,selected?15:0);
  }
- centered(151,"A: Подтвердить B/SELECT: Назад",1,0);
+ centered(151,menu_button()==SELECT?"A: Подтвердить B/SELECT: Назад":"A: Подтвердить B/START: Назад",1,0);
 }
 static void footer(void){
  rect(0,152,240,8,7);
  const char*t=0;
- if(game.mode==LETTER&&game.player==2)t="Крестовина: Выбор  A: Буква";
- if(game.mode==PLUS&&game.player==2)t="ВЛЕВО/ВПРАВО: Клетка A: Открыть";
  if(game.mode==SOLVE)t=game.solve_pos==len(word())?"A: Назвать слово  B: Стереть":"A: Буква  B: Стереть";
  if(t)centered(152,t,1,0);
 }
@@ -231,7 +233,14 @@ static int certificate_paragraph(int y,const char*a,const char*b,const char*c,u8
  return y+count*16+2;
 }
 static void certificate_base(void){
- rect(0,0,240,160,7);sprite(46,68,0,80,7);sprite(47,125,0,64,7);line(4,47,232,1);
+ int left=(240-certificate_logos[0].w-certificate_logos[1].w)/2;
+ rect(0,0,240,160,7);
+ for(int i=0;i<2;i++){
+  const Sprite*s=&certificate_logos[i];
+  image(s,left,0,7);
+  left+=s->w;
+ }
+ line(4,47,232,1);
 }
 static void dos_author(void){
  certificate_base();int y=certificate_paragraph(50,msg_4099,0,0,0);
@@ -306,6 +315,7 @@ static void render(void){
   rect(0,top,240,160,1);
   const char*lines[10]={msg_4ebd,msg_4ecf,msg_4ee3,msg_4ef5,msg_4f08,msg_4f18,msg_4f2a,msg_4f38,msg_4f47,msg_4f5a};
   for(int i=0;i<10;i++)centered(top+4+i*14,lines[i],0,14);
+  centered(top+151,"A: Следующий раунд",1,14);
   return;
  }
  if(game.mode==REVEAL){

@@ -100,9 +100,10 @@ def profile(rom_path=None,elf_path=None,destination=None):
         # a RAM-only mode/dirty fixture cannot force these static screens.
         if 'ui' in em.sym:
             em.tap(10) # Restore sound after the muted keyboard/scene fixtures.
-            fixture(0);em.tap(2);em.tap(5);em.tap(8);results.append(sample('help-idle'))
+            menu_key=3 if 'START: Меню'.encode('cp866') in loaded_rom else 2
+            fixture(0);em.tap(menu_key);em.tap(5);em.tap(8);results.append(sample('help-idle'))
             em.tap(0);em.tap(5);em.tap(8);results.append(sample('records-idle'))
-            em.tap(2) # Close the entire title menu before RAM fixtures.
+            em.tap(menu_key) # Close the entire title menu before RAM fixtures.
         else:
             fixture(0);em.tap(2);results.append(sample('help-idle'))
             em.tap(0);em.tap(10);results.append(sample('records-idle'))

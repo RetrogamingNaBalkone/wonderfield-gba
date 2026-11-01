@@ -58,11 +58,11 @@ def qr_pixels(name):
  decode(name)
 
 try:
- boot();e.tap(2);stable();e.screenshot('menu-title-v11.png')
+ boot();e.tap(3);stable();e.screenshot('menu-title-v11.png')
  check('title menu uses only grayscale',set(indices())<={0,7,8,15})
  item(1);e.screenshot('help-v11.png');p=indices()
  check('help uses only grayscale',set(p)<={0,7,8,15})
- commands=['Крестовина: перемещение','A: подтвердить / далее','B: назад / стереть','SELECT: меню / пауза','L: включить/выключить звук','Имя: R - пробел','Имя: START - сохранить']
+ commands=['Крестовина: Перемещение','A: Подтвердить / Далее','B: Назад / Стереть','START: Меню / Пауза','L: Включить / Выключить звук','Имя: R пробел, SELECT меню','Имя: START - сохранить']
  for row,text in enumerate(commands):
   check(f'help line {row+1} uses complete native 8x14 glyphs',len(text)*8<=224 and all(p[(25+row*16+y)*240+8+i*8+x]==0 for i,ch in enumerate(text.encode('cp866')) for y in range(14) for x in range(8) if font[ch*14+y]&(128>>x)))
  e.tap(0);e.tap(5);e.tap(5);e.tap(8);stable()
@@ -77,17 +77,18 @@ try:
  e.tap(0);stable();check('B returns to unchanged DOS author',body(e.raw)==body(dos))
  e.tap(8);e.tap(8);check('A from GBA author returns to selected menu entry',e.state()[3]==23 and read('ui',8)==3)
  e.tap(8);e.tap(0);check('B from first author returns to menu',e.state()[3]==23)
- e.tap(8);e.tap(8);e.tap(2);check('SELECT closes nested authors to title',e.state()[3]==0)
+ e.tap(8);e.tap(8);e.tap(3);check('START closes nested authors to title',e.state()[3]==0)
 
- fixture(2);before=e.state();e.tap(2);stable();e.screenshot('menu-pause-v11.png');since=read('ui',16);spin=read('scene',20)
- item(2);e.tap(8);stable();decode('paused GBA author');e.run(240);e.tap(2)
+ fixture(2);before=e.state();e.tap(3);stable();e.screenshot('menu-pause-v11.png');since=read('ui',16);spin=read('scene',20)
+ item(2);e.tap(8);stable();decode('paused GBA author');e.run(240);e.tap(3)
  check('authors in pause restore scene, RNG and spin steps',e.state()[3]==2 and e.state()[2]==before[2] and e.state()[74]==before[74])
  check('authors count as one continuous pause',abs((read('scene',20)-spin)-(read('video_ticks')-since))<=8)
  for mode in (5,14,19):
   fixture(mode);e.poke(80,2);c.memmove(e.ramgame+352,b'AB\0',3)
   write('scene',1,180);write('scene',1,184)
   before=e.state();gift=memory('scene',188)[180:188];saved=c.string_at(e.core.retro_get_memory_data(0),128)
-  e.tap(2);item(2);e.tap(8);e.run(180);e.tap(2)
+  key=2 if mode==14 else 3
+  e.tap(key);item(2);e.tap(8);e.run(180);e.tap(key)
   check(f'authors preserve input and score in mode {mode}',e.state()[3]==mode and e.state()[9:12]==before[9:12] and e.state()[80]==2 and memory('game',376)[352:355]==b'AB\0')
   check(f'authors preserve gift and SRAM in mode {mode}',memory('scene',188)[180:188]==gift and c.string_at(e.core.retro_get_memory_data(0),128)==saved)
 

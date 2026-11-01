@@ -94,7 +94,6 @@ static void glyph(int x,int y,unsigned c,int small,u8 color){int h=small?8:14;co
 static void text(int x,int y,const char *s,int small,u8 c){int advance=8;for(int i=0;s[i];i++)glyph(x+i*advance,y,(u8)s[i],small,c);}
 static void centered(int y,const char*s,int small,u8 c){text((240-len(s)*8)/2,y,s,small,c);}
 static void number(int x,int y,int value,int small,u8 c){char b[12];int n=0;unsigned v=value<0?-value:value;do{b[n++]='0'+v%10;v/=10;}while(v);if(value<0)b[n++]='-';for(int i=n-1;i>=0;i--)glyph(x+(n-1-i)*8,y,b[i],small,c);}
-static void sprite(int id,int x,int y,int scale,int transparent){const Sprite*s=&sprites[id];int w=(s->w*scale)>>8,h=(s->h*scale)>>8;unsigned step=divide(65536,scale);for(int j=0;j<h;j++){int sy=(j*step)>>8;for(int i=0;i<w;i++){int sx=(i*step)>>8;u8 c=s->data[sy*s->w+sx];if(c!=transparent)pixel(x+i,y+j,c);}}}
 static void beep(int hz,int duration){speaker_tone(hz,duration*4);}
 static void vblank(void){while(REG16(0x04000006)>=160){}while(REG16(0x04000006)<160){}}
 static void dma_words(u32*destination,const u32*source,unsigned count){while(count){unsigned n=count>64?64:count;REG32(0x040000d4)=(u32)source;REG32(0x040000d8)=(u32)destination;REG32(0x040000dc)=0x84000000|n;source+=n;destination+=n;count-=n;}}
@@ -251,12 +250,14 @@ static void menu_close(void){
  /* Restoring the mode must not reset its clocks, wait, or input. */
  game.mode=ui.origin;game.wait=ui.wait;ui.active=0;dirty=1;
 }
+/* Keep START available for saving a name, including while its menu is open. */
+static u16 menu_button(void){return (ui.active?ui.origin:game.mode)==NAME?SELECT:START;}
 #include "presentation.inc"
 #include "scene.inc"
 static void update(u16 pressed,u16 repeat){
  scene.now=video_ticks;
  if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
- if(pressed&SELECT){if(game.mode==RESTART_CONFIRM)set_mode(MENU);else if(ui.active)menu_close();else menu_open();return;}
+ if(pressed&menu_button()){if(game.mode==RESTART_CONFIRM)set_mode(MENU);else if(ui.active)menu_close();else menu_open();return;}
  if(game.mode==RESTART_CONFIRM){
   if(pressed&B){set_mode(MENU);return;}
   if(repeat&(UP|DOWN)){ui.confirm^=1;dirty=1;}
@@ -289,7 +290,7 @@ static void update(u16 pressed,u16 repeat){
   else if(pressed&A){if(!ui.author_page){ui.author_page=1;dirty=1;}else set_mode(MENU);}
   return;
  }
- if(game.mode==TITLE){if(pressed&(A|START)){ui.viewer=0;new_game();}return;}
+ if(game.mode==TITLE){if(pressed&A){ui.viewer=0;new_game();}return;}
  if(game.mode==RECORDS){if(pressed&(A|B))set_mode(ui.viewer?MENU:TITLE);return;}
  if(scene_tick(pressed))return;
  if(game.mode==GIFT_PAGES){

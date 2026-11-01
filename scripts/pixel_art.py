@@ -40,7 +40,7 @@ def snickers_label(raw):
     assert set(result)<=set(raw)
     return w,h,bytes(result)
 
-def title_logo_resize(raw,w,h,nw,nh,resource):
+def logo_resize(raw,w,h,nw,nh,resource):
     """Repair only identified hairline cuts, then reduce the original ink mask.
 
     The narrow loop in the capital and the counters/letter separations stay

@@ -32,4 +32,7 @@ try {
  if($LASTEXITCODE) {throw 'Link failed'}
  & $PythonExe scripts/finish_rom.py
  if($LASTEXITCODE) {throw 'ROM validation failed'}
+ New-Item -ItemType Directory -Force dist | Out-Null
+ Copy-Item -LiteralPath build/gba/pole.gba -Destination 'dist/pole 1.1.gba'
+ Write-Output 'ROM: dist/pole 1.1.gba'
 } finally {$env:ZIG_GLOBAL_CACHE_DIR=$taskCache; $env:PYTHONDONTWRITEBYTECODE=$taskBytecode; Pop-Location}

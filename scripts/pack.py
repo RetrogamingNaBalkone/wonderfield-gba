@@ -2,7 +2,7 @@
 from pathlib import Path
 import json,struct,re,math
 from extract import ROOT,OUT,SRC,EGA
-from pixel_art import outlined_resize,wheel_symbol,title_logo_resize,snickers_label
+from pixel_art import outlined_resize,wheel_symbol,logo_resize,snickers_label
 from vendor.nayuki.qrcodegen import QrCode,QrSegment
 GEN=ROOT/'build/generated'; GEN.mkdir(parents=True,exist_ok=True)
 def cstr(b):return '"'+''.join('\\%03o'%x for x in b)+'"'
@@ -54,15 +54,19 @@ def main():
   code.append(arr(f'small_data_{s["id"]}',small));half.append((sw,sh,small));half_refs.append(f'{{{sw},{sh},small_data_{s["id"]}}}')
  code.append('const Sprite sprites[57]={'+','.join(sprites)+'};\n')
  code.append('const Sprite sprites_half[57]={'+','.join(half_refs)+'};\n')
- # The large title gets its own carefully reduced masks; DOS resources and
- # the smaller logos on the certificate/cash screens retain their original ink.
- title_refs=[]
+ # Reduce each logo directly from the repaired source mask, preserving fine
+ # joins at both title and certificate sizes. Extracted DOS assets stay lossless.
+ title_refs=[];certificate_refs=[]
  for id in (46,47):
   w,h=metadata[id]['width'],metadata[id]['height'];raw=(OUT/f'sprite-{id:02}.bin').read_bytes()
   tw,th=round(w*35/48)*150//256,h*150//256
-  code.append(arr(f'title_logo_data_{id}',title_logo_resize(raw,w,h,tw,th,id)))
+  code.append(arr(f'title_logo_data_{id}',logo_resize(raw,w,h,tw,th,id)))
   title_refs.append(f'{{{tw},{th},title_logo_data_{id}}}')
+  cw,ch=round(w*35/48)//4,h//4
+  code.append(arr(f'certificate_logo_data_{id}',logo_resize(raw,w,h,cw,ch,id)))
+  certificate_refs.append(f'{{{cw},{ch},certificate_logo_data_{id}}}')
  code.append('const Sprite title_logos[2]={'+','.join(title_refs)+'};\n')
+ code.append('const Sprite certificate_logos[2]={'+','.join(certificate_refs)+'};\n')
  # Large payouts skip directly to one prepared DOS-style finished picture.
  # Draw these stamps at build time; the ARM7 only copies a bitmap on A.
  finished=bytearray([7]*38400)
@@ -164,6 +168,7 @@ def main():
  hdr+='extern const Sprite sprites_half[57];\nextern const unsigned char wheel_bitmaps[],stage_background[];\nextern const char *const gift_names[10];\nextern const char *const initial_names[8];\nextern const unsigned short initial_scores[8];\n'
  hdr+='extern const unsigned char cash_finished_bitmap[];\n'
  hdr+='extern const Sprite title_logos[2];\n'
+ hdr+='extern const Sprite certificate_logos[2];\n'
  hdr+='extern const unsigned char channel_qr[106];\n'
  hdr+=''.join(f'extern const char msg_{off:x}[];\n' for off,b in literals)
  (GEN/'assets.h').write_text(hdr)

@@ -113,11 +113,11 @@ try:
   fixture(1,2)
   if mode==22:wait_answer()
   else:e.run(40)
-  e.tap(2);check('SELECT pauses AI chest phase',e.state()[3]==23)
+  e.tap(3);check('START pauses AI chest phase',e.state()[3]==23)
   old=read('scene',4);age=read('video_ticks')-old;choice=e.state()[81];rng=e.state()[2]
   e.run(180)
   check('paused AI chest cannot choose or award',e.state()[3]==23 and e.state()[81]==choice and e.state()[2]==rng and e.state()[10]==130)
-  e.tap(2)
+  e.tap(3)
   check('resuming retains phase, selection and remaining deadline',e.state()[3]==mode and abs((read('video_ticks')-read('scene',4))-age)<=12 and read('scene',4)>=old+180)
   e.until(lambda s:s[3]!=mode)
   check('resumed AI chest advances automatically',e.state()[3]==(22 if mode==8 else 6))

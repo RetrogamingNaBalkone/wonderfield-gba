@@ -26,7 +26,7 @@ def skip_intro():
   if e.state()[3]!=15:return
   e.tap(8)
  e.run(30)
-e.tap(2);check('SELECT opens menu',e.state()[3]==23);e.tap(5);e.tap(8);e.run(30);e.screenshot('help.png');check('help opens',e.state()[3]==11);e.tap(2);check('help returns',e.state()[3]==0)
+e.tap(3);check('START opens menu',e.state()[3]==23);e.tap(5);e.tap(8);e.run(30);e.screenshot('help.png');check('help opens',e.state()[3]==11);e.tap(3);check('help returns',e.state()[3]==0)
 e.tap(8);e.run(40);check('DOS player introduction restored',e.state()[3]==15);e.screenshot('introduction.png');skip_intro();e.screenshot('turn.png');check('first round human turn',e.state()[3:6]==(1,0,2))
 e.tap(8);e.until(lambda s:s[3] not in (1,2));e.run(30);check('wheel stops',0<=e.state()[7]<16)
 # Selected seed may produce a special sector; use deterministic rare-branch fixtures below.
@@ -50,8 +50,8 @@ e.screenshot('keyboard.png');before=e.state();e.tap(0);e.run(25)
 check('B keeps letter keyboard open without selecting a letter',e.state()[3]==3 and e.state()[71]==1 and e.state()[70]==before[70] and e.state()[38:70]==before[38:70])
 e.tap(7);check('letter navigation remains available immediately after B',e.state()[70]==(before[70]+1)%32)
 e.tap(0);check('repeated B keeps keyboard and cursor visible',e.state()[3]==3 and e.state()[71]==1 and e.state()[70]==(before[70]+1)%32)
-e.tap(2);check('SELECT pauses letter selection',e.state()[3]==23)
-e.tap(2);check('pause resumes directly into letter selection',e.state()[3]==3 and e.state()[71]==1 and e.state()[70]==(before[70]+1)%32)
+e.tap(3);check('START pauses letter selection',e.state()[3]==23)
+e.tap(3);check('pause resumes directly into letter selection',e.state()[3]==3 and e.state()[71]==1 and e.state()[70]==(before[70]+1)%32)
 select('И');check('all repeated letters revealed',sum(e.state()[18:38])==3);check('points per occurrence',e.state()[11]==130);check('hit continues directly to same player turn',e.state()[3]==1 and e.state()[5]==2)
 e.screenshot('correct-letter.png')
 fixture_sector(10);check('x4 sector value',e.state()[8]==204);select('И');check('x4 multiplies score once',e.state()[11]==400)
@@ -104,7 +104,7 @@ for round_no,allowed in ((1,{5,20,35,50}),(2,{10,40,70,100})):
  check(f'round {round_no+1}: opponents roll their banks independently',any(a!=b for a,b in pairs))
 
 # Start a fresh game using only menu and keypad; solve three original words.
-e.tap(2);e.tap(5);e.tap(5);e.tap(5);e.tap(8);e.tap(5);e.tap(8);e.run(30);e.tap(8);e.run(30);skip_intro()
+e.tap(3);e.tap(5);e.tap(5);e.tap(5);e.tap(8);e.tap(5);e.tap(8);e.run(30);e.tap(8);e.run(30);skip_intro()
 played=[]
 for round_no in range(3):
  check(f'round {round_no+1} enters',e.state()[3]==1 and e.state()[4]==round_no)

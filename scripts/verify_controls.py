@@ -27,12 +27,14 @@ def shot(name):e.run(16);e.screenshot(name)
 def menu_item(index):
  for _ in range(index):e.tap(5)
  e.tap(8)
-def help_open():e.tap(2);menu_item(1)
+def menu_key():return 2 if (read('ui',4) if read('ui') else e.state()[3])==14 else 3
+
+def help_open():e.tap(menu_key());menu_item(1)
 def filled_answer(data):
  e.poke(80,len(data));c.memmove(e.ramgame+352,data+b'\0',len(data)+1)
 
 try:
- boot();e.tap(2);check('title SELECT opens menu at Play',e.state()[3]==23 and read('ui',8)==0)
+ boot();e.tap(menu_key());check('title START opens menu at Play',e.state()[3]==23 and read('ui',8)==0)
  shot('menu-title-v11.png');menu_item(1)
  check('title help opens',e.state()[3]==11)
  shot('help-v11.png');help_frame=e.raw;draws=read('rendered_frames');e.run(90)
@@ -45,13 +47,14 @@ try:
  e.tap(5);e.tap(5);check('title menu wraps after its four entries',e.state()[3]==23 and read('ui',8)==0)
  e.tap(4);check('title menu wraps back to Authors',read('ui',8)==3)
  e.tap(10);check('L only toggles sound in menu',e.state()[3]==23 and read('sound_on')==0)
- e.tap(2);check('SELECT closes nested viewer menu to title',e.state()[3]==0)
+ e.tap(menu_key());check('START closes nested viewer menu to title',e.state()[3]==0)
  e.tap(10);check('L on title only changes sound',e.state()[3]==0 and read('sound_on')==1)
  e.tap(11);check('R has no title action',e.state()[3]==0)
- e.tap(3);check('START still begins a new game',e.state()[3]==15)
+ e.tap(2);check('SELECT has no title action',e.state()[3]==0)
+ e.tap(3);check('START opens title menu',e.state()[3]==23);e.tap(8);check('A begins a new game from menu',e.state()[3]==15)
 
  # Restart is destructive only after an explicit second choice and A.
- fixture(2);before=e.state();e.tap(2)
+ fixture(2);before=e.state();e.tap(menu_key())
  for _ in range(3):e.tap(5)
  e.run(120,(8,));e.run(1)
  check('held menu A cannot accept restart confirmation',e.state()[3]==25 and read('ui',28)==0)
@@ -59,36 +62,37 @@ try:
  check('restart warning waits without redrawing or advancing the game',e.state()[3]==25 and read('rendered_frames')==draws and e.state()[2]==before[2] and e.state()[74]==before[74])
  e.tap(8);check('default A returns to the selected pause menu item',e.state()[3]==23 and read('ui',8)==3)
  e.tap(8);e.tap(0);check('B cancels restart back to menu',e.state()[3]==23 and read('ui',8)==3)
- e.tap(8);e.tap(2);check('SELECT cancels restart back to menu',e.state()[3]==23 and read('ui',8)==3)
- e.tap(2);check('cancelled restart resumes the same spin and RNG',e.state()[3]==2 and e.state()[2]==before[2] and e.state()[74]==before[74])
+ e.tap(8);e.tap(menu_key());check('START cancels restart back to menu',e.state()[3]==23 and read('ui',8)==3)
+ e.tap(menu_key());check('cancelled restart resumes the same spin and RNG',e.state()[3]==2 and e.state()[2]==before[2] and e.state()[74]==before[74])
  fixture(5);e.poke(80,2);c.memmove(e.ramgame+352,b'AB\0',3);before=c.string_at(e.ramgame+352,21)
- e.tap(2);menu_item(3);e.run(180);e.tap(0);e.tap(2)
+ e.tap(menu_key());menu_item(3);e.run(180);e.tap(0);e.tap(menu_key())
  check('cancelled restart preserves typed answer',e.state()[3]==5 and e.state()[80]==2 and c.string_at(e.ramgame+352,21)==before)
  fixture(7);e.poke(81,0);e.poke(82,1);e.poke(83,1000000);e.tap(8);e.run(140)
- e.tap(2);menu_item(3);canvas=memory('cash_canvas',38400);bills=read('cash');e.run(180)
+ e.tap(menu_key());menu_item(3);canvas=memory('cash_canvas',38400);bills=read('cash');e.run(180)
  check('restart warning freezes cash without losing banknotes',e.state()[3]==25 and read('cash')==bills and memory('cash_canvas',38400)==canvas)
- e.tap(2);e.tap(2);e.run(30)
+ e.tap(menu_key());e.tap(menu_key());e.run(30)
  check('cancelled warning continues the same cash payout',e.state()[3]==21 and read('cash')>bills)
 
  for mode in (1,3,4,7,8,5,14,15,16,17,18,19,21,22):
   fixture(mode);e.poke(76,23);before=memory('game',376)
-  e.tap(2)
+  e.tap(menu_key())
   if mode==1:shot('menu-pause-v11.png')
-  menu_item(1);e.run(16);check(f'mode {mode} opens the same compact help',e.state()[3]==11 and e.raw==help_frame)
+  menu_item(1);e.run(16);body_bytes=150*240*(4 if e.format==1 else 2)
+  check(f'mode {mode} opens the same compact help',e.state()[3]==11 and e.raw[:body_bytes]==help_frame[:body_bytes])
   clock=read('scene',4);since=read('ui',16);e.run(180);e.tap(0)
   check(f'mode {mode} B returns to paused menu',e.state()[3]==23)
-  e.run(60);e.tap(2)
+  e.run(60);e.tap(menu_key())
   shifted=read('scene',4)-clock
   check(f'mode {mode} nested pause shifts clocks exactly once',shifted>=240 and abs(shifted-(read('video_ticks')-since))<=8)
   check(f'mode {mode} restores scene and wait',e.state()[3]==mode and e.state()[76]==23)
   check(f'mode {mode} preserves answer and selection',memory('game',376)[352:373]==before[352:373] and e.state()[70]==0 and e.state()[81]==1)
 
- fixture();e.tap(3);check('START has no gameplay action',e.state()[3]==1)
+ fixture();e.tap(2);check('SELECT has no gameplay action',e.state()[3]==1)
  e.tap(6);e.tap(8);e.poke(80,len(word)-1)
  c.memmove(e.ramgame+352,word[:-1]+b'\0\0',len(word)+1);e.poke(70,word[-1]-128)
  e.run(120,(8,));check('holding last letter A cannot submit',e.state()[3]==5 and memory('game',376)[352:352+len(word)]==word)
  e.run(1);e.tap(0);check('B edits the completed word',e.state()[3]==5 and e.state()[80]==len(word)-1)
- e.tap(8);e.tap(3);check('START does not submit a complete word',e.state()[3]==5)
+ e.tap(8);e.tap(3);check('START pauses a complete word without submitting',e.state()[3]==23);e.tap(3);check('START resumes a complete word without submitting',e.state()[3]==5)
  e.tap(8);check('next distinct A submits completed word',e.state()[3]==9)
 
  def result_case(reason,player):
@@ -114,7 +118,7 @@ try:
   # Leave headroom for one complete bitmap render before the boundary.
   write('scene',read('video_ticks')-duration+30,4);e.run(8)
   check(name+' waits before deadline',e.state()[3]==mode)
-  e.tap(2);e.run(180);e.tap(5);e.tap(8);e.run(90);e.tap(2)
+  e.tap(menu_key());e.run(180);e.tap(5);e.tap(8);e.run(90);e.tap(menu_key())
   check(name+' pause preserves remaining deadline',e.state()[3]==mode)
   started=read('scene',4);e.until(lambda s:s[3]!=mode,limit=60)
   elapsed=read('video_ticks')-started
@@ -154,6 +158,8 @@ try:
   e.tap(8);e.tap(11);check('R inserts a space in name',e.state()[80]==2 and memory('game',376)[353]==32)
   help_open();check('name help never saves through START',e.state()[3]==11)
   e.tap(3);check('START in help does not save name',e.state()[3]==11)
+  e.tap(2);check('SELECT closes nested name help without saving',e.state()[3]==14 and e.state()[80]==2)
+  help_open()
   e.tap(0);e.tap(5);e.tap(5);e.tap(8)
   check('pending record remains intact while restart confirmation is open',e.state()[3]==25 and e.state()[80]==2)
   e.tap(5);e.tap(8)
@@ -168,7 +174,7 @@ try:
  fixture(2);e.poke(74,100);e.poke(75,5);e.tap(10);silent('muted repeated wheel tones')
  help_open();e.tap(10);check('L enables sound inside help',read('sound_on')==1)
  e.tap(10);shot('help-muted-v11.png');silent('muted help')
- e.tap(2);check('mute survives nested help and resume',e.state()[3]==2 and read('sound_on')==0)
+ e.tap(menu_key());check('mute survives nested help and resume',e.state()[3]==2 and read('sound_on')==0)
  fixture(7);e.poke(81,0);e.poke(82,1);e.poke(83,1000000);e.tap(8);e.tap(10);e.run(140)
  silent('muted banknote stream');check('banknote stream still advances while muted',read('cash')>100)
  fixture();e.tap(10);e.poke(81,0);e.tap(8);silent('muted new speech effect')
@@ -178,7 +184,7 @@ try:
  e.run(10);remaining=read('remaining');e.tap(10);e.audio.clear();e.run(8)
  check('unmute restores current active tone',any(any(b) for b in e.audio) and 0<read('remaining')<remaining)
  e.run(50);e.audio.clear();e.run(30);check('unmute never replays expired notes',not any(any(b) for b in e.audio))
- fixture();e.tap(10);e.tap(2);menu_item(3);e.tap(5);e.tap(8);e.tap(8)
+ fixture();e.tap(10);e.tap(menu_key());menu_item(3);e.tap(5);e.tap(8);e.tap(8)
  check('mute persists through title and new game',e.state()[3]==15 and read('sound_on')==0)
 
  # Actual PPU icon remains confined to its backing on every kind of screen.
