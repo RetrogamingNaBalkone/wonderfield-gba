@@ -41,11 +41,13 @@ static void cash_note(void){
   * transparent colour 2; retain every previous stamp. */
  unsigned hz=cash_random(50),x=cash_random(400),y=cash_random(295);
  /* The blitter's Pascal argument order is X then Y on the stack. */
- int px=(int)(x*35/96),py=(int)(y/2);
  const Sprite*s=&sprites_half[56];
+ /* Fit the whole bill above the footer, with a two-pixel bottom margin.
+  * Scale the original draw so the RNG sequence and payout pace stay intact. */
+ int px=(int)(x*35/96),py=(int)(y*(150-s->h+1)/295);
  for(int yy=0;yy<s->h;yy++)for(int xx=0;xx<s->w;xx++){
   int dx=px+xx,dy=py+yy;u8 c=s->data[yy*s->w+xx];
-  if(c!=2&&(unsigned)dx<240&&(unsigned)dy<152)cash_canvas[dy*240+dx]=c;
+  if(c!=2&&(unsigned)dx<240&&(unsigned)dy<150)cash_canvas[dy*240+dx]=c;
  }
  unsigned before=cash.drawn*5672/1000;cash.drawn++;
  speaker_queue_tone(hz,cash.drawn*5672/1000-before);

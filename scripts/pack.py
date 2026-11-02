@@ -83,8 +83,8 @@ def main():
  for _ in range(100000):
   seed=(seed*134775813+1)&0xffffffff
   seed=(seed*134775813+1)&0xffffffff;x=((seed>>16)%400)*35//96
-  seed=(seed*134775813+1)&0xffffffff;y=((seed>>16)%295)//2
-  cash_blit(half[56],x,y,2,152)
+  seed=(seed*134775813+1)&0xffffffff;y=((seed>>16)%295)*(150-half[56][1]+1)//295
+  cash_blit(half[56],x,y,2,150)
  code.append(arr('cash_finished_bitmap',finished))
  stage=build_stage(half)
  # Bake wheel composites from original sprites; scaling is not repeated per frame.

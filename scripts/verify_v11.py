@@ -46,6 +46,38 @@ check('compact version fits the final grid cell',all(title_pixels[(122+y)*240+21
 check('version keeps the grid cell border intact',all(title_pixels[y*240+234]==6 for y in range(115,134)) and all(title_pixels[134*240+x]==6 for x in range(213,235)))
 check('version no longer touches the dedication',all(title_pixels[y*240+x]==7 for y in range(8) for x in range(208,232)))
 
+# Waiting screens advertise their real confirmation; timed scenes stay uncluttered.
+font8=asset('font8',256*8)
+def footer_matches(label,x=None,width=240):
+ pixels=ppu();row=bytearray([7]*(width*8));encoded=label.encode('cp866')
+ if x is None:x=(240-len(encoded)*8)//2
+ for i,ch in enumerate(encoded):
+  for y in range(8):
+   for xx in range(8):
+    if font8[ch*8+y]&(128>>xx):row[y*width+x+i*8+xx]=0
+ return all(pixels[(152+y)*240+xx]==row[y*width+xx] for y in range(8) for xx in range(width))
+for mode,player,round_no,deal,label in (
+ (9,2,0,0,'A: Продолжить'),(9,0,2,0,'A: Продолжить'),
+ (9,2,2,0,''),(10,2,0,0,'A: Продолжить'),(10,2,0,6,''),
+ (3,2,0,0,'A: Выбрать букву'),(4,2,0,0,'A: Открыть букву'),
+ (8,2,0,0,'A: Выбрать шкатулку'),(3,0,0,0,'')):
+ turn()
+ for i,v in {3:mode,4:round_no,5:player,82:deal}.items():e.poke(i,v)
+ write('scene',read('video_ticks'),4);write('dirty',1);e.run(16)
+ check(f'footer mode {mode}, player {player}, round {round_no}, deal {deal}',footer_matches(label))
+ if mode in (9,10) and label:
+  e.run(650);check('untimed screen keeps waiting with hint',e.state()[3]==mode and footer_matches(label))
+  shot(f'waiting-{mode}-{player}-v11.png');e.tap(8)
+  check('advertised A advances waiting screen',e.state()[3]!=mode)
+for final in (0,1):
+ turn();e.poke(3,19);e.poke(83,0);write('scene',final,180);write('scene',0,184);write('dirty',1);e.run(16)
+ check('first gift page omits unavailable Back',footer_matches('A: Продолжить',4,200))
+ e.tap(0);check('B stays on first gift page',read('scene',184)==0)
+ shot(f'gift-first-{final}-v11.png');e.tap(8);e.run(16)
+ check('later gift page advertises working Back',read('scene',184)==1 and footer_matches('A: Далее  B: Назад',4,200))
+ e.tap(0);check('B returns to first gift page',read('scene',184)==0)
+turn()
+
 # Source-independent topology: straight parallel stems and a single closed
 # counter, not merely agreement with the asset-generation implementation.
 spec=json.loads((ROOT/'assets/wheel-digits.json').read_text())
@@ -146,9 +178,9 @@ def composite(canvas,seed,n):
  for _ in range(n):
   seed=(seed*134775813+1)&0xffffffff
   seed=(seed*134775813+1)&0xffffffff;x=((seed>>16)%400)*35//96
-  seed=(seed*134775813+1)&0xffffffff;y=((seed>>16)%295)//2
+  seed=(seed*134775813+1)&0xffffffff;y=((seed>>16)%295)*133//295
   for yy,xx,data in spans:
-   if y+yy>=152:continue
+   assert y+yy<150, 'whole banknote must fit above footer'
    p=(y+yy)*240+x+xx;canvas[p:p+len(data)]=data
  return bytes(canvas),seed
 def cash_fixture(amount):
@@ -176,6 +208,8 @@ for amount in (100,1000,100000,1000000):
  e.until(lambda s:read('cash')==read('cash',4),limit=3000);e.run(16)
  check(f'{amount} skip uses prepared picture' if amount>=100000 else f'{amount} skip equals every original stamp',memory('cash_canvas',38400)==expected and read('cash',8)==end_seed)
  check(f'{amount} completed screen waits for next A',e.state()[3]==21)
+ check(f'{amount} bills preserve bottom margin and footer canvas',memory('cash_canvas',38400)[150*240:]==canvas[150*240:])
+ check(f'{amount} completed payout advertises continuation',footer_matches('A: Продолжить'))
  if amount==1000000:shot('cash-filled-v11.png')
  e.tap(8);check(f'{amount} completed payout proceeds to farewell',e.state()[3]==10 and e.state()[82]==0)
 

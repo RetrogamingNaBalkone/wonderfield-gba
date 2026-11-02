@@ -128,6 +128,9 @@ for gift in range(10):
  e.poke(2,seed);e.tap(8)
  check(f'four cash refusals draw original Prize gift {gift}',
        e.state()[3]==10 and e.state()[82]==6 and e.state()[83]==gift)
+ e.run(24)
+ if gift==0:prize_intro=e.raw;preview('prize-intro-v11.png')
+ else:check(f'gift {gift} stays undisclosed on studio screen',e.raw==prize_intro)
  e.tap(8);e.run(24)
  rng=e.state()[2]
  for page in range(3):

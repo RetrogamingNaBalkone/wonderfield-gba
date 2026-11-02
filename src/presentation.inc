@@ -91,11 +91,11 @@ static void people(void){
   score_badge(player,player?141:1,73);
  }
  /* Host rectangle: [185,240), separate from the widest contestant [153,182). */
- half_image(27,185,56,-1);
+ half_image(27,185,62,-1);
  int face,eyes,eye_y;host_pose(&face,&eyes,&eye_y);
- half_image(face,196,57,-1);
- if(eyes>=0)half_image(eyes,204,eye_y,-1);
- score_badge(2,164,138);
+ half_image(face,196,63,-1);
+ if(eyes>=0)half_image(eyes,204,eye_y+6,-1);
+ score_badge(2,164,142);
 }
 static void speech_shape(int x,int y,const int*left,const int*right,int height){
  /* Outline the final silhouette, so no black stroke is lost to resampling. */
@@ -208,6 +208,14 @@ static void restart_confirm(void){
 static void footer(void){
  rect(0,152,240,8,7);
  const char*t=0;
+ if((game.mode==ROUND_END&&!(game.player==2&&game.round==2))||
+    (game.mode==GAME_OVER&&game.deal!=6)||
+    (game.mode==CASH&&cash.drawn==cash.total))t="A: Продолжить";
+ if(game.player==2){
+  if(game.mode==LETTER)t="A: Выбрать букву";
+  if(game.mode==PLUS)t="A: Открыть букву";
+  if(game.mode==CHEST)t="A: Выбрать шкатулку";
+ }
  if(game.mode==SOLVE)t=game.solve_pos==len(word())?"A: Назвать слово  B: Стереть":"A: Буква  B: Стереть";
  if(t)centered(152,t,1,0);
 }
@@ -257,7 +265,7 @@ static void gba_author(void){
  centered(140,"t.me/RetroGamingNaBalkone",1,0);
 }
 static void page_footer(int page,int total){
- rect(0,151,240,9,7);text(4,152,"A: Далее  B: Назад",1,0);
+ rect(0,151,240,9,7);text(4,152,game.mode==GIFT_PAGES&&page==0?"A: Продолжить":"A: Далее  B: Назад",1,0);
  glyph(208,152,'1'+page,1,0);glyph(216,152,'/',1,0);glyph(224,152,'0'+total,1,0);
 }
 static void authors(void){
@@ -359,9 +367,6 @@ static void render(void){
    label_center(x,112,w,option?"Кручу":"Скажу",0,selected?15:0);
    label_center(x,129,w,option?"БАРАБАН":"СЛОВО",0,selected?15:0);
   }
- }
- if(game.mode==GAME_OVER&&game.deal==6){
-  rect(3,103,177,31,7);label_center(3,108,177,gift_names[game.prize],0,0);
  }
  if(game.keyboard&&game.mode==LETTER)keyboard();
  /* Speech is the final scene overlay and cannot be overwritten by the wheel. */

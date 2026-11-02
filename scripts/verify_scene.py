@@ -126,16 +126,16 @@ check('board has three rows with a taller shared middle row',all(pixels[y*240+40
 stone=(ROOT/'assets/generated/blue-stone-extension.bin').read_bytes()
 check('drawn blue stone course stays continuous behind wheel',all(pixels[44*240+x]==palette[stone[52*192+x%192]] for x in range(15,225)))
 check('drawn stone course uses only original masonry colours',set(stone)=={0,1,7,9})
-check('raised portrait has six clear rows before score panel',all(pixels[y*240+x]==palette[7] for y in range(132,138) for x in range(185,240)))
+check('lowered portrait has four clear rows before score panel',all(pixels[y*240+x]==palette[7] for y in range(138,142) for x in range(185,240)))
 snickers=rom[e.sym['small_data_28']-0x08000000:e.sym['small_data_28']-0x08000000+34*9]
-check('all three players show the same Snickers at zero',all(pixels[(by+y)*240+bx+5+x]==palette[v] for bx,by in ((1,73),(141,73),(164,138)) for y in range(9) for x in range(34) if (v:=snickers[y*34+x])!=7))
-check('human zero badge has no YOU label or extra panel',all(pixels[y*240+x]==palette[7] for y in range(138,148) for x in range(185,240) if not(169<=x<203 and y<147)))
+check('all three players show the same Snickers at zero',all(pixels[(by+y)*240+bx+5+x]==palette[v] for bx,by in ((1,73),(141,73),(164,142)) for y in range(9) for x in range(34) if (v:=snickers[y*34+x])!=7))
+check('human zero badge has no YOU label or extra panel',all(pixels[y*240+x]==palette[7] for y in range(142,152) for x in range(185,240) if not(169<=x<203 and y<151)))
 e.screenshot('layout-fixed.png')
 preview('layout-preview.png')
 e.poke(11,30000);e.poke(18,1);store_u32(e,'dirty',1);e.run(15);pixels=ppu();e.screenshot('score-spacing.png')
 check('revealed cells restore original light grey',pixels[12*240+left+8]==palette[7])
 font8=(ROOT/'assets/font-8.bin').read_bytes()
-check('human five-digit score fits the shared badge',all(pixels[(139+y)*240+166+i*8+x]==palette[0 if font8[ch*8+y]&(128>>x) else 5] for i,ch in enumerate(b'30000') for y in range(8) for x in range(8)))
+check('human five-digit score fits the shared badge',all(pixels[(143+y)*240+166+i*8+x]==palette[0 if font8[ch*8+y]&(128>>x) else 5] for i,ch in enumerate(b'30000') for y in range(8) for x in range(8)))
 # Longest question is tested at native font size, with every letter visible.
 words=json.loads((ROOT/'assets/words.json').read_text(encoding='utf-8'));longest=max(range(len(words)),key=lambda i:len(words[i]['word']))
 e.poke(6,longest)
@@ -152,10 +152,10 @@ portrait_frames=set();portrait_outline_ok=True
 for frame in range(260):
  e.run(1)
  pixels=ppu()
- outline=[pixels[56*240+x] for x in range(185,240)]+[pixels[131*240+x] for x in range(185,240)]
- outline += [pixels[y*240+185] for y in range(56,132)]+[pixels[y*240+239] for y in range(56,132)]
+ outline=[pixels[62*240+x] for x in range(185,240)]+[pixels[137*240+x] for x in range(185,240)]
+ outline += [pixels[y*240+185] for y in range(62,138)]+[pixels[y*240+239] for y in range(62,138)]
  portrait_outline_ok=portrait_outline_ok and all(v==palette[0] for v in outline)
- portrait_frames.add(bytes().join(struct.pack('<H',pixels[y*240+x]) for y in range(57,112) for x in range(196,226)))
+ portrait_frames.add(bytes().join(struct.pack('<H',pixels[y*240+x]) for y in range(63,118) for x in range(196,226)))
 check('host contour stays intact and idle face has no unsolicited animation',portrait_outline_ok and len(portrait_frames)==1)
 e.screenshot('portrait-outline.png')
 # Check the coloured Prize glyph at every real wheel phase, including its inner edge.
@@ -180,6 +180,6 @@ for frame in range(450):
 check('Prize contour checked in all 32 moving wheel phases',len(seen)==32)
 
 e.close();gif(OUT/'studio-demo.gif',frames,e.format)
-report=dict(status='passed',count=len(checks),checks=checks,rom_sha256=hashlib.sha256((ROOT/'build/gba/pole.gba').read_bytes()).hexdigest(),source_reference='build/reference/original-*.png',native_glyph_height=14,sign_height=12,sign_strokes_checked=sign_strokes,host_x=185,host_y=56,score_panel_y=138,right_contestant_x=153,max_contestant_width=max(widths),animation_frames=len(frames))
+report=dict(status='passed',count=len(checks),checks=checks,rom_sha256=hashlib.sha256((ROOT/'build/gba/pole.gba').read_bytes()).hexdigest(),source_reference='build/reference/original-*.png',native_glyph_height=14,sign_height=12,sign_strokes_checked=sign_strokes,host_x=185,host_y=62,score_panel_y=142,right_contestant_x=153,max_contestant_width=max(widths),animation_frames=len(frames))
 (OUT/'visual-report.json').write_text(json.dumps(report,indent=2))
 print(json.dumps(report))
