@@ -274,7 +274,7 @@ for id in (42,45):
  data=rom[e.sym[f'small_data_{id}']-0x08000000:e.sym[f'small_data_{id}']-0x08000000+sw*sh]
  face_templates[id]=tuple(palette[data[y*sw+x]] for y in range(28,51) for x in range(30))
 def face_frame():
- pixels=ppu();sample=tuple(pixels[(57+y)*240+196+x] for y in range(28,51) for x in range(30))
+ pixels=ppu();sample=tuple(pixels[(63+y)*240+196+x] for y in range(28,51) for x in range(30))
  return next((id for id,template in face_templates.items() if template==sample),None)
 e.poke(3,1);e.poke(5,2);write('scene',0,4);e.run(150)
 check('idle host uses original closed-mouth face 45',face_frame()==45)

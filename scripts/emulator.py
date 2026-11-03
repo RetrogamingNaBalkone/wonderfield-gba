@@ -92,11 +92,14 @@ class Emulator:
    value=seed&0xffffffff;self.poke(2,value if value<0x80000000 else value-0x100000000)
    self.tap(button);return
   checkpoint=self.checkpoint();self.tap(button)
-  salt=struct.unpack('<I',c.string_at(self.ram+self.sym['input_entropy']-0x02000000,4))[0]
+  # Releases can update entropy after the draw; compensate the salt actually
+  # consumed at seed_from_input, not the later input accumulator.
+  salt_symbol=self.sym.get('input_seed_salt',self.sym['input_entropy'])
+  salt=struct.unpack('<I',c.string_at(self.ram+salt_symbol-0x02000000,4))[0]
   self.restore(checkpoint)
   value=(seed&0xffffffff)^salt;self.poke(2,value if value<0x80000000 else value-0x100000000)
   self.tap(button)
-  assert struct.unpack('<I',c.string_at(self.ram+self.sym['input_entropy']-0x02000000,4))[0]==salt
+  assert struct.unpack('<I',c.string_at(self.ram+salt_symbol-0x02000000,4))[0]==salt
  def until(self,predicate,limit=5000):
   for i in range(limit):
    if predicate(self.state()):return

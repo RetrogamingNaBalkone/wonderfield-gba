@@ -4,6 +4,7 @@ This does not modify the cartridge or original executable. Emulator fixtures
 set seeds and modes explicitly; the cartridge performs every audited draw.
 """
 from emulator import Emulator, ROOT
+from rng_reference import dos_spin
 from collections import Counter
 from itertools import product
 import ctypes as c
@@ -37,7 +38,6 @@ assert all(dos_step(seed) == step(seed) for seed in range(0, 1 << 32, 65537))
 
 # Exact distribution over all possible 16-bit outputs, not a random sample.
 word_counts = Counter(x % 495 for x in range(65536))
-wheel_counts = Counter(x % 32 % 16 for x in range(65536))
 words = json.loads((ROOT/'assets/words.json').read_text(encoding='utf-8'))
 duplicates = {w: ids for w in {x['word'] for x in words}
               if len(ids := [x['id'] for x in words if x['word'] == w]) > 1}
@@ -77,11 +77,27 @@ for trial in range(512):
  # Force a human turn, then start the original cartridge spin using A.
  for index, value in ((3,1),(5,2),(7,trial & 15),(81,1),(2,12345+trial)):
   e.poke(index,value)
- expected = ((trial & 15) - ((step(12345+trial) >> 16) % 32)) & 15
+ expected, expected_seed = dos_spin(12345+trial, trial & 15)
  e.tap_seeded(8,12345+trial)
  target = struct.unpack('<I',c.string_at(e.ram+e.sym['scene']-0x02000000+156,4))[0]
  assert e.state()[3] == 2 and target == expected
+ assert e.state()[2] & MASK == expected_seed
  actual_sectors[target] += 1
+# Force rejection of both prior record IDs in the third round. The ROM
+# must draw again, rather than checking a theme or accepting a duplicate.
+for trial in range(64):
+ seed=trial*2654435761 & MASK
+ prior=[(step(seed)>>16)%495,(advance(seed,2)>>16)%495]
+ c.memmove(e.ram+e.sym['selected_words']-0x02000000,struct.pack('<3i',*prior,-1),12)
+ e.poke(3,17);e.poke(4,1)
+ ticks=struct.unpack('<I',c.string_at(e.ram+e.sym['video_ticks']-0x02000000,4))[0]
+ c.memmove(e.ram+e.sym['scene']-0x02000000+12,struct.pack('<I',(ticks-40)&MASK),4)
+ expected_seed=seed
+ while True:
+  expected_seed=step(expected_seed);expected=(expected_seed>>16)%495
+  if expected not in prior:break
+ e.tap_seeded(8,seed)
+ assert e.state()[4]==2 and e.state()[6]==expected
 replays = []
 for seed in (1,12345,999999):
  outcomes = []
@@ -110,13 +126,12 @@ report = dict(
   quotient=65536//495, remainder=65536%495,
   favored_record_ids=[0,65536%495-1], min_count=min(word_counts.values()),
   max_count=max(word_counts.values()), duplicate_spellings=duplicates),
- gba_sector_output_space=dict(counts=[wheel_counts[i] for i in range(16)],
-  probability_per_position=1/16),
+ gba_sector_output_space=dict(model="DOS four-stage spin; see dos_spin displacement counts"),
  dos_spin=dict(model='1000:2c6a..2fa2, initial even phase; counts are relative sector displacements',
   ideal_independent_duration_combinations=20000,
   ideal_counts=[ideal_dos[i] for i in range(16)],
   lcg_entry_states=100000, lcg_counts=[dos_counts[i] for i in range(16)]),
- cartridge_checks=dict(first_word_draws=512, spin_targets=512,
+ cartridge_checks=dict(first_word_draws=512, spin_targets=512, duplicate_rejection_draws=64,
   distinct_first_records=len(actual_words), sector_counts=[actual_sectors[i] for i in range(16)],
   natural_vs_skip=replays, cold_boots=boots))
 out = ROOT/'build/qa/rng-audit.json'; out.parent.mkdir(exist_ok=True)

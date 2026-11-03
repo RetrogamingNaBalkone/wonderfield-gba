@@ -1,0 +1,74 @@
+{
+  "status": "passed",
+  "rom_sha256": "ff23d19569bbd2be833a7fe66da32660e4c91768f120854b88e4b0e7de68a235",
+  "spins": 2048,
+  "rounds": 96,
+  "award_counts": {
+    "204": 137,
+    "-1": 138,
+    "0": 233,
+    "100": 107,
+    "20": 237,
+    "5": 248,
+    "25": 113,
+    "300": 146,
+    "10": 268,
+    "202": 143,
+    "15": 278
+  },
+  "unique_spin_states": 2048,
+  "same_ai_plus_pairs": 8,
+  "same_ai_plus_triples": 0,
+  "longest_plus_run": 2,
+  "repeated_plus": [
+    {
+      "draw": 61,
+      "player": 1,
+      "run": 2,
+      "rng": 2377353432
+    },
+    {
+      "draw": 248,
+      "player": 0,
+      "run": 2,
+      "rng": 3431384349
+    },
+    {
+      "draw": 446,
+      "player": 0,
+      "run": 2,
+      "rng": 2258992571
+    },
+    {
+      "draw": 511,
+      "player": 1,
+      "run": 2,
+      "rng": 1744608534
+    },
+    {
+      "draw": 586,
+      "player": 0,
+      "run": 2,
+      "rng": 3171670565
+    },
+    {
+      "draw": 654,
+      "player": 0,
+      "run": 2,
+      "rng": 2812282877
+    },
+    {
+      "draw": 1380,
+      "player": 0,
+      "run": 2,
+      "rng": 718588611
+    },
+    {
+      "draw": 1474,
+      "player": 1,
+      "run": 2,
+      "rng": 3848325554
+    }
+  ],
+  "limitation": "AI spin/answer/chest/reveal chains driven by fast A, without seed fixtures.\n\nThe only gameplay fixtures assign human turns to AI and restart at round end.\nAll decisions between spins execute ROM code, retaining revealed/used letters.\nRuns are counted only within the same round and for the same contestant.\n"
+}

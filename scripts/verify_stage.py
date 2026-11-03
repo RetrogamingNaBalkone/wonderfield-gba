@@ -5,6 +5,7 @@ each one, and presses A. The sector visible before the press is identified
 from actual PPU pixels, independently of the logical wheel position.
 """
 from emulator import Emulator,ROOT
+from rng_reference import dos_spin
 import ctypes as c,struct,json,hashlib,collections,zlib,binascii
 
 checks=[]
@@ -106,7 +107,7 @@ for trial in range(64):
  reset_turn(trial&15);seed=(97531+trial*2654435761)&0xffffffff;e.tap_seeded(8,seed)
  check(f'audit spin {trial} starts normally',e.state()[3]==2)
  target=scene(156);target_counts[target]+=1;points=[];invariant=True;total=e.state()[74]
- reference=((trial&15)-64-((((seed*134775813+1)&0xffffffff)>>16)%32))&15
+ reference,reference_rng=dos_spin(seed,trial&15)
  check(f'audit spin {trial} retains original draw formula after input seeding',target==reference)
  thresholds=[total-2,total*4//5,total*3//5,total*2//5,total//5,1]
  for frame in range(5000):
@@ -120,8 +121,7 @@ for trial in range(64):
   e.run(1)
  else:raise AssertionError('natural spin never stops')
  e.run(16);natural=(e.state()[7],e.state()[8],e.state()[2]);durations.append(frame)
- reference_rng=seed
- for step in range(13):reference_rng=(reference_rng*134775813+1)&0xffffffff
+ for step in range(6):reference_rng=(reference_rng*134775813+1)&0xffffffff
  check(f'audit spin {trial} retains original RNG steps after input seeding',natural[2]&0xffffffff==reference_rng)
  check(f'audit spin {trial} keeps target invariant to natural stop',invariant and natural[0]==target and len(points)==6)
  for delay,phase,checkpoint,display in points:

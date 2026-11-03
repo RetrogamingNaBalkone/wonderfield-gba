@@ -75,10 +75,20 @@ check('complete emulator replay remains deterministic',first==(e.state()[2],read
 e.restore(checkpoint);e.tap(11);fixture_turn(e);e.tap(8);with_input=e.state()[2]
 e.restore(checkpoint);e.run(6);fixture_turn(e);e.tap(8)
 check('additional input contributes to later RNG state',e.state()[2]!=with_input)
+# Keep the press and next draw at the same frames; vary only release time.
+e.restore(checkpoint);e.run(1,(11,));held=e.checkpoint();releases=[]
+for duration in range(4):
+ e.restore(held);e.run(duration,(11,));before=read(e,'input_entropy')
+ seed=e.state()[2];e.run(1)
+ check(f'release after {duration} frames contributes entropy',read(e,'input_entropy')!=before)
+ check(f'release after {duration} frames does not advance active RNG',e.state()[2]==seed)
+ e.run(4-duration);e.tap(8)
+ releases.append(e.state()[2]&0xffffffff)
+check('release timing alone changes the next spin RNG',len(set(releases))==4)
 e.close()
 report=dict(status='passed',count=len(checks),checks=checks,
  rom_sha256=hashlib.sha256((ROOT/'build/gba/pole.gba').read_bytes()).hexdigest(),
- early_boots=boots,later_input_timings=timings,
+ early_boots=boots,later_input_timings=timings,release_timing_rng=releases,
  limitation='Identical complete emulator state and cycle-identical inputs remain reproducible; presses before the first input poll can coalesce.')
 out=ROOT/'build/qa/rng-verification.json';out.parent.mkdir(exist_ok=True)
 out.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

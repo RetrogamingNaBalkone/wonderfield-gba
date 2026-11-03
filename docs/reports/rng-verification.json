@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "count": 49,
+  "count": 58,
   "checks": [
     "early A after 4 VBlank starts game",
     "early A after 5 VBlank starts game",
@@ -50,123 +50,138 @@
     "skip at 75 captures its own input time",
     "skip at 75 keeps the natural sector, value and RNG",
     "complete emulator replay remains deterministic",
-    "additional input contributes to later RNG state"
+    "additional input contributes to later RNG state",
+    "release after 0 frames contributes entropy",
+    "release after 0 frames does not advance active RNG",
+    "release after 1 frames contributes entropy",
+    "release after 1 frames does not advance active RNG",
+    "release after 2 frames contributes entropy",
+    "release after 2 frames does not advance active RNG",
+    "release after 3 frames contributes entropy",
+    "release after 3 frames does not advance active RNG",
+    "release timing alone changes the next spin RNG"
   ],
-  "rom_sha256": "0d772e6ac2860867e23007a95ab8b1a63b69469c3df9fbee8b2834883715606e",
+  "rom_sha256": "ff23d19569bbd2be833a7fe66da32660e4c91768f120854b88e4b0e7de68a235",
   "early_boots": [
     {
       "delay": 4,
       "loop_before": 1,
-      "word": 314,
-      "rng": 3908939639,
-      "entropy": 1273514125
+      "word": 234,
+      "rng": 3196131472,
+      "entropy": 2124029461
     },
     {
       "delay": 5,
       "loop_before": 1,
-      "word": 147,
-      "rng": 1061433531,
-      "entropy": 498049121
+      "word": 51,
+      "rng": 1451147280,
+      "entropy": 179338208
     },
     {
       "delay": 6,
       "loop_before": 1,
-      "word": 59,
-      "rng": 1391174664,
-      "entropy": 766303168
+      "word": 250,
+      "rng": 109642093,
+      "entropy": 340725906
     },
     {
       "delay": 7,
       "loop_before": 1,
-      "word": 471,
-      "rng": 1762743186,
-      "entropy": 1392458034
+      "word": 54,
+      "rng": 86391735,
+      "entropy": 159764496
     },
     {
       "delay": 8,
       "loop_before": 2,
-      "word": 158,
-      "rng": 1848486681,
-      "entropy": 4106468215
+      "word": 476,
+      "rng": 1181858184,
+      "entropy": 895189887
     },
     {
       "delay": 9,
       "loop_before": 2,
-      "word": 114,
-      "rng": 1930305062,
-      "entropy": 2232442262
+      "word": 110,
+      "rng": 1911566079,
+      "entropy": 2381274591
     },
     {
       "delay": 10,
       "loop_before": 2,
-      "word": 252,
-      "rng": 546855597,
-      "entropy": 251541723
+      "word": 184,
+      "rng": 1658564137,
+      "entropy": 705206410
     },
     {
       "delay": 11,
       "loop_before": 3,
-      "word": 53,
-      "rng": 2146492910,
-      "entropy": 383241086
+      "word": 36,
+      "rng": 4142272372,
+      "entropy": 370824877
     },
     {
       "delay": 12,
       "loop_before": 3,
-      "word": 361,
-      "rng": 317368450,
-      "entropy": 534797282
+      "word": 441,
+      "rng": 3307280221,
+      "entropy": 1403578388
     }
   ],
   "later_input_timings": [
     {
       "delay": 0,
-      "rng": 1978394552,
-      "entropy": 2757589880,
-      "target": 5
+      "rng": 4107429530,
+      "entropy": 2071903612,
+      "target": 11
     },
     {
       "delay": 1,
-      "rng": 1172046259,
-      "entropy": 787679281,
-      "target": 8
-    },
-    {
-      "delay": 2,
-      "rng": 3053447033,
-      "entropy": 315423903,
+      "rng": 3383331724,
+      "entropy": 1685344583,
       "target": 7
     },
     {
+      "delay": 2,
+      "rng": 2811618923,
+      "entropy": 1185914513,
+      "target": 5
+    },
+    {
       "delay": 3,
-      "rng": 2541866977,
-      "entropy": 1285068695,
-      "target": 12
+      "rng": 2273529926,
+      "entropy": 60974558,
+      "target": 13
     },
     {
       "delay": 4,
-      "rng": 896631605,
-      "entropy": 12268779,
-      "target": 9
+      "rng": 3528911340,
+      "entropy": 1352422556,
+      "target": 15
     },
     {
       "delay": 5,
-      "rng": 1781271519,
-      "entropy": 3959213661,
-      "target": 0
+      "rng": 2455375957,
+      "entropy": 2420426833,
+      "target": 10
     },
     {
       "delay": 6,
-      "rng": 2344486984,
-      "entropy": 1787025448,
-      "target": 8
+      "rng": 2934764863,
+      "entropy": 1648644752,
+      "target": 14
     },
     {
       "delay": 7,
-      "rng": 2177910137,
-      "entropy": 3011859103,
-      "target": 4
+      "rng": 2087701172,
+      "entropy": 381629074,
+      "target": 10
     }
+  ],
+  "release_timing_rng": [
+    3661076536,
+    2555515683,
+    3462920995,
+    1496820947
   ],
   "limitation": "Identical complete emulator state and cycle-identical inputs remain reproducible; presses before the first input poll can coalesce."
 }

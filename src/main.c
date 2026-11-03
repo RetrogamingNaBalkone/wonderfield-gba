@@ -49,6 +49,7 @@ static int scene_tick(u16 pressed);
 static volatile u16 input_events[32],input_keys;
 static volatile u8 input_read,input_write;
 static volatile u32 input_entropy;
+static volatile u32 input_seed_salt;
 static u32 mix_input(u32 value){
  value^=value>>16;value*=0x7feb352du;value^=value>>15;value*=0x846ca68bu;return value^(value>>16);
 }
@@ -57,13 +58,15 @@ static u32 input_clock(void){
  u16 high,low;do{high=REG16(0x0400010c);low=REG16(0x04000108);}while(high!=REG16(0x0400010c));
  return ((u32)high<<16)|low;
 }
-static void seed_from_input(void){game.rng^=input_entropy;}
+static void seed_from_input(void){input_seed_salt=input_entropy;game.rng^=input_seed_salt;}
 static void capture_keys(void){
- u16 keys=(~REG16(0x04000130))&1023,pressed=keys&~input_keys;input_keys=keys;
- if(pressed){
-  /* Capture at the input edge, including taps queued during rendering.
+ u16 keys=(~REG16(0x04000130))&1023,changed=keys^input_keys,pressed=keys&changed;input_keys=keys;
+ if(changed){
+  /* Capture both edges, including hold duration and releases during rendering.
    * Keep timing separate until a new draw: pause/skip cannot reroll a spin. */
-  input_entropy=mix_input(input_entropy^input_clock()^((u32)pressed<<16)^video_ticks);
+  input_entropy=mix_input(input_entropy^input_clock()^((u32)changed<<16)^keys^video_ticks);
+ }
+ if(pressed){
   u8 next=(input_write+1)&31;if(next!=input_read){input_events[input_write]=pressed;input_write=next;}
  }
 }
@@ -213,11 +216,19 @@ static void open_letter(void){set_mode(LETTER);game.cursor=0;game.keyboard=game.
 static void stop_spin(void){int sector=game.sector;game.sector_value=sector_values[wheel_sectors[sector]-4];if(game.sector_value!=100)game.streak++;if(game.sector_value<0){game.streak=0;game.score[game.player]=0;result_reason=BANKRUPT;result(msg_dfe,msg_dea,TURN,nextplayer());}else if(!game.sector_value){game.streak=0;result_reason=ZERO;result(msg_dda,msg_dea,TURN,nextplayer());}else if(game.sector_value==100){set_mode(PLUS);game.cursor=0;while(game.revealed[game.cursor])game.cursor++;say(msg_e26,msg_e33);if(game.player!=2)game.wait=60;}else if(game.sector_value==300&&game.player==2){set_mode(PRIZE);game.choice=1;game.deal=0;game.prize=10;say(msg_e47,msg_e54);}else{open_letter();}}
 static void start_spin(void){
  if(game.player==2)seed_from_input();
- set_mode(SPIN);int draw=64+random_n(32);
+ set_mode(SPIN);say(msg_da9,"");scene.host_active=0;
+ /* DOS 1000:2c6a..2fa2: noise consumes six draws before the
+  * four speed stages. Counters include both zero and the limit.
+  * The fifth duration is drawn on stopping, even though unused. */
+ unsigned limit=10+random_n(20),half_steps=0;
+ for(unsigned divisor=1;divisor<=4;divisor++){
+  half_steps+=limit/divisor+1;
+  limit=5+random_n(10);
+ }
+ int draw=(half_steps+1)/2;
  scene.spin_target=(game.sector-draw)&15;
- /* Keep the same draw/RNG, animate only the equivalent one to two turns. */
+ /* Resolve all draws before animation so skipping preserves the result. */
  game.spin_steps=16+(draw&15);game.spin_ticks=0;game.spin_wait=1;scene.spin_half=0;scene.spin_at=video_ticks;
- say(msg_da9,"");scene.host_active=0;
 }
 static void end_result(void){int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(game.player!=2)game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==FINAL_RECORDS)final_records();else set_mode(next);}
 static void open_chest(void){
