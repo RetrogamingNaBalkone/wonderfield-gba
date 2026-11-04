@@ -345,11 +345,6 @@ static void render(void){
   image(&sprites[scene.chest_money?38:37],game.choice?115:18,96,7);image(&sprites[36],game.choice?18:115,96,7);
  }
  if(game.mode==PRIZE){
-  if(game.deal){
-   rect(6,99,150,48,7);border(6,99,150,48,0);
-   int digits=1,value=game.prize;while(value>=10){value/=10;digits++;}
-   number(81-digits*4,102,game.prize,0,0);
-  }
   /* Both alternatives stay visible; a shared frame makes this one switch. */
   rect(6,122,150,25,0);
   for(int option=0;option<2;option++){
