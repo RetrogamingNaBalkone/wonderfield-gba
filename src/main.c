@@ -16,6 +16,7 @@ typedef unsigned int u32;
 #define DOWN 128
 #define R 256
 #define L 512
+#define A_RELEASE 0x8000
 enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
@@ -50,8 +51,11 @@ static volatile u16 input_events[32],input_keys;
 static volatile u8 input_read,input_write;
 static volatile u32 input_entropy;
 static volatile u32 input_seed_salt;
+static u32 input_seed_counter;
 static int fast_input=1;
 static volatile u32 startup_input_polls;
+static int start_pending;
+static volatile struct {int value,count;u32 rerolls;} spin_history;
 static u32 mix_input(u32 value){
  value^=value>>16;value*=0x7feb352du;value^=value>>15;value*=0x846ca68bu;return value^(value>>16);
 }
@@ -72,7 +76,15 @@ static u32 input_clock(void){
  u16 high,low;do{high=REG16(0x0400010c);low=REG16(0x04000108);}while(high!=REG16(0x0400010c));
  return ((u32)high<<16)|low;
 }
-static void seed_from_input(void){input_seed_salt=input_entropy;game.rng^=input_seed_salt;}
+static void seed_from_input(void){
+ /* Mix at the draw boundary, even when no new key edge arrived since the
+  * previous draw. The timer/counter diversify samples; the final avalanche
+  * spreads timing differences through all RNG bits rather than only XORing
+  * the same input snapshot into successive LCG states. No SRAM is required. */
+ input_seed_counter++;
+ input_seed_salt=input_entropy^mix_input(input_clock()^input_seed_counter*0x9e3779b9u);
+ game.rng=mix_input(game.rng^input_seed_salt);
+}
 static void capture_keys(void){
  u16 keys=(~REG16(0x04000130))&1023,changed=keys^input_keys,pressed=keys&changed;input_keys=keys;
  if(changed){
@@ -80,8 +92,11 @@ static void capture_keys(void){
    * Keep timing separate until a new draw: pause/skip cannot reroll a spin. */
   input_entropy=mix_input(input_entropy^input_clock()^((u32)changed<<16)^keys^video_ticks);
  }
- if(pressed){
-  u8 next=(input_write+1)&31;if(next!=input_read){input_events[input_write]=pressed;input_write=next;}
+ /* Queue startup A releases in order, even if a whole tap arrived while
+  * rendering. The start draw must include the release's timing entropy. */
+ u16 event=pressed;if(fast_input&&(changed&A)&&!(keys&A))event|=A_RELEASE;
+ if(event){
+  u8 next=(input_write+1)&31;if(next!=input_read){input_events[input_write]=event;input_write=next;}
  }
 }
 void game_irq(unsigned flags){if(flags&1){video_ticks++;capture_keys();}speaker_irq(flags);}
@@ -140,7 +155,7 @@ static int load(void){
  return record_scores[0];
 }
 static const char*word(void){return words[game.word_id].word;}
-static void set_mode(int mode){if(mode==TITLE){scene.title_at=video_ticks;fast_input=1;}game.mode=mode;game.wait=0;dirty=1;}
+static void set_mode(int mode){if(mode==TITLE){scene.title_at=video_ticks;fast_input=1;start_pending=0;}game.mode=mode;game.wait=0;dirty=1;}
 static int message_done(u16 pressed,unsigned duration){return (pressed&A)||scene.now-scene.speech_at>=duration;}
 static void say(const char*a,const char*b){
  message1=a;message2=b;scene.speech_at=scene.host_at=scene.host_phase_at=video_ticks;
@@ -160,7 +175,7 @@ static void farewell(void){set_mode(GAME_OVER);game.keyboard=0;game.deal=0;say(m
 static void result(const char*a,const char*b,int next,int player){say(a,b);set_mode(RESULT);game.next_mode=next;game.next_player=player;game.wait=game.player==2?0:65;}
 static int nextplayer(void){return (game.player+1)%3;}
 static void begin_turn(void){set_mode(TURN);game.choice=1;const char*a=game.player==2?msg_d9a:game.player==0?msg_d8c:msg_d93;int p=0;while(a[p]){turn_line[p]=a[p];p++;}for(int i=0;msg_da1[i];i++)turn_line[p++]=msg_da1[i];turn_line[p]=0;say(turn_line,msg_da9);if(game.player!=2)game.wait=65;}
-static void new_round(void){if(game.round)seed_from_input();int duplicate;do{game.word_id=random_n(495);duplicate=0;for(int i=0;i<game.round;i++)if(selected_words[i]==game.word_id)duplicate=1;}while(duplicate);selected_words[game.round]=game.word_id;for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;
+static void new_round(void){spin_history.count=0;if(game.round)seed_from_input();int duplicate;do{game.word_id=random_n(495);duplicate=0;for(int i=0;i<game.round;i++)if(selected_words[i]==game.word_id)duplicate=1;}while(duplicate);selected_words[game.round]=game.word_id;for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;
  /* DOS 1000:5799..57d4: each opponent starts with round * (Random(4)*15+5). */
  for(int i=0;i<2;i++)game.score[i]=game.round*(random_n(4)*15+5);
  game.player=2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
@@ -237,19 +252,30 @@ static void prize_offer(void){
 }
 static void open_letter(void){set_mode(LETTER);game.cursor=0;game.keyboard=game.player==2;if(game.sector_value<100){int p=0;while(msg_dbb[p]){sector_message[p]=msg_dbb[p];p++;}int v=game.sector_value;if(v>=10)sector_message[p++]='0'+v/10;sector_message[p++]='0'+v%10;for(int i=0;msg_dc2[i];i++)sector_message[p++]=msg_dc2[i];sector_message[p]=0;say(sector_message,msg_dca);}else say(game.sector_value==300?msg_e47:msg_e12,msg_dca);if(game.player!=2)game.wait=55;}
 static void stop_spin(void){int sector=game.sector;game.sector_value=sector_values[wheel_sectors[sector]-4];if(game.sector_value!=100)game.streak++;if(game.sector_value<0){game.streak=0;game.score[game.player]=0;result_reason=BANKRUPT;result(msg_dfe,msg_dea,TURN,nextplayer());}else if(!game.sector_value){game.streak=0;result_reason=ZERO;result(msg_dda,msg_dea,TURN,nextplayer());}else if(game.sector_value==100){set_mode(PLUS);game.cursor=0;while(game.revealed[game.cursor])game.cursor++;say(msg_e26,msg_e33);if(game.player!=2)game.wait=60;}else if(game.sector_value==300&&game.player==2){set_mode(PRIZE);game.choice=1;game.deal=0;game.prize=10;say(msg_e47,msg_e54);}else{open_letter();}}
-static void start_spin(void){
- if(game.player==2)seed_from_input();
- set_mode(SPIN);say(msg_da9,"");scene.host_active=0;
- /* DOS 1000:2c6a..2fa2: noise consumes six draws before the
-  * four speed stages. Counters include both zero and the limit.
-  * The fifth duration is drawn on stopping, even though unused. */
+static int spin_draw(void){
+ /* DOS four speed stages; the fifth duration is drawn although unused. */
  unsigned limit=10+random_n(20),half_steps=0;
  for(unsigned divisor=1;divisor<=4;divisor++){
   half_steps+=limit/divisor+1;
   limit=5+random_n(10);
  }
- int draw=(half_steps+1)/2;
- scene.spin_target=(game.sector-draw)&15;
+ return (half_steps+1)/2;
+}
+static void start_spin(void){
+ seed_from_input();
+ set_mode(SPIN);say(msg_da9,"");scene.host_active=0;
+ /* Speech consumes the original six noise draws once. A third equal award
+  * gets one further four-stage draw, shared across contestants in this round.
+  * The second candidate is always accepted, so repeats remain possible. */
+ int draw=spin_draw(),target=(game.sector-draw)&15;
+ int value=sector_values[wheel_sectors[target]-4];
+ if(spin_history.count>=2&&value==spin_history.value){
+  spin_history.rerolls++;draw=spin_draw();target=(game.sector-draw)&15;
+  value=sector_values[wheel_sectors[target]-4];
+ }
+ spin_history.count=value==spin_history.value?spin_history.count+1:1;
+ spin_history.value=value;
+ scene.spin_target=target;
  /* Resolve all draws before animation so skipping preserves the result. */
  game.spin_steps=16+(draw&15);game.spin_ticks=0;game.spin_wait=1;scene.spin_half=0;scene.spin_at=video_ticks;
 }
@@ -290,6 +316,11 @@ static u16 menu_button(void){return (ui.active?ui.origin:game.mode)==NAME?SELECT
 #include "scene.inc"
 static void update(u16 pressed,u16 repeat){
  scene.now=video_ticks;
+ if(start_pending){
+  if(pressed&A_RELEASE){start_pending=0;ui.active=ui.viewer=0;new_game();}
+  return;
+ }
+ pressed&=~A_RELEASE;
  if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
  if(pressed&menu_button()){if(game.mode==RESTART_CONFIRM)set_mode(MENU);else if(ui.active)menu_close();else menu_open();return;}
  if(game.mode==RESTART_CONFIRM){
@@ -307,7 +338,7 @@ static void update(u16 pressed,u16 repeat){
   if(repeat&UP){ui.choice=(ui.choice+count-1)%count;dirty=1;}
   if(repeat&DOWN){ui.choice=(ui.choice+1)%count;dirty=1;}
   if(pressed&A){
-   if(ui.choice==0){if(ui.origin==TITLE){ui.active=0;ui.viewer=0;new_game();}else menu_close();}
+   if(ui.choice==0){if(ui.origin==TITLE){fast_input=1;start_pending=1;}else menu_close();}
    else if(ui.choice==1)set_mode(HELP);
    else if((ui.origin==TITLE&&ui.choice==3)||(ui.origin!=TITLE&&ui.choice==2)){ui.author_page=0;set_mode(AUTHORS);}
    else if(ui.origin==TITLE){ui.viewer=1;set_mode(RECORDS);}
@@ -324,7 +355,7 @@ static void update(u16 pressed,u16 repeat){
   else if(pressed&A){if(!ui.author_page){ui.author_page=1;dirty=1;}else set_mode(MENU);}
   return;
  }
- if(game.mode==TITLE){if(pressed&A){ui.viewer=0;new_game();}return;}
+ if(game.mode==TITLE){if(pressed&A){fast_input=1;start_pending=1;}return;}
  if(game.mode==RECORDS){if(pressed&(A|B))set_mode(ui.viewer?MENU:TITLE);return;}
  if(scene_tick(pressed))return;
  if(game.mode==GIFT_PAGES){

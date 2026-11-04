@@ -74,7 +74,10 @@ seed=e.state()[2];e.run(60)
 check('idle title does not advance the game RNG',e.state()[2]==seed)
 e.run(12,(8,));entropy=read(e,'input_entropy');e.run(60,(8,))
 check('held A collects no repeated input edges',read(e,'input_entropy')==entropy)
-polls=read(e,'startup_input_polls');e.run(2,(8,))
+check('holding startup A waits for release before choosing the game',e.state()[3]==0 and e.state()[6]==-1)
+e.run(12)
+check('releasing startup A starts the game',e.state()[3]==15)
+polls=read(e,'startup_input_polls');e.run(2)
 check('starting the game disables frequent polling',read(e,'startup_input_polls')==polls)
 e.run(12)
 fixture_turn(e);checkpoint=e.checkpoint();timings=[]
@@ -119,6 +122,81 @@ e.poke(3,10);e.poke(82,0);e.tap(8);e.run(120)
 check('game over returns to the title',e.state()[3]==0)
 polls=read(e,'startup_input_polls');e.run(1)
 check('returning to title re-enables frequent polling',read(e,'startup_input_polls')>polls+100)
+e.close()
+
+holds=[]
+for duration in (1,2,4,8):
+ e=Emulator();e.run(220);e.run(duration,(8,))
+ check(f'startup hold {duration} does not draw a word',e.state()[6]==-1)
+ e.run(12)
+ check(f'startup release after {duration} starts',e.state()[3]==15)
+ holds.append(e.state()[2]);e.close()
+check('startup hold duration changes initial game seed',len(set(holds))==len(holds))
+
+# The original first candidate remains DOS-compatible; only an impending
+# third equal award receives exactly one extra five-draw candidate.
+from rng_reference import dos_spin
+def candidate(seed,sector):
+ def random_n(n):
+  nonlocal seed
+  seed=(seed*134775813+1)&0xffffffff
+  return (seed>>16)%n
+ limit=10+random_n(20);steps=0
+ for divisor in (1,2,3,4):
+  steps+=limit//divisor+1;limit=5+random_n(10)
+ return (sector-(steps+1)//2)&15,seed
+rom=(ROOT/'build/gba/pole.gba').read_bytes()
+e=Emulator();e.run(220);e.tap(8)
+wheel=struct.unpack_from('<16h',rom,e.sym['wheel_sectors']-0x08000000)
+values=struct.unpack_from('<12h',rom,e.sym['sector_values']-0x08000000)
+history=e.ram+e.sym['spin_history']-0x02000000
+second_matches=0
+for seed in range(1,65):
+ first,first_seed=dos_spin(seed,12);value=values[wheel[first]-4]
+ second,second_seed=candidate(first_seed,12)
+ for count in (0,1,2):
+  fixture_turn(e);c.memmove(history,struct.pack('<iiI',value,count,0),12)
+  e.tap_seeded(8,seed)
+  target=struct.unpack('<I',c.string_at(e.ram+e.sym['scene']-0x02000000+156,4))[0]
+  expected,expected_seed=(second,second_seed) if count==2 else (first,first_seed)
+  check(f'award history {count}, seed {seed} selects expected candidate',target==expected and e.state()[2]&0xffffffff==expected_seed)
+  check(f'award history {count}, seed {seed} rerolls at most once',struct.unpack('<I',c.string_at(history+8,4))[0]==(count==2))
+ if values[wheel[second]-4]==value:second_matches+=1
+check('one reroll can still accept a third equal award',second_matches>0)
+fixture_turn(e);e.poke(5,0);c.memmove(history,bytes(12),12)
+checkpoint=e.checkpoint();ai_seeds=[]
+for delay in range(4):
+ e.restore(checkpoint);e.run(delay);e.tap(8)
+ check(f'AI spin delay {delay} starts',e.state()[3]==2)
+ ai_seeds.append(e.state()[2])
+check('timed input also changes AI spin seeds',len(set(ai_seeds))==4)
+spin=e.checkpoint();e.until(lambda s:s[3]!=2);natural=result(e)
+e.restore(spin);e.tap(8)
+check('AI skip preserves sector award and RNG',result(e)==natural)
+e.poke(3,17);e.poke(4,0)
+ticks=read(e,'video_ticks')
+c.memmove(e.ram+e.sym['scene']-0x02000000+12,struct.pack('<I',(ticks-40)&0xffffffff),4)
+e.tap(8)
+check('new round resets shared award history',struct.unpack('<i',c.string_at(history+4,4))[0]==0)
+e.close()
+e=Emulator();e.run(220);e.tap(3)
+check('title START opens menu',e.state()[3]==23)
+e.run(20,(8,))
+check('menu game start also waits for A release',e.state()[3]==23 and e.state()[6]==-1)
+e.run(12)
+check('menu A release starts the game',e.state()[3]==15)
+e.close()
+e=Emulator();e.run(220);e.tap(8);e.run(12)
+idle_entropy=read(e,'input_entropy');automatic=[]
+for draw in range(2):
+ fixture_turn(e);e.poke(5,0)
+ ticks=read(e,'video_ticks')
+ c.memmove(e.ram+e.sym['scene']-0x02000000+4,struct.pack('<I',(ticks-200)&0xffffffff),4)
+ e.until(lambda s:s[3]==2)
+ automatic.append((read(e,'input_seed_salt'),e.state()[2]))
+ check(f'automatic AI draw {draw} needs no new input entropy',read(e,'input_entropy')==idle_entropy)
+check('automatic AI draws do not reuse the same timing salt',automatic[0][0]!=automatic[1][0])
+check('automatic AI draws mix identical starting RNG states differently',automatic[0][1]!=automatic[1][1])
 e.close()
 report=dict(status='passed',count=len(checks),checks=checks,
  rom_sha256=hashlib.sha256((ROOT/'build/gba/pole.gba').read_bytes()).hexdigest(),

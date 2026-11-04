@@ -75,6 +75,8 @@ for trial in range(512):
  assert e.state()[6] == expected, (trial, e.state()[6], expected)
  actual_words[expected] += 1
  # Force a human turn, then start the original cartridge spin using A.
+ # Suppress the new history rule only in this DOS first-candidate fixture.
+ c.memmove(e.ram+e.sym['spin_history']-0x02000000,bytes(12),12)
  for index, value in ((3,1),(5,2),(7,trial & 15),(81,1),(2,12345+trial)):
   e.poke(index,value)
  expected, expected_seed = dos_spin(12345+trial, trial & 15)
@@ -102,6 +104,7 @@ replays = []
 for seed in (1,12345,999999):
  outcomes = []
  for skip in (False,True):
+  c.memmove(e.ram+e.sym['spin_history']-0x02000000,bytes(12),12)
   for index,value in ((3,1),(5,2),(7,12),(81,1),(2,seed)):
    e.poke(index,value)
   e.tap_seeded(8,seed)

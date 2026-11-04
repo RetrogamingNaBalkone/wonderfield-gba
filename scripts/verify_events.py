@@ -70,6 +70,7 @@ check('second A press shows predetermined result',e.state()[3]!=2 and e.state()[
 # Replay identical real starts, rather than only injecting an ongoing spin.
 # Outcome and RNG must match natural playback at every skip time.
 def replay_start(seed):
+ c.memmove(e.ram+e.sym['spin_history']-0x02000000,bytes(12),12)
  fixture(3);e.run(24)
  e.poke(3,1);e.poke(7,11);e.run(6);e.tap_seeded(8,seed)
  check(f'replay {seed} starts through keypad',e.state()[3]==2)

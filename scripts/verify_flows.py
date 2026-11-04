@@ -151,8 +151,10 @@ def start_fixture():
  for i in range(32):e.poke(38+i,0)
  for i,v in {3:1,4:0,5:2,6:0,7:12,11:0,70:0,71:0,72:0,76:0,79:0,81:1,82:0}.items():e.poke(i,v)
 def spin_to(sector):
+ from rng_reference import dos_spin
+ c.memmove(e.ram+e.sym['spin_history']-0x02000000,bytes(12),12)
  initial=e.state()[7]
- seed=next(s for s in range(1000) if (initial-64-((next_rng(s)>>16)%32))&15==sector)
+ seed=next(s for s in range(1000) if dos_spin(s,initial)[0]==sector)
  e.tap_seeded(8,seed);e.tap(8)
  check(f'keypad spin reaches sector {sector}',e.state()[3]==(4 if sector==0 else 3))
 def finish_assistant(skip):

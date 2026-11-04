@@ -86,7 +86,7 @@ class Emulator:
 
   Replay the same full core state to measure the captured timing salt, then
   compensate the pre-input seed. Production input mixing stays enabled.
-  Use only for TITLE/new-game or human TURN/spin draws that mix input once.
+  Use only for TITLE/new-game or TURN/spin draws that mix input once.
   """
   if 'input_entropy' not in self.sym: # Archived ROMs used by pacing comparisons.
    value=seed&0xffffffff;self.poke(2,value if value<0x80000000 else value-0x100000000)
@@ -97,7 +97,15 @@ class Emulator:
   salt_symbol=self.sym.get('input_seed_salt',self.sym['input_entropy'])
   salt=struct.unpack('<I',c.string_at(self.ram+salt_symbol-0x02000000,4))[0]
   self.restore(checkpoint)
-  value=(seed&0xffffffff)^salt;self.poke(2,value if value<0x80000000 else value-0x100000000)
+  value=seed&0xffffffff
+  if 'input_seed_counter' in self.sym:
+   # Invert the production avalanche for an explicit effective-seed fixture.
+   value^=value>>16
+   value=value*pow(0x846ca68b,-1,1<<32)&0xffffffff
+   value^=(value>>15)^(value>>30)
+   value=value*pow(0x7feb352d,-1,1<<32)&0xffffffff
+   value^=value>>16
+  value^=salt;self.poke(2,value if value<0x80000000 else value-0x100000000)
   self.tap(button)
   assert struct.unpack('<I',c.string_at(self.ram+salt_symbol-0x02000000,4))[0]==salt
  def until(self,predicate,limit=5000):
