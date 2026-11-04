@@ -1,7 +1,7 @@
 """Real mGBA input/timer checks; fixtures never replace input entropy.
 
 The seed arithmetic fixtures live in audit_rng.py. These checks exercise
-actual timing, SRAM independence, held keys and replay/skip behavior.
+actual timing, persistent boot seeds, held keys and replay/skip behavior.
 """
 from emulator import Emulator, ROOT
 import ctypes as c
@@ -31,6 +31,30 @@ check('early inputs include multiple frames in the same old loop bucket',any(len
 check('different early input frames have distinct seeds within each loop bucket',
       all(len({b['rng'] for b in g})==len(g) for g in groups.values()))
 
+# Cold launches with the same rapid input and the previous launch's SRAM.
+# Preserve a valid legacy record table and unrelated save bytes throughout.
+payload=bytearray([255]*32768)
+payload[:4]=b'POL2'
+payload[4:124]=bytes(120)
+hash_value=2166136261
+for byte in payload[4:124]:hash_value=((hash_value^byte)*16777619)&0xffffffff
+struct.pack_into('<I',payload,124,hash_value)
+launches=[]
+for launch in range(12):
+ e=Emulator();address=e.core.retro_get_memory_data(0)
+ c.memmove(address,bytes(payload),len(payload));e.core.retro_reset();e.run(4);e.tap(8)
+ check(f'persistent rapid boot {launch} starts',e.state()[3]==15)
+ launches.append((e.state()[2],e.state()[6],tuple(e.state()[12:18])))
+ saved=c.string_at(address,len(payload))
+ check(f'boot {launch} preserves records and other save bytes',saved[:128]==payload[:128] and saved[140:]==payload[140:])
+ count,inverse=struct.unpack_from('<II',saved,132)
+ check(f'boot {launch} commits next counter',saved[128:132]==b'RNG\x01' and count==launch+1 and inverse==count^0xffffffff)
+ check(f'boot {launch} loads legacy records',e.state()[85]==0 and read(e,'record_scores')==0)
+ payload[:]=saved;e.close()
+check('identical rapid input across cold boots uses distinct RNG states',len({v[0] for v in launches})==12)
+check('identical rapid input across cold boots varies words',len({v[1] for v in launches})>1)
+check('identical rapid input across cold boots varies opponents',len({v[2] for v in launches})>1)
+
 for fill in (0,255):
  e=Emulator()
  e.core.retro_get_memory_size.argtypes=[c.c_uint];e.core.retro_get_memory_size.restype=c.c_size_t
@@ -42,10 +66,16 @@ for fill in (0,255):
  e.close()
 
 e=Emulator();e.run(220)
+polls=read(e,'startup_input_polls');entropy=read(e,'input_entropy');e.run(1)
+polls_per_frame=(read(e,'startup_input_polls')-polls)&0xffffffff
+check('idle title polls buttons more than 100 times per frame',polls_per_frame>100)
+check('frequent idle polling does not invent input entropy',read(e,'input_entropy')==entropy)
 seed=e.state()[2];e.run(60)
 check('idle title does not advance the game RNG',e.state()[2]==seed)
 e.run(12,(8,));entropy=read(e,'input_entropy');e.run(60,(8,))
 check('held A collects no repeated input edges',read(e,'input_entropy')==entropy)
+polls=read(e,'startup_input_polls');e.run(2,(8,))
+check('starting the game disables frequent polling',read(e,'startup_input_polls')==polls)
 e.run(12)
 fixture_turn(e);checkpoint=e.checkpoint();timings=[]
 for delay in range(8):
@@ -85,10 +115,14 @@ for duration in range(4):
  e.run(4-duration);e.tap(8)
  releases.append(e.state()[2]&0xffffffff)
 check('release timing alone changes the next spin RNG',len(set(releases))==4)
+e.poke(3,10);e.poke(82,0);e.tap(8);e.run(120)
+check('game over returns to the title',e.state()[3]==0)
+polls=read(e,'startup_input_polls');e.run(1)
+check('returning to title re-enables frequent polling',read(e,'startup_input_polls')>polls+100)
 e.close()
 report=dict(status='passed',count=len(checks),checks=checks,
  rom_sha256=hashlib.sha256((ROOT/'build/gba/pole.gba').read_bytes()).hexdigest(),
- early_boots=boots,later_input_timings=timings,release_timing_rng=releases,
+ early_boots=boots,later_input_timings=timings,release_timing_rng=releases,startup_polls_per_frame=polls_per_frame,
  limitation='Identical complete emulator state and cycle-identical inputs remain reproducible; presses before the first input poll can coalesce.')
 out=ROOT/'build/qa/rng-verification.json';out.parent.mkdir(exist_ok=True)
 out.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

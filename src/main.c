@@ -50,8 +50,22 @@ static volatile u16 input_events[32],input_keys;
 static volatile u8 input_read,input_write;
 static volatile u32 input_entropy;
 static volatile u32 input_seed_salt;
+static int fast_input=1;
+static volatile u32 startup_input_polls;
 static u32 mix_input(u32 value){
  value^=value>>16;value*=0x7feb352du;value^=value>>15;value*=0x846ca68bu;return value^(value>>16);
+}
+static u32 boot_seed(void){
+ /* Records own bytes 0..127. A separate versioned counter survives resets,
+  * even when the player repeats exactly the same input timing. Byte accesses
+  * are required for SRAM; an invalid/incomplete record starts a new sequence. */
+ volatile u8*s=(volatile u8*)0x0e000080;u32 count=0,inverse=0;
+ for(int i=0;i<4;i++){count|=(u32)s[4+i]<<(i*8);inverse|=(u32)s[8+i]<<(i*8);}
+ if(s[0]!='R'||s[1]!='N'||s[2]!='G'||s[3]!=1||inverse!=~count)count=0;
+ count++;s[0]=0;
+ for(int i=0;i<4;i++){s[4+i]=count>>(i*8);s[8+i]=(~count)>>(i*8);}
+ s[1]='N';s[2]='G';s[3]=1;s[0]='R';
+ return mix_input(count);
 }
 static u32 input_clock(void){
  /* Timers 0/1 belong to audio. Timer 2 counts CPU clocks, 3 its overflows. */
@@ -98,7 +112,16 @@ static void text(int x,int y,const char *s,int small,u8 c){int advance=8;for(int
 static void centered(int y,const char*s,int small,u8 c){text((240-len(s)*8)/2,y,s,small,c);}
 static void number(int x,int y,int value,int small,u8 c){char b[12];int n=0;unsigned v=value<0?-value:value;do{b[n++]='0'+v%10;v/=10;}while(v);if(value<0)b[n++]='-';for(int i=n-1;i>=0;i--)glyph(x+(n-1-i)*8,y,b[i],small,c);}
 static void beep(int hz,int duration){speaker_tone(hz,duration*4);}
-static void vblank(void){while(REG16(0x04000006)>=160){}while(REG16(0x04000006)<160){}}
+static void poll_startup_keys(void){
+ /* capture_keys also runs in VBlank: serialize its edge/queue updates. */
+ u16 ime=REG16(0x04000208);REG16(0x04000208)=0;capture_keys();startup_input_polls++;REG16(0x04000208)=ime;
+}
+static void vblank(void){
+ if(fast_input){
+  while(REG16(0x04000006)>=160)poll_startup_keys();
+  while(REG16(0x04000006)<160)poll_startup_keys();
+ }else{while(REG16(0x04000006)>=160){}while(REG16(0x04000006)<160){}}
+}
 static void dma_words(u32*destination,const u32*source,unsigned count){while(count){unsigned n=count>64?64:count;REG32(0x040000d4)=(u32)source;REG32(0x040000d8)=(u32)destination;REG32(0x040000dc)=0x84000000|n;source+=n;destination+=n;count-=n;}}
 static void present(void){static unsigned page;page^=1;u32*destination=(u32*)(page?0x0600a000:0x06000000);dma_words(destination,(const u32*)framebuffer,9600);vblank();REG16(0x04000000)=0x0404|(page?16:0);}
 static void save(void){
@@ -117,7 +140,7 @@ static int load(void){
  return record_scores[0];
 }
 static const char*word(void){return words[game.word_id].word;}
-static void set_mode(int mode){if(mode==TITLE)scene.title_at=video_ticks;game.mode=mode;game.wait=0;dirty=1;}
+static void set_mode(int mode){if(mode==TITLE){scene.title_at=video_ticks;fast_input=1;}game.mode=mode;game.wait=0;dirty=1;}
 static int message_done(u16 pressed,unsigned duration){return (pressed&A)||scene.now-scene.speech_at>=duration;}
 static void say(const char*a,const char*b){
  message1=a;message2=b;scene.speech_at=scene.host_at=scene.host_phase_at=video_ticks;
@@ -141,7 +164,7 @@ static void new_round(void){if(game.round)seed_from_input();int duplicate;do{gam
  /* DOS 1000:5799..57d4: each opponent starts with round * (Random(4)*15+5). */
  for(int i=0;i<2;i++)game.score[i]=game.round*(random_n(4)*15+5);
  game.player=2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
-static void new_game(void){seed_from_input();game.round=0;game.score[2]=0;game.sector=12;for(int i=0;i<6;i++)game.opponent[i]=i;for(int i=0;i<20;i++){int a=random_n(6),b=random_n(6),t=game.opponent[a];game.opponent[a]=game.opponent[b];game.opponent[b]=t;}new_round();}
+static void new_game(void){fast_input=0;seed_from_input();game.round=0;game.score[2]=0;game.sector=12;for(int i=0;i<6;i++)game.opponent[i]=i;for(int i=0;i<20;i++){int a=random_n(6),b=random_n(6),t=game.opponent[a];game.opponent[a]=game.opponent[b];game.opponent[b]=t;}new_round();}
 static int hidden(void){int n=0;for(int i=0;word()[i];i++)if(!game.revealed[i])n++;return n;}
 static void finish_round(void){
  for(int i=0;word()[i];i++)game.revealed[i]=1;
@@ -376,7 +399,7 @@ void gba_main(void){
  REG16(0x0400010a)=0;REG16(0x0400010e)=0;
  REG16(0x04000108)=0;REG16(0x0400010c)=0;
  REG16(0x0400010e)=0x84;REG16(0x0400010a)=0x80;
- extern void gba_irq(void);REG32(0x03007ffc)=(u32)gba_irq;game.magic=0x504f4c45;game.rng=1;game.word_id=-1;game.best=load();REG16(0x04000204)=0x4317;REG16(0x04000000)=0x0404;for(int i=0;i<16;i++)((volatile u16*)0x05000000)[i]=palette[i];speaker_init();REG16(0x04000200)|=1;REG16(0x04000004)|=8;set_mode(TITLE);
+ extern void gba_irq(void);REG32(0x03007ffc)=(u32)gba_irq;game.magic=0x504f4c45;REG16(0x04000204)=0x4317;game.rng=boot_seed();game.word_id=-1;game.best=load();REG16(0x04000000)=0x0404;for(int i=0;i<16;i++)((volatile u16*)0x05000000)[i]=palette[i];speaker_init();REG16(0x04000200)|=1;REG16(0x04000004)|=8;set_mode(TITLE);
  for(;;){
   /* VBlank queues taps even while a bitmap is being drawn. Drain in order. */
   u16 ime=REG16(0x04000208);REG16(0x04000208)=0;capture_keys();
