@@ -1,0 +1,935 @@
+{
+  "baseline_commit": "3d517a4",
+  "current_commit": "34cb668",
+  "method": "mGBA, timed A presses and releases, no injected RNG state; human turn fixtures and AI ownership fixtures shorten gameplay. Deterministic samples, not proof for all input timings.",
+  "versions": {
+    "parent": {
+      "human": {
+        "status": "passed",
+        "rom_sha256": "e93f3f10837238047df45e29cba33ae1b875315d2d4560b4325d1c5b16828ea4",
+        "samples": [
+          {
+            "delay": 0,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 6,
+            "adjacent_topic_repeats": 2,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 58,
+            "same_award": 63,
+            "consecutive_awards": {
+              "pairs": {
+                "204": 6,
+                "5": 9,
+                "20": 14,
+                "25": 5,
+                "0": 5,
+                "202": 0,
+                "15": 8,
+                "100": 4,
+                "-1": 2,
+                "10": 7,
+                "300": 3
+              },
+              "triples": {
+                "204": 1,
+                "5": 1,
+                "20": 7,
+                "25": 1,
+                "0": 0,
+                "202": 0,
+                "15": 0,
+                "100": 1,
+                "-1": 0,
+                "10": 1,
+                "300": 0
+              },
+              "longest": {
+                "204": 3,
+                "5": 3,
+                "20": 5,
+                "25": 3,
+                "0": 2,
+                "202": 1,
+                "15": 2,
+                "100": 3,
+                "-1": 2,
+                "10": 3,
+                "300": 2
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          },
+          {
+            "delay": 1,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 4,
+            "adjacent_topic_repeats": 2,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 47,
+            "same_award": 57,
+            "consecutive_awards": {
+              "pairs": {
+                "202": 3,
+                "20": 9,
+                "15": 5,
+                "100": 4,
+                "-1": 2,
+                "10": 5,
+                "0": 15,
+                "300": 2,
+                "5": 8,
+                "204": 3,
+                "25": 1
+              },
+              "triples": {
+                "202": 0,
+                "20": 0,
+                "15": 2,
+                "100": 1,
+                "-1": 0,
+                "10": 0,
+                "0": 4,
+                "300": 0,
+                "5": 0,
+                "204": 1,
+                "25": 0
+              },
+              "longest": {
+                "202": 2,
+                "20": 2,
+                "15": 3,
+                "100": 3,
+                "-1": 2,
+                "10": 2,
+                "0": 3,
+                "300": 2,
+                "5": 2,
+                "204": 3,
+                "25": 2
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          },
+          {
+            "delay": 2,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 4,
+            "adjacent_topic_repeats": 3,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 50,
+            "same_award": 57,
+            "consecutive_awards": {
+              "pairs": {
+                "20": 8,
+                "5": 12,
+                "15": 6,
+                "10": 7,
+                "25": 5,
+                "0": 5,
+                "202": 3,
+                "-1": 4,
+                "100": 0,
+                "300": 5,
+                "204": 2
+              },
+              "triples": {
+                "20": 0,
+                "5": 2,
+                "15": 0,
+                "10": 1,
+                "25": 0,
+                "0": 0,
+                "202": 0,
+                "-1": 1,
+                "100": 0,
+                "300": 0,
+                "204": 0
+              },
+              "longest": {
+                "20": 2,
+                "5": 3,
+                "15": 2,
+                "10": 3,
+                "25": 2,
+                "0": 2,
+                "202": 2,
+                "-1": 3,
+                "100": 1,
+                "300": 2,
+                "204": 2
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          },
+          {
+            "delay": 4,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 8,
+            "adjacent_topic_repeats": 3,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 50,
+            "same_award": 63,
+            "consecutive_awards": {
+              "pairs": {
+                "204": 3,
+                "20": 5,
+                "0": 6,
+                "10": 14,
+                "100": 6,
+                "25": 3,
+                "300": 3,
+                "5": 9,
+                "-1": 2,
+                "15": 6,
+                "202": 6
+              },
+              "triples": {
+                "204": 0,
+                "20": 0,
+                "0": 0,
+                "10": 2,
+                "100": 0,
+                "25": 0,
+                "300": 1,
+                "5": 0,
+                "-1": 0,
+                "15": 1,
+                "202": 1
+              },
+              "longest": {
+                "204": 2,
+                "20": 2,
+                "0": 2,
+                "10": 3,
+                "100": 2,
+                "25": 2,
+                "300": 3,
+                "5": 2,
+                "-1": 2,
+                "15": 3,
+                "202": 3
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          },
+          {
+            "delay": 8,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 10,
+            "adjacent_topic_repeats": 8,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 37,
+            "same_award": 49,
+            "consecutive_awards": {
+              "pairs": {
+                "20": 7,
+                "-1": 4,
+                "5": 5,
+                "204": 3,
+                "25": 3,
+                "100": 0,
+                "10": 16,
+                "300": 4,
+                "0": 5,
+                "202": 2,
+                "15": 0
+              },
+              "triples": {
+                "20": 0,
+                "-1": 0,
+                "5": 0,
+                "204": 0,
+                "25": 0,
+                "100": 0,
+                "10": 5,
+                "300": 1,
+                "0": 1,
+                "202": 0,
+                "15": 0
+              },
+              "longest": {
+                "20": 2,
+                "-1": 2,
+                "5": 2,
+                "204": 2,
+                "25": 2,
+                "100": 1,
+                "10": 4,
+                "300": 3,
+                "0": 3,
+                "202": 2,
+                "15": 1
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          }
+        ],
+        "topic_records": {
+          "НАУЧНЫЙ ТЕРМИН": 14,
+          "КИНОГЕРОИ": 16,
+          "ФИЛОСОФЫ": 11,
+          "ПИСАТЕЛИ": 6,
+          "ПИСАТЕЛИ, ИСТОРИКИ": 2,
+          "ПРОФЕССИИ": 3,
+          "ПЛОХИЕ ЛЮДИ": 18,
+          "БОЛЕЗНИ": 14,
+          "ЧУСТВА И ПОРОКИ": 20,
+          "БИЗНЕС": 3,
+          "ВАЛЮТА": 16,
+          "ИСТОРИЯ": 1,
+          "УДАЧА": 1,
+          "ПОЛИТИКА": 24,
+          "ЯЗЫКИ": 5,
+          "КУЛЬТУРА": 11,
+          "МУЗЫКА": 19,
+          "ТИП ЧЕЛОВЕКА": 11,
+          "РЕЛИГИЯ": 19,
+          "МОНАХИ": 3,
+          "ДОМАШНИЕ ЖИВОТНЫЕ": 11,
+          "ЖИВОТНЫЕ": 21,
+          "РЫБЫ": 15,
+          "ГЕОГРАФИЯ": 9,
+          "ВУЛКАН": 2,
+          "ОЗЕРО": 2,
+          "НАЦИОНАЛЬНОСТИ": 4,
+          "ГОРОДА": 22,
+          "ГОРЯЧАЯ ТОЧКА": 5,
+          "ПТИЦЫ": 14,
+          "НАСЕКОЫЕ": 1,
+          "НАСЕКОМЫЕ": 15,
+          "КОСМОНАВТИКА": 11,
+          "КНИГА": 6,
+          "МОРСКИЕ ТЕРМИНЫ": 14,
+          "ПОЛКОВОДЦЫ": 16,
+          "КЛАССНЫЙ ПАРЕНЬ": 1,
+          "СОТРУДНИКИ ОТД.08": 46,
+          "НАЧАЛЬНИКИ ОТД.08": 20,
+          "СОТРУДНИКИ ОТД.02": 1,
+          "ЗЕМНОВОДНЫЕ": 8,
+          "МЕБЕЛЬ": 34
+        },
+        "limitation": "Fast-A sequences with real input entropy and no injected RNG state.\n\nFixtures shorten gameplay by entering the next human turn / credits;\nthey preserve RNG, entropy, clocks, previous sector and selected records.\nThese are deterministic scenario samples, not independent random trials.\n"
+      },
+      "ai": {
+        "status": "passed",
+        "rom_sha256": "e93f3f10837238047df45e29cba33ae1b875315d2d4560b4325d1c5b16828ea4",
+        "spins": 2048,
+        "rounds": 101,
+        "award_counts": {
+          "204": 125,
+          "-1": 122,
+          "0": 252,
+          "100": 136,
+          "20": 279,
+          "5": 250,
+          "25": 120,
+          "300": 128,
+          "10": 230,
+          "202": 147,
+          "15": 259
+        },
+        "unique_spin_states": 2048,
+        "same_ai_plus_pairs": 12,
+        "same_ai_plus_triples": 2,
+        "longest_plus_run": 4,
+        "repeated_plus": [
+          {
+            "draw": 279,
+            "player": 0,
+            "run": 2,
+            "rng": 3329293533
+          },
+          {
+            "draw": 293,
+            "player": 1,
+            "run": 2,
+            "rng": 4164034171
+          },
+          {
+            "draw": 410,
+            "player": 1,
+            "run": 2,
+            "rng": 876051684
+          },
+          {
+            "draw": 625,
+            "player": 1,
+            "run": 2,
+            "rng": 2604493012
+          },
+          {
+            "draw": 938,
+            "player": 1,
+            "run": 2,
+            "rng": 2370688411
+          },
+          {
+            "draw": 1552,
+            "player": 0,
+            "run": 2,
+            "rng": 3912312495
+          },
+          {
+            "draw": 1580,
+            "player": 1,
+            "run": 2,
+            "rng": 217125233
+          },
+          {
+            "draw": 1634,
+            "player": 1,
+            "run": 2,
+            "rng": 2205033656
+          },
+          {
+            "draw": 1635,
+            "player": 1,
+            "run": 3,
+            "rng": 922189666
+          },
+          {
+            "draw": 1636,
+            "player": 1,
+            "run": 4,
+            "rng": 3372568476
+          },
+          {
+            "draw": 1822,
+            "player": 0,
+            "run": 2,
+            "rng": 1395560395
+          },
+          {
+            "draw": 1950,
+            "player": 1,
+            "run": 2,
+            "rng": 1604446875
+          }
+        ],
+        "limitation": "Award runs stay within rounds and may cross contestants; plus-specific counters also require the same contestant.",
+        "consecutive_awards_within_round": {
+          "pairs": {
+            "204": 7,
+            "-1": 11,
+            "0": 33,
+            "100": 12,
+            "20": 30,
+            "5": 36,
+            "25": 9,
+            "300": 15,
+            "10": 33,
+            "202": 11,
+            "15": 27
+          },
+          "triples": {
+            "204": 0,
+            "-1": 1,
+            "0": 2,
+            "100": 2,
+            "20": 1,
+            "5": 11,
+            "25": 2,
+            "300": 0,
+            "10": 2,
+            "202": 0,
+            "15": 1
+          },
+          "longest": {
+            "204": 2,
+            "-1": 3,
+            "0": 3,
+            "100": 4,
+            "20": 3,
+            "5": 5,
+            "25": 3,
+            "300": 2,
+            "10": 3,
+            "202": 2,
+            "15": 3
+          }
+        }
+      }
+    },
+    "current": {
+      "human": {
+        "status": "passed",
+        "rom_sha256": "206210a99a6f2b8474557b95d5fbc674008a1bac033324f3a3e410ad66fc1adc",
+        "samples": [
+          {
+            "delay": 0,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 5,
+            "adjacent_topic_repeats": 1,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 57,
+            "same_award": 65,
+            "consecutive_awards": {
+              "pairs": {
+                "-1": 3,
+                "20": 10,
+                "5": 7,
+                "100": 5,
+                "0": 6,
+                "15": 6,
+                "204": 7,
+                "10": 10,
+                "202": 3,
+                "300": 4,
+                "25": 4
+              },
+              "triples": {
+                "-1": 1,
+                "20": 2,
+                "5": 0,
+                "100": 0,
+                "0": 2,
+                "15": 1,
+                "204": 1,
+                "10": 3,
+                "202": 0,
+                "300": 1,
+                "25": 1
+              },
+              "longest": {
+                "-1": 3,
+                "20": 4,
+                "5": 2,
+                "100": 2,
+                "0": 3,
+                "15": 3,
+                "204": 3,
+                "10": 4,
+                "202": 2,
+                "300": 3,
+                "25": 3
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          },
+          {
+            "delay": 1,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 6,
+            "adjacent_topic_repeats": 1,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 46,
+            "same_award": 55,
+            "consecutive_awards": {
+              "pairs": {
+                "15": 2,
+                "5": 9,
+                "20": 3,
+                "10": 12,
+                "100": 2,
+                "25": 2,
+                "-1": 5,
+                "204": 8,
+                "0": 5,
+                "300": 4,
+                "202": 3
+              },
+              "triples": {
+                "15": 0,
+                "5": 3,
+                "20": 0,
+                "10": 2,
+                "100": 0,
+                "25": 0,
+                "-1": 0,
+                "204": 1,
+                "0": 0,
+                "300": 1,
+                "202": 0
+              },
+              "longest": {
+                "15": 2,
+                "5": 4,
+                "20": 2,
+                "10": 4,
+                "100": 2,
+                "25": 2,
+                "-1": 2,
+                "204": 3,
+                "0": 2,
+                "300": 3,
+                "202": 2
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          },
+          {
+            "delay": 2,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 11,
+            "adjacent_topic_repeats": 1,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 42,
+            "same_award": 51,
+            "consecutive_awards": {
+              "pairs": {
+                "0": 4,
+                "20": 5,
+                "10": 9,
+                "5": 7,
+                "25": 7,
+                "100": 6,
+                "-1": 1,
+                "204": 2,
+                "300": 6,
+                "15": 1,
+                "202": 3
+              },
+              "triples": {
+                "0": 0,
+                "20": 0,
+                "10": 2,
+                "5": 1,
+                "25": 2,
+                "100": 0,
+                "-1": 0,
+                "204": 0,
+                "300": 1,
+                "15": 0,
+                "202": 0
+              },
+              "longest": {
+                "0": 2,
+                "20": 2,
+                "10": 3,
+                "5": 3,
+                "25": 3,
+                "100": 2,
+                "-1": 2,
+                "204": 2,
+                "300": 3,
+                "15": 2,
+                "202": 2
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          },
+          {
+            "delay": 4,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 7,
+            "adjacent_topic_repeats": 1,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 52,
+            "same_award": 59,
+            "consecutive_awards": {
+              "pairs": {
+                "0": 5,
+                "25": 2,
+                "5": 4,
+                "15": 6,
+                "-1": 4,
+                "10": 15,
+                "300": 3,
+                "204": 6,
+                "20": 10,
+                "100": 0,
+                "202": 4
+              },
+              "triples": {
+                "0": 0,
+                "25": 0,
+                "5": 0,
+                "15": 0,
+                "-1": 0,
+                "10": 3,
+                "300": 0,
+                "204": 0,
+                "20": 1,
+                "100": 0,
+                "202": 0
+              },
+              "longest": {
+                "0": 2,
+                "25": 2,
+                "5": 2,
+                "15": 2,
+                "-1": 2,
+                "10": 4,
+                "300": 2,
+                "204": 2,
+                "20": 3,
+                "100": 1,
+                "202": 2
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          },
+          {
+            "delay": 8,
+            "parties": 32,
+            "rounds": 96,
+            "furniture": 6,
+            "adjacent_topic_repeats": 4,
+            "topic_pairs": 64,
+            "spins": 512,
+            "spin_pairs": 480,
+            "same_sector": 55,
+            "same_award": 63,
+            "consecutive_awards": {
+              "pairs": {
+                "-1": 4,
+                "204": 2,
+                "5": 7,
+                "15": 4,
+                "300": 7,
+                "0": 10,
+                "10": 10,
+                "25": 4,
+                "100": 6,
+                "20": 5,
+                "202": 4
+              },
+              "triples": {
+                "-1": 2,
+                "204": 0,
+                "5": 0,
+                "15": 0,
+                "300": 2,
+                "0": 3,
+                "10": 2,
+                "25": 0,
+                "100": 0,
+                "20": 0,
+                "202": 1
+              },
+              "longest": {
+                "-1": 4,
+                "204": 2,
+                "5": 2,
+                "15": 2,
+                "300": 3,
+                "0": 3,
+                "10": 3,
+                "25": 2,
+                "100": 2,
+                "20": 2,
+                "202": 3
+              }
+            },
+            "unique_rng_states": 576,
+            "observed_rng_states": 576
+          }
+        ],
+        "topic_records": {
+          "НАУЧНЫЙ ТЕРМИН": 14,
+          "КИНОГЕРОИ": 16,
+          "ФИЛОСОФЫ": 11,
+          "ПИСАТЕЛИ": 6,
+          "ПИСАТЕЛИ, ИСТОРИКИ": 2,
+          "ПРОФЕССИИ": 3,
+          "ПЛОХИЕ ЛЮДИ": 18,
+          "БОЛЕЗНИ": 14,
+          "ЧУСТВА И ПОРОКИ": 20,
+          "БИЗНЕС": 3,
+          "ВАЛЮТА": 16,
+          "ИСТОРИЯ": 1,
+          "УДАЧА": 1,
+          "ПОЛИТИКА": 24,
+          "ЯЗЫКИ": 5,
+          "КУЛЬТУРА": 11,
+          "МУЗЫКА": 19,
+          "ТИП ЧЕЛОВЕКА": 11,
+          "РЕЛИГИЯ": 19,
+          "МОНАХИ": 3,
+          "ДОМАШНИЕ ЖИВОТНЫЕ": 11,
+          "ЖИВОТНЫЕ": 21,
+          "РЫБЫ": 15,
+          "ГЕОГРАФИЯ": 9,
+          "ВУЛКАН": 2,
+          "ОЗЕРО": 2,
+          "НАЦИОНАЛЬНОСТИ": 4,
+          "ГОРОДА": 22,
+          "ГОРЯЧАЯ ТОЧКА": 5,
+          "ПТИЦЫ": 14,
+          "НАСЕКОЫЕ": 1,
+          "НАСЕКОМЫЕ": 15,
+          "КОСМОНАВТИКА": 11,
+          "КНИГА": 6,
+          "МОРСКИЕ ТЕРМИНЫ": 14,
+          "ПОЛКОВОДЦЫ": 16,
+          "КЛАССНЫЙ ПАРЕНЬ": 1,
+          "СОТРУДНИКИ ОТД.08": 46,
+          "НАЧАЛЬНИКИ ОТД.08": 20,
+          "СОТРУДНИКИ ОТД.02": 1,
+          "ЗЕМНОВОДНЫЕ": 8,
+          "МЕБЕЛЬ": 34
+        },
+        "limitation": "Fast-A sequences with real input entropy and no injected RNG state.\n\nFixtures shorten gameplay by entering the next human turn / credits;\nthey preserve RNG, entropy, clocks, previous sector and selected records.\nThese are deterministic scenario samples, not independent random trials.\n"
+      },
+      "ai": {
+        "status": "passed",
+        "rom_sha256": "206210a99a6f2b8474557b95d5fbc674008a1bac033324f3a3e410ad66fc1adc",
+        "spins": 2048,
+        "rounds": 101,
+        "award_counts": {
+          "15": 244,
+          "5": 256,
+          "202": 133,
+          "0": 235,
+          "20": 287,
+          "300": 132,
+          "-1": 130,
+          "25": 121,
+          "204": 135,
+          "10": 233,
+          "100": 142
+        },
+        "unique_spin_states": 2048,
+        "same_ai_plus_pairs": 11,
+        "same_ai_plus_triples": 3,
+        "longest_plus_run": 3,
+        "repeated_plus": [
+          {
+            "draw": 39,
+            "player": 0,
+            "run": 2,
+            "rng": 1508495366
+          },
+          {
+            "draw": 40,
+            "player": 0,
+            "run": 3,
+            "rng": 1432365024
+          },
+          {
+            "draw": 134,
+            "player": 1,
+            "run": 2,
+            "rng": 2922352513
+          },
+          {
+            "draw": 291,
+            "player": 0,
+            "run": 2,
+            "rng": 4125040700
+          },
+          {
+            "draw": 292,
+            "player": 0,
+            "run": 3,
+            "rng": 2297276045
+          },
+          {
+            "draw": 622,
+            "player": 0,
+            "run": 2,
+            "rng": 3380789467
+          },
+          {
+            "draw": 699,
+            "player": 0,
+            "run": 2,
+            "rng": 3207829288
+          },
+          {
+            "draw": 818,
+            "player": 1,
+            "run": 2,
+            "rng": 2351169242
+          },
+          {
+            "draw": 1701,
+            "player": 1,
+            "run": 2,
+            "rng": 263017206
+          },
+          {
+            "draw": 1702,
+            "player": 1,
+            "run": 3,
+            "rng": 4248152144
+          },
+          {
+            "draw": 1987,
+            "player": 1,
+            "run": 2,
+            "rng": 169185716
+          }
+        ],
+        "limitation": "Award runs stay within rounds and may cross contestants; plus-specific counters also require the same contestant.",
+        "consecutive_awards_within_round": {
+          "pairs": {
+            "15": 16,
+            "5": 35,
+            "202": 11,
+            "0": 29,
+            "20": 35,
+            "300": 17,
+            "-1": 13,
+            "25": 12,
+            "204": 13,
+            "10": 41,
+            "100": 11
+          },
+          "triples": {
+            "15": 1,
+            "5": 7,
+            "202": 0,
+            "0": 2,
+            "20": 2,
+            "300": 1,
+            "-1": 0,
+            "25": 2,
+            "204": 1,
+            "10": 10,
+            "100": 3
+          },
+          "longest": {
+            "15": 3,
+            "5": 5,
+            "202": 2,
+            "0": 3,
+            "20": 3,
+            "300": 3,
+            "-1": 2,
+            "25": 4,
+            "204": 3,
+            "10": 3,
+            "100": 3
+          }
+        }
+      }
+    }
+  }
+}
