@@ -34,7 +34,7 @@ foreach($taskRelative in @(
  'build/reference/stdout.log','build/reference/stderr.log',
  'build/reference/plane0.png',
  'build/reference/spin-timing/5000','build/reference/spin-timing/20000',
- 'scripts/__pycache__','analysis/ghidra.log','dist/pole-gba.zip.tmp'
+ 'scripts/__pycache__','analysis/ghidra.log'
 )) {Remove-ProjectArtifact $taskRelative}
 # Remove isolated sessions left behind by a forcibly interrupted process.
 foreach($taskParent in @('build','build/reference')) {

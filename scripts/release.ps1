@@ -106,7 +106,7 @@ try {
  Copy-Item -LiteralPath build/qa/short-i.png -Destination docs/media/short-i.png
  Copy-Item -LiteralPath assets/generated/blue-stone-extension.png -Destination docs/media/stone-texture.png
  Copy-Item -LiteralPath assets/generated/blue-stone-extension.prompt.txt -Destination docs/media/stone-texture.prompt.txt
- & $PythonExe scripts/package_release.py
- if($LASTEXITCODE) {throw 'Release packaging failed'}
- Write-Output "Release: dist/pole 1.1.gba; archive: build/release/pole-gba-1.1.zip"
+ & $PythonExe scripts/prepare_release.py
+ if($LASTEXITCODE) {throw 'Release file preparation failed'}
+ Write-Output "Release: build/release/pole.1.1.gba; checksum: build/release/SHA256SUMS"
 } finally {$env:PYTHONDONTWRITEBYTECODE=$taskBytecode; Pop-Location}
