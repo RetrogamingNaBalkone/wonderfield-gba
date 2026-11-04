@@ -8,6 +8,7 @@ def measure(rom_path=None,elf_path=None):
  def read(name,off=0):return struct.unpack('<I',c.string_at(e.ram+e.sym[name]-0x02000000+off,4))[0]
  def write(name,value,off=0):c.memmove(e.ram+e.sym[name]-0x02000000+off,struct.pack('<I',value&0xffffffff),4)
  def fixture():
+  if 'spin_history' in e.sym:write('spin_history',0,4)
   e.run(12)
   for i in range(20):e.poke(18+i,0)
   for i in range(32):e.poke(38+i,0)

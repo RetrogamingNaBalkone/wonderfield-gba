@@ -111,12 +111,19 @@ try:
    outcomes=[]
    for skip in (False,True):
     fixture(mode,player);e.poke(2,12345)
+    draws_before=read('input_seed_counter')
     if skip:
      e.run(40,(8,));e.run(1)
      check(f'AI {player} mode {mode} accepts early A and held A advances once',e.state()[3]=={1:2,3:18,4:18,8:22,18:16,22:6}[mode])
     else:e.until(lambda s:s[3]!=mode)
+    if mode==1:
+     check(f'AI {player} turn, skip={skip}, makes exactly one timed draw',read('input_seed_counter')-draws_before==1 and 0<=read('scene',156)<16)
     state=e.state();outcomes.append((state[2],state[3],state[9:12],state[70],state[81],read('scene',144),read('scene',156)))
-   check(f'AI {player} mode {mode} skip preserves seeded outcome',outcomes[0]==outcomes[1])
+   if mode==1:
+    # Starting a spin now intentionally mixes the input timestamp for AI too.
+    # Its result can differ before selection; held A must still start once.
+    check(f'AI {player} early A and timeout both enter one spin',all(outcome[1]==2 for outcome in outcomes))
+   else:check(f'AI {player} mode {mode} skip preserves seeded outcome',outcomes[0]==outcomes[1])
  fixture(6,0);e.poke(77,1);e.poke(78,0)
  e.run(80,(8,));check('held A from preceding result cannot skip the next AI prompt',e.state()[3]==1)
  e.run(120,(8,));check('held A across prompt timeout cannot also skip the wheel',e.state()[3]==2 and e.state()[74]>0)

@@ -63,8 +63,12 @@ if (directory/'pole.gba').exists() and (directory/'pole.elf').exists():
 
 reference=json.loads((ROOT/'analysis/pacing-reference.json').read_text())
 pacing=measure_pacing();previous=reference['timings']
-for old,new in zip(previous['spins'],pacing['spins']):
- check(f'spin seed {new["seed"]} retains pre-optimization duration',old['seed']==new['seed'] and abs(old['vblanks']-new['vblanks'])<=2)
+# The archived pre-optimization trace predates the restored DOS four-stage
+# wheel. Compare wheel clocks against the explicitly selected prior cartridge;
+# the original reference still covers walking speed and host animation below.
+spin_reference=measure_pacing(directory/'pole.gba',directory/'pole.elf') if baseline else previous
+for old,new in zip(spin_reference['spins'],pacing['spins']):
+ check(f'spin seed {new["seed"]} retains baseline duration',old['seed']==new['seed'] and abs(old['vblanks']-new['vblanks'])<=2)
 for old,new in zip(previous['reveals'],pacing['reveals']):
  reaction_extension=0 if new['sector']==0 else 90
  check(f'reveal sector {new["sector"]} retains walking speed after the readable reaction',old['sector']==new['sector'] and abs(old['vblanks']+reaction_extension-new['vblanks'])<=4)
@@ -203,6 +207,6 @@ write('enabled',1);e.close()
 
 report=dict(status='passed',count=len(checks),checks=checks,rom_sha256=hashlib.sha256(rom).hexdigest(),
  ai_chest_vblanks=elapsed,audio_cases=len(audio_cases),idle_profile=current,baseline_profile=baseline,
- pacing_reference=reference,pacing_actual=pacing)
+ pacing_reference=reference,pacing_spin_reference=spin_reference,pacing_actual=pacing)
 (ROOT/'build/qa/performance-report.json').write_text(json.dumps(report,indent=2))
-print(json.dumps({k:v for k,v in report.items() if k not in ('checks','idle_profile','baseline_profile','pacing_reference','pacing_actual')}))
+print(json.dumps({k:v for k,v in report.items() if k not in ('checks','idle_profile','baseline_profile','pacing_reference','pacing_spin_reference','pacing_actual')}))

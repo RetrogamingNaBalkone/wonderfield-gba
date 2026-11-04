@@ -1,5 +1,5 @@
 {
-  "rom_sha256": "90d9eaa01f9447f1690d9493d047bc240ead35d59f19f8ae615f46f91920c0ae",
+  "rom_sha256": "f4ca9f79753b73e8cdb32c5cadf0971983c980faaf2b1d81bab4117d9c64e7d4",
   "rom_bytes": 1048576,
   "hash_source": "retro_load_game input buffer",
   "fps": 59.727500915527344,
@@ -16,18 +16,18 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        2668851959
+        172569293
       ],
       "scene_without_controls_crc32": [
-        3559933924
+        593898394
       ],
       "title_without_version_crc32": [
-        2425546075
+        97035617
       ],
       "cash_without_speech_crc32": [],
-      "audio_irqs": 10287,
-      "audio_samples": 164592,
-      "fast_silent_buffers": 10287
+      "audio_irqs": 10286,
+      "audio_samples": 164576,
+      "fast_silent_buffers": 10286
     },
     {
       "name": "human-turn-settled",
@@ -39,16 +39,16 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        2949810733
+        148474916
       ],
       "scene_without_controls_crc32": [
-        2596375021
+        2948891682
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
-      "audio_irqs": 10287,
-      "audio_samples": 164592,
-      "fast_silent_buffers": 10287
+      "audio_irqs": 10286,
+      "audio_samples": 164576,
+      "fast_silent_buffers": 10286
     },
     {
       "name": "human-turn-muted",
@@ -60,10 +60,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        1971018738
+        3530579451
       ],
       "scene_without_controls_crc32": [
-        2596375021
+        2948891682
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -81,7 +81,7 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        604181527
+        35113395
       ],
       "scene_without_controls_crc32": [
         1256277409
@@ -102,16 +102,16 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        794804075
+        1254410762
       ],
       "scene_without_controls_crc32": [
         3120757388
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
-      "audio_irqs": 10286,
+      "audio_irqs": 10287,
       "audio_samples": 164576,
-      "fast_silent_buffers": 10286
+      "fast_silent_buffers": 10287
     },
     {
       "name": "gift-page-idle",
@@ -123,10 +123,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        605821010
+        3886107209
       ],
       "scene_without_controls_crc32": [
-        3526428413
+        2276742794
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -144,10 +144,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        926383538
+        2773871441
       ],
       "scene_without_controls_crc32": [
-        1505763844
+        1150566068
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -165,10 +165,10 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        536576372
+        1767309718
       ],
       "scene_without_controls_crc32": [
-        2166311167
+        2621738564
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [],
@@ -186,7 +186,7 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        1615687405
+        650465947
       ],
       "scene_without_controls_crc32": [
         1325740747
@@ -207,14 +207,14 @@
       "draw_counter": "rendered_frames",
       "unique_ppu_frames": 1,
       "ppu_crc32": [
-        1439970037
+        1029388613
       ],
       "scene_without_controls_crc32": [
-        397976976
+        4294659691
       ],
       "title_without_version_crc32": [],
       "cash_without_speech_crc32": [
-        866622557
+        1258896715
       ],
       "audio_irqs": 10286,
       "audio_samples": 164576,

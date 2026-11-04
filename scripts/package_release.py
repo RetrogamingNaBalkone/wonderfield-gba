@@ -18,7 +18,8 @@ names+=['ai-chests-verification.json','ai-chest-0-0.png','ai-chest-0-1.png','ai-
 names+=['controls-verification.json','menu-title-v11.png','menu-pause-v11.png','help-v11.png','game-muted-v11.png','help-muted-v11.png','name-controls-v11.png']
 names+=['authors-verification.json','authors-dos-v11.png','authors-gba-v11.png','authors-gba-muted-v11.png','finale-4.png']
 names+=['restart-confirm-v11.png']
-for name in ('verification.json','visual-verification.json','events-verification.json','flows-verification.json','ai-chests-verification.json','stage-verification.json','v11-verification.json','performance-verification.json','records-verification.json','controls-verification.json','authors-verification.json'):
+names+=['rng-verification.json','rng-audit.json','rng-cold.json','rng-live-mash.json']
+for name in ('verification.json','visual-verification.json','events-verification.json','flows-verification.json','ai-chests-verification.json','stage-verification.json','v11-verification.json','performance-verification.json','records-verification.json','controls-verification.json','authors-verification.json','rng-verification.json','rng-audit.json','rng-cold.json','rng-live-mash.json'):
     report=json.loads((root/'docs/reports'/name).read_text(encoding='utf-8'))
     assert report['status']=='passed' and report['rom_sha256']==digest,name
 temporary=release/(archive_name+'.tmp')

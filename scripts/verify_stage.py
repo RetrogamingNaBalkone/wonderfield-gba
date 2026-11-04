@@ -38,6 +38,9 @@ def preview(name):
  def chunk(t,b):return struct.pack('>I',len(b))+t+b+struct.pack('>I',binascii.crc32(t+b)&0xffffffff)
  (ROOT/'build/qa'/name).write_bytes(b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',960,640,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(raw))+chunk(b'IEND',b''))
 def reset_turn(sector=12):
+ # This fixture audits the original first candidate, independently of the
+ # production history rule, which is covered by verify_rng.py.
+ c.memmove(e.ram+e.sym['spin_history']-0x02000000,bytes(12),12)
  e.run(12)
  for i in range(20):e.poke(18+i,0)
  for i in range(32):e.poke(38+i,0)

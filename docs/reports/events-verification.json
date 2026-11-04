@@ -414,11 +414,6 @@
     "longest balloon remains inside screen with original glyph size"
   ],
   "early_wheel_phases": [
-    0,
-    1,
-    2,
-    3,
-    4,
     5,
     6,
     7,
@@ -431,11 +426,16 @@
     14,
     15,
     16,
-    27,
-    28,
-    29,
-    30,
-    31
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26
   ],
   "ai_start_vblanks": 180,
   "prize_rubles": [
@@ -444,5 +444,5 @@
     100000,
     1000000
   ],
-  "rom_sha256": "90d9eaa01f9447f1690d9493d047bc240ead35d59f19f8ae615f46f91920c0ae"
+  "rom_sha256": "f4ca9f79753b73e8cdb32c5cadf0971983c980faaf2b1d81bab4117d9c64e7d4"
 }

@@ -53,12 +53,12 @@
     "credits-settled preserves scene pixels outside approved controls UI",
     "completed cash differs only inside approved host balloon bounds",
     "title changes only approved logo strokes, version and menu hint",
-    "spin seed 0 retains pre-optimization duration",
-    "spin seed 1 retains pre-optimization duration",
-    "spin seed 2 retains pre-optimization duration",
-    "spin seed 5 retains pre-optimization duration",
-    "spin seed 17 retains pre-optimization duration",
-    "spin seed 31 retains pre-optimization duration",
+    "spin seed 0 retains baseline duration",
+    "spin seed 1 retains baseline duration",
+    "spin seed 2 retains baseline duration",
+    "spin seed 5 retains baseline duration",
+    "spin seed 17 retains baseline duration",
+    "spin seed 31 retains baseline duration",
     "reveal sector 3 retains walking speed after the readable reaction",
     "reveal sector 0 retains walking speed after the readable reaction",
     "host keeps every pre-optimization face phase",
@@ -84,7 +84,7 @@
     "AI chest prompt lasts three seconds",
     "AI chest reply remains static and readable",
     "AI chest reply lasts three seconds before opening",
-    "SELECT pauses animated chest",
+    "START pauses animated chest",
     "resuming shifts chest animation clock by the pause duration",
     "empty preserves every FIFO byte",
     "empty preserves queue and oscillator state",
@@ -117,11 +117,11 @@
     "muted active note preserves queue and oscillator state",
     "muted active note preserves sample/transition diagnostics"
   ],
-  "rom_sha256": "90d9eaa01f9447f1690d9493d047bc240ead35d59f19f8ae615f46f91920c0ae",
+  "rom_sha256": "f4ca9f79753b73e8cdb32c5cadf0971983c980faaf2b1d81bab4117d9c64e7d4",
   "ai_chest_vblanks": 360,
   "audio_cases": 10,
   "idle_profile": {
-    "rom_sha256": "90d9eaa01f9447f1690d9493d047bc240ead35d59f19f8ae615f46f91920c0ae",
+    "rom_sha256": "f4ca9f79753b73e8cdb32c5cadf0971983c980faaf2b1d81bab4117d9c64e7d4",
     "rom_bytes": 1048576,
     "hash_source": "retro_load_game input buffer",
     "fps": 59.727500915527344,
@@ -138,18 +138,18 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          2668851959
+          172569293
         ],
         "scene_without_controls_crc32": [
-          3559933924
+          593898394
         ],
         "title_without_version_crc32": [
-          2425546075
+          97035617
         ],
         "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
       },
       {
         "name": "human-turn-settled",
@@ -161,16 +161,16 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          2949810733
+          148474916
         ],
         "scene_without_controls_crc32": [
-          2596375021
+          2948891682
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
       },
       {
         "name": "human-turn-muted",
@@ -182,10 +182,10 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1971018738
+          3530579451
         ],
         "scene_without_controls_crc32": [
-          2596375021
+          2948891682
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -203,7 +203,7 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          604181527
+          35113395
         ],
         "scene_without_controls_crc32": [
           1256277409
@@ -224,16 +224,16 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          794804075
+          1254410762
         ],
         "scene_without_controls_crc32": [
           3120757388
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
-        "audio_irqs": 10286,
+        "audio_irqs": 10287,
         "audio_samples": 164576,
-        "fast_silent_buffers": 10286
+        "fast_silent_buffers": 10287
       },
       {
         "name": "gift-page-idle",
@@ -245,10 +245,10 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          605821010
+          3886107209
         ],
         "scene_without_controls_crc32": [
-          3526428413
+          2276742794
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -266,10 +266,10 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          926383538
+          2773871441
         ],
         "scene_without_controls_crc32": [
-          1505763844
+          1150566068
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -287,10 +287,10 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          536576372
+          1767309718
         ],
         "scene_without_controls_crc32": [
-          2166311167
+          2621738564
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -308,7 +308,7 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1615687405
+          650465947
         ],
         "scene_without_controls_crc32": [
           1325740747
@@ -329,14 +329,14 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1439970037
+          1029388613
         ],
         "scene_without_controls_crc32": [
-          397976976
+          4294659691
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [
-          866622557
+          1258896715
         ],
         "audio_irqs": 10286,
         "audio_samples": 164576,
@@ -345,7 +345,7 @@
     ]
   },
   "baseline_profile": {
-    "rom_sha256": "656970d1f724b5692351d7f4c88e43f995984964bfa15b4bf8966e3906a267b0",
+    "rom_sha256": "7e49a8373407ff16f2235c9d3ac16d1c8b2b09dba8e7ac1c900d792da2b83a5c",
     "rom_bytes": 1048576,
     "hash_source": "retro_load_game input buffer",
     "fps": 59.727500915527344,
@@ -362,18 +362,18 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          3800471863
+          172569293
         ],
         "scene_without_controls_crc32": [
-          3559933924
+          593898394
         ],
         "title_without_version_crc32": [
-          3976662683
+          97035617
         ],
         "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
       },
       {
         "name": "human-turn-settled",
@@ -385,16 +385,16 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          3410679897
+          148474916
         ],
         "scene_without_controls_crc32": [
-          2596375021
+          2948891682
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
       },
       {
         "name": "human-turn-muted",
@@ -406,10 +406,10 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          3410679897
+          3530579451
         ],
         "scene_without_controls_crc32": [
-          2596375021
+          2948891682
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -427,7 +427,7 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          3298633534
+          35113395
         ],
         "scene_without_controls_crc32": [
           1256277409
@@ -448,16 +448,16 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1164672475
+          1254410762
         ],
         "scene_without_controls_crc32": [
           3120757388
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
-        "audio_irqs": 10286,
-        "audio_samples": 164576,
-        "fast_silent_buffers": 10286
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
       },
       {
         "name": "gift-page-idle",
@@ -469,10 +469,10 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          1761400240
+          3886107209
         ],
         "scene_without_controls_crc32": [
-          3526428413
+          2276742794
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -490,10 +490,10 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          3773556619
+          2773871441
         ],
         "scene_without_controls_crc32": [
-          1786642186
+          1150566068
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -511,10 +511,10 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          536576372
+          1767309718
         ],
         "scene_without_controls_crc32": [
-          2166311167
+          2621738564
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
@@ -532,16 +532,16 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          2983715019
+          650465947
         ],
         "scene_without_controls_crc32": [
           1325740747
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [],
-        "audio_irqs": 10286,
-        "audio_samples": 164576,
-        "fast_silent_buffers": 10286
+        "audio_irqs": 10287,
+        "audio_samples": 164592,
+        "fast_silent_buffers": 10287
       },
       {
         "name": "cash-completed",
@@ -553,18 +553,18 @@
         "draw_counter": "rendered_frames",
         "unique_ppu_frames": 1,
         "ppu_crc32": [
-          178295010
+          1029388613
         ],
         "scene_without_controls_crc32": [
-          397976976
+          4294659691
         ],
         "title_without_version_crc32": [],
         "cash_without_speech_crc32": [
-          866622557
+          1258896715
         ],
-        "audio_irqs": 10287,
-        "audio_samples": 164592,
-        "fast_silent_buffers": 10287
+        "audio_irqs": 10286,
+        "audio_samples": 164576,
+        "fast_silent_buffers": 10286
       }
     ]
   },
@@ -3154,232 +3154,428 @@
       ]
     }
   },
-  "pacing_actual": {
+  "pacing_spin_reference": {
     "spins": [
       {
         "seed": 0,
-        "vblanks": 232,
+        "vblanks": 372,
         "trace": [
           [
             4,
             12,
             0,
-            16,
+            30,
             1
           ],
           [
             5,
             12,
             1,
-            16,
+            30,
             1
           ],
           [
             10,
             11,
             0,
-            15,
+            29,
             1
           ],
           [
             15,
             11,
             1,
-            15,
+            29,
             1
           ],
           [
             20,
             10,
             0,
-            14,
+            28,
             1
           ],
           [
             25,
             10,
             1,
-            14,
+            28,
             1
           ],
           [
             30,
             9,
             0,
-            13,
+            27,
             1
           ],
           [
             35,
             9,
             1,
-            13,
+            27,
             1
           ],
           [
             40,
             8,
             0,
-            12,
+            26,
             1
           ],
           [
             45,
             8,
             1,
-            12,
+            26,
             1
           ],
           [
             50,
             7,
             0,
-            11,
+            25,
             1
           ],
           [
             55,
             7,
             1,
-            11,
+            25,
             1
           ],
           [
             60,
             6,
             0,
-            10,
+            24,
             1
           ],
           [
             65,
             6,
             1,
-            10,
+            24,
             1
           ],
           [
             70,
             5,
             0,
-            9,
+            23,
             1
           ],
           [
             75,
             5,
             1,
-            9,
+            23,
             1
           ],
           [
             80,
             4,
             0,
-            8,
+            22,
             1
           ],
           [
             85,
             4,
             1,
-            8,
+            22,
             1
           ],
           [
             90,
             3,
             0,
-            7,
-            4
+            21,
+            1
           ],
           [
             95,
             3,
             1,
-            7,
-            4
+            21,
+            1
           ],
           [
             100,
             2,
             0,
-            6,
-            6
+            20,
+            1
           ],
           [
-            106,
+            105,
             2,
             1,
-            6,
-            6
+            20,
+            1
           ],
           [
-            112,
+            110,
             1,
             0,
-            5,
-            8
+            19,
+            1
+          ],
+          [
+            115,
+            1,
+            1,
+            19,
+            1
           ],
           [
             120,
+            0,
+            0,
+            18,
+            1
+          ],
+          [
+            125,
+            0,
             1,
+            18,
+            1
+          ],
+          [
+            130,
+            15,
+            0,
+            17,
+            1
+          ],
+          [
+            135,
+            15,
+            1,
+            17,
+            1
+          ],
+          [
+            140,
+            14,
+            0,
+            16,
+            1
+          ],
+          [
+            145,
+            14,
+            1,
+            16,
+            1
+          ],
+          [
+            150,
+            13,
+            0,
+            15,
+            1
+          ],
+          [
+            155,
+            13,
+            1,
+            15,
+            1
+          ],
+          [
+            160,
+            12,
+            0,
+            14,
+            1
+          ],
+          [
+            165,
+            12,
+            1,
+            14,
+            1
+          ],
+          [
+            170,
+            11,
+            0,
+            13,
+            1
+          ],
+          [
+            175,
+            11,
+            1,
+            13,
+            1
+          ],
+          [
+            180,
+            10,
+            0,
+            12,
+            1
+          ],
+          [
+            185,
+            10,
+            1,
+            12,
+            1
+          ],
+          [
+            190,
+            9,
+            0,
+            11,
+            1
+          ],
+          [
+            195,
+            9,
+            1,
+            11,
+            1
+          ],
+          [
+            200,
+            8,
+            0,
+            10,
+            1
+          ],
+          [
+            205,
+            8,
+            1,
+            10,
+            1
+          ],
+          [
+            210,
+            7,
+            0,
+            9,
+            1
+          ],
+          [
+            215,
+            7,
+            1,
+            9,
+            1
+          ],
+          [
+            220,
+            6,
+            0,
+            8,
+            1
+          ],
+          [
+            225,
+            6,
+            1,
+            8,
+            1
+          ],
+          [
+            230,
+            5,
+            0,
+            7,
+            4
+          ],
+          [
+            235,
+            5,
+            1,
+            7,
+            4
+          ],
+          [
+            240,
+            4,
+            0,
+            6,
+            6
+          ],
+          [
+            246,
+            4,
+            1,
+            6,
+            6
+          ],
+          [
+            252,
+            3,
+            0,
+            5,
+            8
+          ],
+          [
+            260,
+            3,
             1,
             5,
             8
           ],
           [
-            128,
-            0,
+            268,
+            2,
             0,
             4,
             10
           ],
           [
-            138,
-            0,
+            278,
+            2,
             1,
             4,
             10
           ],
           [
-            148,
-            15,
+            288,
+            1,
             0,
             3,
             12
           ],
           [
-            160,
-            15,
+            300,
+            1,
             1,
             3,
             12
           ],
           [
-            172,
-            14,
+            312,
+            0,
             0,
             2,
             14
           ],
           [
-            186,
-            14,
+            326,
+            0,
             1,
             2,
             14
           ],
           [
-            200,
-            13,
+            340,
+            15,
             0,
             1,
             16
           ],
           [
-            216,
-            13,
+            356,
+            15,
             1,
             1,
             16
@@ -3388,340 +3584,424 @@
       },
       {
         "seed": 1,
-        "vblanks": 312,
+        "vblanks": 372,
         "trace": [
           [
             4,
             12,
             0,
-            24,
+            30,
             1
           ],
           [
             5,
             12,
             1,
-            24,
+            30,
             1
           ],
           [
             10,
             11,
             0,
-            23,
+            29,
             1
           ],
           [
             15,
             11,
             1,
-            23,
+            29,
             1
           ],
           [
             20,
             10,
             0,
-            22,
+            28,
             1
           ],
           [
             25,
             10,
             1,
-            22,
+            28,
             1
           ],
           [
             30,
             9,
             0,
-            21,
+            27,
             1
           ],
           [
             35,
             9,
             1,
-            21,
+            27,
             1
           ],
           [
             40,
             8,
             0,
-            20,
+            26,
             1
           ],
           [
             45,
             8,
             1,
-            20,
+            26,
             1
           ],
           [
             50,
             7,
             0,
-            19,
+            25,
             1
           ],
           [
             55,
             7,
             1,
-            19,
+            25,
             1
           ],
           [
             60,
             6,
             0,
-            18,
+            24,
             1
           ],
           [
             65,
             6,
             1,
-            18,
+            24,
             1
           ],
           [
             70,
             5,
             0,
-            17,
+            23,
             1
           ],
           [
             75,
             5,
             1,
-            17,
+            23,
             1
           ],
           [
             80,
             4,
             0,
-            16,
+            22,
             1
           ],
           [
             85,
             4,
             1,
-            16,
+            22,
             1
           ],
           [
             90,
             3,
             0,
-            15,
+            21,
             1
           ],
           [
             95,
             3,
             1,
-            15,
+            21,
             1
           ],
           [
             100,
             2,
             0,
-            14,
+            20,
             1
           ],
           [
             105,
             2,
             1,
-            14,
+            20,
             1
           ],
           [
             110,
             1,
             0,
-            13,
+            19,
             1
           ],
           [
             115,
             1,
             1,
-            13,
+            19,
             1
           ],
           [
             120,
             0,
             0,
-            12,
+            18,
             1
           ],
           [
             125,
             0,
             1,
-            12,
+            18,
             1
           ],
           [
             130,
             15,
             0,
-            11,
+            17,
             1
           ],
           [
             135,
             15,
             1,
-            11,
+            17,
             1
           ],
           [
             140,
             14,
             0,
-            10,
+            16,
             1
           ],
           [
             145,
             14,
             1,
-            10,
+            16,
             1
           ],
           [
             150,
             13,
             0,
-            9,
+            15,
             1
           ],
           [
             155,
             13,
             1,
-            9,
+            15,
             1
           ],
           [
             160,
             12,
             0,
-            8,
+            14,
             1
           ],
           [
             165,
             12,
             1,
-            8,
+            14,
             1
           ],
           [
             170,
             11,
             0,
-            7,
-            4
+            13,
+            1
           ],
           [
             175,
             11,
             1,
-            7,
-            4
+            13,
+            1
           ],
           [
             180,
             10,
             0,
-            6,
-            6
+            12,
+            1
           ],
           [
-            186,
+            185,
             10,
             1,
-            6,
-            6
+            12,
+            1
           ],
           [
-            192,
+            190,
             9,
             0,
-            5,
-            8
+            11,
+            1
+          ],
+          [
+            195,
+            9,
+            1,
+            11,
+            1
           ],
           [
             200,
+            8,
+            0,
+            10,
+            1
+          ],
+          [
+            205,
+            8,
+            1,
+            10,
+            1
+          ],
+          [
+            210,
+            7,
+            0,
             9,
+            1
+          ],
+          [
+            215,
+            7,
+            1,
+            9,
+            1
+          ],
+          [
+            220,
+            6,
+            0,
+            8,
+            1
+          ],
+          [
+            225,
+            6,
+            1,
+            8,
+            1
+          ],
+          [
+            230,
+            5,
+            0,
+            7,
+            4
+          ],
+          [
+            235,
+            5,
+            1,
+            7,
+            4
+          ],
+          [
+            240,
+            4,
+            0,
+            6,
+            6
+          ],
+          [
+            246,
+            4,
+            1,
+            6,
+            6
+          ],
+          [
+            252,
+            3,
+            0,
+            5,
+            8
+          ],
+          [
+            260,
+            3,
             1,
             5,
             8
           ],
           [
-            208,
-            8,
+            268,
+            2,
             0,
             4,
             10
           ],
           [
-            218,
-            8,
+            278,
+            2,
             1,
             4,
             10
           ],
           [
-            228,
-            7,
+            288,
+            1,
             0,
             3,
             12
           ],
           [
-            240,
-            7,
+            300,
+            1,
             1,
             3,
             12
           ],
           [
-            252,
-            6,
+            312,
+            0,
             0,
             2,
             14
           ],
           [
-            266,
-            6,
+            326,
+            0,
             1,
             2,
             14
           ],
           [
-            280,
-            5,
+            340,
+            15,
             0,
             1,
             16
           ],
           [
-            296,
-            5,
+            356,
+            15,
             1,
             1,
             16
@@ -3730,242 +4010,424 @@
       },
       {
         "seed": 2,
-        "vblanks": 242,
+        "vblanks": 372,
         "trace": [
           [
             4,
             12,
             0,
-            17,
+            30,
             1
           ],
           [
             5,
             12,
             1,
-            17,
+            30,
             1
           ],
           [
             10,
             11,
             0,
-            16,
+            29,
             1
           ],
           [
             15,
             11,
             1,
-            16,
+            29,
             1
           ],
           [
             20,
             10,
             0,
-            15,
+            28,
             1
           ],
           [
             25,
             10,
             1,
-            15,
+            28,
             1
           ],
           [
             30,
             9,
             0,
-            14,
+            27,
             1
           ],
           [
             35,
             9,
             1,
-            14,
+            27,
             1
           ],
           [
             40,
             8,
             0,
-            13,
+            26,
             1
           ],
           [
             45,
             8,
             1,
-            13,
+            26,
             1
           ],
           [
             50,
             7,
             0,
-            12,
+            25,
             1
           ],
           [
             55,
             7,
             1,
-            12,
+            25,
             1
           ],
           [
             60,
             6,
             0,
-            11,
+            24,
             1
           ],
           [
             65,
             6,
             1,
-            11,
+            24,
             1
           ],
           [
             70,
             5,
             0,
-            10,
+            23,
             1
           ],
           [
             75,
             5,
             1,
-            10,
+            23,
             1
           ],
           [
             80,
             4,
             0,
-            9,
+            22,
             1
           ],
           [
             85,
             4,
             1,
-            9,
+            22,
             1
           ],
           [
             90,
             3,
             0,
-            8,
+            21,
             1
           ],
           [
             95,
             3,
             1,
-            8,
+            21,
             1
           ],
           [
             100,
             2,
             0,
-            7,
-            4
+            20,
+            1
           ],
           [
             105,
             2,
             1,
-            7,
-            4
+            20,
+            1
           ],
           [
             110,
             1,
             0,
-            6,
-            6
+            19,
+            1
           ],
           [
-            116,
+            115,
             1,
             1,
-            6,
-            6
+            19,
+            1
           ],
           [
-            122,
+            120,
             0,
             0,
-            5,
-            8
+            18,
+            1
+          ],
+          [
+            125,
+            0,
+            1,
+            18,
+            1
           ],
           [
             130,
+            15,
             0,
+            17,
+            1
+          ],
+          [
+            135,
+            15,
+            1,
+            17,
+            1
+          ],
+          [
+            140,
+            14,
+            0,
+            16,
+            1
+          ],
+          [
+            145,
+            14,
+            1,
+            16,
+            1
+          ],
+          [
+            150,
+            13,
+            0,
+            15,
+            1
+          ],
+          [
+            155,
+            13,
+            1,
+            15,
+            1
+          ],
+          [
+            160,
+            12,
+            0,
+            14,
+            1
+          ],
+          [
+            165,
+            12,
+            1,
+            14,
+            1
+          ],
+          [
+            170,
+            11,
+            0,
+            13,
+            1
+          ],
+          [
+            175,
+            11,
+            1,
+            13,
+            1
+          ],
+          [
+            180,
+            10,
+            0,
+            12,
+            1
+          ],
+          [
+            185,
+            10,
+            1,
+            12,
+            1
+          ],
+          [
+            190,
+            9,
+            0,
+            11,
+            1
+          ],
+          [
+            195,
+            9,
+            1,
+            11,
+            1
+          ],
+          [
+            200,
+            8,
+            0,
+            10,
+            1
+          ],
+          [
+            205,
+            8,
+            1,
+            10,
+            1
+          ],
+          [
+            210,
+            7,
+            0,
+            9,
+            1
+          ],
+          [
+            215,
+            7,
+            1,
+            9,
+            1
+          ],
+          [
+            220,
+            6,
+            0,
+            8,
+            1
+          ],
+          [
+            225,
+            6,
+            1,
+            8,
+            1
+          ],
+          [
+            230,
+            5,
+            0,
+            7,
+            4
+          ],
+          [
+            235,
+            5,
+            1,
+            7,
+            4
+          ],
+          [
+            240,
+            4,
+            0,
+            6,
+            6
+          ],
+          [
+            246,
+            4,
+            1,
+            6,
+            6
+          ],
+          [
+            252,
+            3,
+            0,
+            5,
+            8
+          ],
+          [
+            260,
+            3,
             1,
             5,
             8
           ],
           [
-            138,
-            15,
+            268,
+            2,
             0,
             4,
             10
           ],
           [
-            148,
-            15,
+            278,
+            2,
             1,
             4,
             10
           ],
           [
-            158,
-            14,
+            288,
+            1,
             0,
             3,
             12
           ],
           [
-            170,
-            14,
+            300,
+            1,
             1,
             3,
             12
           ],
           [
-            182,
-            13,
+            312,
+            0,
             0,
             2,
             14
           ],
           [
-            196,
-            13,
+            326,
+            0,
             1,
             2,
             14
           ],
           [
-            210,
-            12,
+            340,
+            15,
             0,
             1,
             16
           ],
           [
-            226,
-            12,
+            356,
+            15,
             1,
             1,
             16
@@ -3974,368 +4436,256 @@
       },
       {
         "seed": 5,
-        "vblanks": 332,
+        "vblanks": 252,
         "trace": [
           [
             4,
             12,
             0,
-            26,
+            18,
             1
           ],
           [
             5,
             12,
             1,
-            26,
+            18,
             1
           ],
           [
             10,
             11,
             0,
-            25,
+            17,
             1
           ],
           [
             15,
             11,
             1,
-            25,
+            17,
             1
           ],
           [
             20,
             10,
             0,
-            24,
+            16,
             1
           ],
           [
             25,
             10,
             1,
-            24,
+            16,
             1
           ],
           [
             30,
             9,
             0,
-            23,
+            15,
             1
           ],
           [
             35,
             9,
             1,
-            23,
+            15,
             1
           ],
           [
             40,
             8,
             0,
-            22,
+            14,
             1
           ],
           [
             45,
             8,
             1,
-            22,
+            14,
             1
           ],
           [
             50,
             7,
             0,
-            21,
+            13,
             1
           ],
           [
             55,
             7,
             1,
-            21,
+            13,
             1
           ],
           [
             60,
             6,
             0,
-            20,
+            12,
             1
           ],
           [
             65,
             6,
             1,
-            20,
+            12,
             1
           ],
           [
             70,
             5,
             0,
-            19,
+            11,
             1
           ],
           [
             75,
             5,
             1,
-            19,
+            11,
             1
           ],
           [
             80,
             4,
             0,
-            18,
+            10,
             1
           ],
           [
             85,
             4,
             1,
-            18,
+            10,
             1
           ],
           [
             90,
             3,
             0,
-            17,
+            9,
             1
           ],
           [
             95,
             3,
             1,
-            17,
+            9,
             1
           ],
           [
             100,
             2,
             0,
-            16,
+            8,
             1
           ],
           [
             105,
             2,
             1,
-            16,
+            8,
             1
           ],
           [
             110,
             1,
             0,
-            15,
-            1
+            7,
+            4
           ],
           [
             115,
             1,
             1,
-            15,
-            1
+            7,
+            4
           ],
           [
             120,
             0,
             0,
-            14,
-            1
+            6,
+            6
           ],
           [
-            125,
+            126,
             0,
             1,
-            14,
-            1
+            6,
+            6
           ],
           [
-            130,
+            132,
             15,
             0,
-            13,
-            1
-          ],
-          [
-            135,
-            15,
-            1,
-            13,
-            1
+            5,
+            8
           ],
           [
             140,
+            15,
+            1,
+            5,
+            8
+          ],
+          [
+            148,
             14,
             0,
-            12,
-            1
+            4,
+            10
           ],
           [
-            145,
+            158,
             14,
             1,
-            12,
-            1
+            4,
+            10
           ],
           [
-            150,
+            168,
             13,
             0,
-            11,
-            1
-          ],
-          [
-            155,
-            13,
-            1,
-            11,
-            1
-          ],
-          [
-            160,
-            12,
-            0,
-            10,
-            1
-          ],
-          [
-            165,
-            12,
-            1,
-            10,
-            1
-          ],
-          [
-            170,
-            11,
-            0,
-            9,
-            1
-          ],
-          [
-            175,
-            11,
-            1,
-            9,
-            1
+            3,
+            12
           ],
           [
             180,
-            10,
-            0,
-            8,
-            1
-          ],
-          [
-            185,
-            10,
+            13,
             1,
-            8,
-            1
+            3,
+            12
           ],
           [
-            190,
-            9,
+            192,
+            12,
             0,
-            7,
-            4
-          ],
-          [
-            195,
-            9,
-            1,
-            7,
-            4
-          ],
-          [
-            200,
-            8,
-            0,
-            6,
-            6
+            2,
+            14
           ],
           [
             206,
-            8,
+            12,
             1,
-            6,
-            6
-          ],
-          [
-            212,
-            7,
-            0,
-            5,
-            8
+            2,
+            14
           ],
           [
             220,
-            7,
-            1,
-            5,
-            8
-          ],
-          [
-            228,
-            6,
-            0,
-            4,
-            10
-          ],
-          [
-            238,
-            6,
-            1,
-            4,
-            10
-          ],
-          [
-            248,
-            5,
-            0,
-            3,
-            12
-          ],
-          [
-            260,
-            5,
-            1,
-            3,
-            12
-          ],
-          [
-            272,
-            4,
-            0,
-            2,
-            14
-          ],
-          [
-            286,
-            4,
-            1,
-            2,
-            14
-          ],
-          [
-            300,
-            3,
+            11,
             0,
             1,
             16
           ],
           [
-            316,
-            3,
+            236,
+            11,
             1,
             1,
             16
@@ -4344,228 +4694,256 @@
       },
       {
         "seed": 17,
-        "vblanks": 232,
+        "vblanks": 252,
         "trace": [
           [
             4,
             12,
             0,
-            16,
+            18,
             1
           ],
           [
             5,
             12,
             1,
-            16,
+            18,
             1
           ],
           [
             10,
             11,
             0,
-            15,
+            17,
             1
           ],
           [
             15,
             11,
             1,
-            15,
+            17,
             1
           ],
           [
             20,
             10,
             0,
-            14,
+            16,
             1
           ],
           [
             25,
             10,
             1,
-            14,
+            16,
             1
           ],
           [
             30,
             9,
             0,
-            13,
+            15,
             1
           ],
           [
             35,
             9,
             1,
-            13,
+            15,
             1
           ],
           [
             40,
             8,
             0,
-            12,
+            14,
             1
           ],
           [
             45,
             8,
             1,
-            12,
+            14,
             1
           ],
           [
             50,
             7,
             0,
-            11,
+            13,
             1
           ],
           [
             55,
             7,
             1,
-            11,
+            13,
             1
           ],
           [
             60,
             6,
             0,
-            10,
+            12,
             1
           ],
           [
             65,
             6,
             1,
-            10,
+            12,
             1
           ],
           [
             70,
             5,
             0,
-            9,
+            11,
             1
           ],
           [
             75,
             5,
             1,
-            9,
+            11,
             1
           ],
           [
             80,
             4,
             0,
-            8,
+            10,
             1
           ],
           [
             85,
             4,
             1,
-            8,
+            10,
             1
           ],
           [
             90,
             3,
             0,
-            7,
-            4
+            9,
+            1
           ],
           [
             95,
             3,
             1,
-            7,
-            4
+            9,
+            1
           ],
           [
             100,
             2,
             0,
-            6,
-            6
+            8,
+            1
           ],
           [
-            106,
+            105,
             2,
             1,
-            6,
-            6
+            8,
+            1
           ],
           [
-            112,
+            110,
             1,
             0,
-            5,
-            8
+            7,
+            4
+          ],
+          [
+            115,
+            1,
+            1,
+            7,
+            4
           ],
           [
             120,
+            0,
+            0,
+            6,
+            6
+          ],
+          [
+            126,
+            0,
             1,
+            6,
+            6
+          ],
+          [
+            132,
+            15,
+            0,
+            5,
+            8
+          ],
+          [
+            140,
+            15,
             1,
             5,
             8
           ],
           [
-            128,
-            0,
-            0,
-            4,
-            10
-          ],
-          [
-            138,
-            0,
-            1,
-            4,
-            10
-          ],
-          [
             148,
-            15,
-            0,
-            3,
-            12
-          ],
-          [
-            160,
-            15,
-            1,
-            3,
-            12
-          ],
-          [
-            172,
             14,
             0,
-            2,
-            14
+            4,
+            10
           ],
           [
-            186,
+            158,
             14,
             1,
-            2,
-            14
+            4,
+            10
           ],
           [
-            200,
+            168,
             13,
+            0,
+            3,
+            12
+          ],
+          [
+            180,
+            13,
+            1,
+            3,
+            12
+          ],
+          [
+            192,
+            12,
+            0,
+            2,
+            14
+          ],
+          [
+            206,
+            12,
+            1,
+            2,
+            14
+          ],
+          [
+            220,
+            11,
             0,
             1,
             16
           ],
           [
-            216,
-            13,
+            236,
+            11,
             1,
             1,
             16
@@ -4574,326 +4952,3188 @@
       },
       {
         "seed": 31,
-        "vblanks": 302,
+        "vblanks": 252,
         "trace": [
           [
             4,
             12,
             0,
-            23,
+            18,
             1
           ],
           [
             5,
             12,
             1,
-            23,
+            18,
             1
           ],
           [
             10,
             11,
             0,
-            22,
+            17,
             1
           ],
           [
             15,
             11,
             1,
-            22,
+            17,
             1
           ],
           [
             20,
             10,
             0,
-            21,
+            16,
             1
           ],
           [
             25,
             10,
             1,
-            21,
+            16,
             1
           ],
           [
             30,
             9,
             0,
-            20,
+            15,
             1
           ],
           [
             35,
             9,
             1,
-            20,
+            15,
             1
           ],
           [
             40,
             8,
             0,
-            19,
+            14,
             1
           ],
           [
             45,
             8,
             1,
-            19,
+            14,
             1
           ],
           [
             50,
             7,
             0,
-            18,
+            13,
             1
           ],
           [
             55,
             7,
             1,
-            18,
+            13,
             1
           ],
           [
             60,
             6,
             0,
-            17,
+            12,
             1
           ],
           [
             65,
             6,
             1,
-            17,
+            12,
             1
           ],
           [
             70,
             5,
             0,
-            16,
+            11,
             1
           ],
           [
             75,
             5,
             1,
-            16,
+            11,
             1
           ],
           [
             80,
             4,
             0,
-            15,
+            10,
             1
           ],
           [
             85,
             4,
             1,
-            15,
+            10,
             1
           ],
           [
             90,
             3,
             0,
-            14,
+            9,
             1
           ],
           [
             95,
             3,
             1,
-            14,
+            9,
             1
           ],
           [
             100,
             2,
             0,
-            13,
+            8,
             1
           ],
           [
             105,
             2,
             1,
-            13,
+            8,
             1
           ],
           [
             110,
             1,
             0,
+            7,
+            4
+          ],
+          [
+            115,
+            1,
+            1,
+            7,
+            4
+          ],
+          [
+            120,
+            0,
+            0,
+            6,
+            6
+          ],
+          [
+            126,
+            0,
+            1,
+            6,
+            6
+          ],
+          [
+            132,
+            15,
+            0,
+            5,
+            8
+          ],
+          [
+            140,
+            15,
+            1,
+            5,
+            8
+          ],
+          [
+            148,
+            14,
+            0,
+            4,
+            10
+          ],
+          [
+            158,
+            14,
+            1,
+            4,
+            10
+          ],
+          [
+            168,
+            13,
+            0,
+            3,
+            12
+          ],
+          [
+            180,
+            13,
+            1,
+            3,
+            12
+          ],
+          [
+            192,
             12,
+            0,
+            2,
+            14
+          ],
+          [
+            206,
+            12,
+            1,
+            2,
+            14
+          ],
+          [
+            220,
+            11,
+            0,
+            1,
+            16
+          ],
+          [
+            236,
+            11,
+            1,
+            1,
+            16
+          ]
+        ]
+      }
+    ],
+    "reveals": [
+      {
+        "sector": 3,
+        "vblanks": 510,
+        "trace": [
+          [
+            7,
+            32,
+            0,
+            0
+          ],
+          [
+            180,
+            36,
+            0,
+            0
+          ],
+          [
+            185,
+            40,
+            0,
+            0
+          ],
+          [
+            190,
+            44,
+            0,
+            0
+          ],
+          [
+            195,
+            48,
+            0,
+            0
+          ],
+          [
+            200,
+            52,
+            0,
+            0
+          ],
+          [
+            205,
+            56,
+            0,
+            0
+          ],
+          [
+            210,
+            60,
+            0,
+            0
+          ],
+          [
+            215,
+            64,
+            0,
+            0
+          ],
+          [
+            220,
+            68,
+            0,
+            0
+          ],
+          [
+            225,
+            72,
+            0,
+            0
+          ],
+          [
+            230,
+            76,
+            0,
+            0
+          ],
+          [
+            235,
+            80,
+            0,
+            0
+          ],
+          [
+            240,
+            84,
+            6,
+            0
+          ],
+          [
+            245,
+            84,
+            5,
+            0
+          ],
+          [
+            250,
+            84,
+            4,
+            0
+          ],
+          [
+            255,
+            84,
+            3,
+            1
+          ],
+          [
+            260,
+            84,
+            2,
+            1
+          ],
+          [
+            265,
+            84,
+            1,
+            1
+          ],
+          [
+            270,
+            84,
+            0,
+            1
+          ],
+          [
+            275,
+            88,
+            0,
+            1
+          ],
+          [
+            280,
+            92,
+            0,
+            1
+          ],
+          [
+            285,
+            96,
+            0,
+            1
+          ],
+          [
+            290,
+            100,
+            0,
+            1
+          ],
+          [
+            295,
+            104,
+            0,
+            1
+          ],
+          [
+            300,
+            108,
+            0,
+            1
+          ],
+          [
+            305,
+            111,
+            6,
+            1
+          ],
+          [
+            310,
+            111,
+            5,
+            1
+          ],
+          [
+            315,
+            111,
+            4,
+            1
+          ],
+          [
+            320,
+            111,
+            3,
+            2
+          ],
+          [
+            325,
+            111,
+            2,
+            2
+          ],
+          [
+            330,
+            111,
+            1,
+            2
+          ],
+          [
+            335,
+            111,
+            0,
+            2
+          ],
+          [
+            340,
+            115,
+            0,
+            2
+          ],
+          [
+            345,
+            119,
+            0,
+            2
+          ],
+          [
+            350,
+            123,
+            0,
+            2
+          ],
+          [
+            355,
+            127,
+            0,
+            2
+          ],
+          [
+            360,
+            131,
+            0,
+            2
+          ],
+          [
+            365,
+            135,
+            0,
+            2
+          ],
+          [
+            370,
+            139,
+            0,
+            2
+          ],
+          [
+            375,
+            143,
+            0,
+            2
+          ],
+          [
+            380,
+            147,
+            0,
+            2
+          ],
+          [
+            385,
+            151,
+            0,
+            2
+          ],
+          [
+            390,
+            155,
+            0,
+            2
+          ],
+          [
+            395,
+            159,
+            0,
+            2
+          ],
+          [
+            400,
+            163,
+            0,
+            2
+          ],
+          [
+            405,
+            165,
+            6,
+            2
+          ],
+          [
+            410,
+            165,
+            5,
+            2
+          ],
+          [
+            415,
+            165,
+            4,
+            2
+          ],
+          [
+            420,
+            165,
+            3,
+            3
+          ],
+          [
+            425,
+            165,
+            2,
+            3
+          ],
+          [
+            430,
+            165,
+            1,
+            3
+          ],
+          [
+            435,
+            165,
+            0,
+            3
+          ],
+          [
+            440,
+            169,
+            0,
+            3
+          ],
+          [
+            445,
+            173,
+            0,
+            3
+          ],
+          [
+            450,
+            177,
+            0,
+            3
+          ],
+          [
+            455,
+            181,
+            0,
+            3
+          ],
+          [
+            460,
+            185,
+            0,
+            3
+          ],
+          [
+            465,
+            189,
+            0,
+            3
+          ],
+          [
+            470,
+            193,
+            0,
+            3
+          ],
+          [
+            475,
+            197,
+            0,
+            3
+          ],
+          [
+            480,
+            201,
+            0,
+            3
+          ],
+          [
+            485,
+            205,
+            0,
+            3
+          ],
+          [
+            490,
+            209,
+            0,
+            3
+          ],
+          [
+            495,
+            213,
+            0,
+            3
+          ],
+          [
+            500,
+            217,
+            0,
+            3
+          ],
+          [
+            505,
+            221,
+            0,
+            3
+          ]
+        ]
+      },
+      {
+        "sector": 0,
+        "vblanks": 335,
+        "trace": [
+          [
+            5,
+            36,
+            0,
+            0
+          ],
+          [
+            10,
+            40,
+            0,
+            0
+          ],
+          [
+            15,
+            44,
+            0,
+            0
+          ],
+          [
+            20,
+            48,
+            0,
+            0
+          ],
+          [
+            25,
+            52,
+            0,
+            0
+          ],
+          [
+            30,
+            56,
+            0,
+            0
+          ],
+          [
+            35,
+            60,
+            0,
+            0
+          ],
+          [
+            40,
+            64,
+            0,
+            0
+          ],
+          [
+            45,
+            68,
+            0,
+            0
+          ],
+          [
+            50,
+            72,
+            0,
+            0
+          ],
+          [
+            55,
+            76,
+            0,
+            0
+          ],
+          [
+            60,
+            80,
+            0,
+            0
+          ],
+          [
+            65,
+            84,
+            6,
+            0
+          ],
+          [
+            70,
+            84,
+            5,
+            0
+          ],
+          [
+            75,
+            84,
+            4,
+            0
+          ],
+          [
+            80,
+            84,
+            3,
+            1
+          ],
+          [
+            85,
+            84,
+            2,
+            1
+          ],
+          [
+            90,
+            84,
+            1,
+            1
+          ],
+          [
+            95,
+            84,
+            0,
+            1
+          ],
+          [
+            100,
+            88,
+            0,
+            1
+          ],
+          [
+            105,
+            92,
+            0,
+            1
+          ],
+          [
+            110,
+            96,
+            0,
+            1
+          ],
+          [
+            115,
+            100,
+            0,
+            1
+          ],
+          [
+            120,
+            104,
+            0,
+            1
+          ],
+          [
+            125,
+            108,
+            0,
+            1
+          ],
+          [
+            130,
+            111,
+            6,
+            1
+          ],
+          [
+            135,
+            111,
+            5,
+            1
+          ],
+          [
+            140,
+            111,
+            4,
+            1
+          ],
+          [
+            145,
+            111,
+            3,
+            2
+          ],
+          [
+            150,
+            111,
+            2,
+            2
+          ],
+          [
+            155,
+            111,
+            1,
+            2
+          ],
+          [
+            160,
+            111,
+            0,
+            2
+          ],
+          [
+            165,
+            115,
+            0,
+            2
+          ],
+          [
+            170,
+            119,
+            0,
+            2
+          ],
+          [
+            175,
+            123,
+            0,
+            2
+          ],
+          [
+            180,
+            127,
+            0,
+            2
+          ],
+          [
+            185,
+            131,
+            0,
+            2
+          ],
+          [
+            190,
+            135,
+            0,
+            2
+          ],
+          [
+            195,
+            139,
+            0,
+            2
+          ],
+          [
+            200,
+            143,
+            0,
+            2
+          ],
+          [
+            205,
+            147,
+            0,
+            2
+          ],
+          [
+            210,
+            151,
+            0,
+            2
+          ],
+          [
+            215,
+            155,
+            0,
+            2
+          ],
+          [
+            220,
+            159,
+            0,
+            2
+          ],
+          [
+            225,
+            163,
+            0,
+            2
+          ],
+          [
+            230,
+            165,
+            6,
+            2
+          ],
+          [
+            235,
+            165,
+            5,
+            2
+          ],
+          [
+            240,
+            165,
+            4,
+            2
+          ],
+          [
+            245,
+            165,
+            3,
+            3
+          ],
+          [
+            250,
+            165,
+            2,
+            3
+          ],
+          [
+            255,
+            165,
+            1,
+            3
+          ],
+          [
+            260,
+            165,
+            0,
+            3
+          ],
+          [
+            265,
+            169,
+            0,
+            3
+          ],
+          [
+            270,
+            173,
+            0,
+            3
+          ],
+          [
+            275,
+            177,
+            0,
+            3
+          ],
+          [
+            280,
+            181,
+            0,
+            3
+          ],
+          [
+            285,
+            185,
+            0,
+            3
+          ],
+          [
+            290,
+            189,
+            0,
+            3
+          ],
+          [
+            295,
+            193,
+            0,
+            3
+          ],
+          [
+            300,
+            197,
+            0,
+            3
+          ],
+          [
+            305,
+            201,
+            0,
+            3
+          ],
+          [
+            310,
+            205,
+            0,
+            3
+          ],
+          [
+            315,
+            209,
+            0,
+            3
+          ],
+          [
+            320,
+            213,
+            0,
+            3
+          ],
+          [
+            325,
+            217,
+            0,
+            3
+          ],
+          [
+            330,
+            221,
+            0,
+            3
+          ]
+        ]
+      }
+    ],
+    "host_phases": [
+      [
+        0,
+        0
+      ],
+      [
+        16,
+        1
+      ],
+      [
+        32,
+        2
+      ],
+      [
+        48,
+        3
+      ],
+      [
+        56,
+        4
+      ],
+      [
+        64,
+        5
+      ],
+      [
+        72,
+        6
+      ],
+      [
+        80,
+        7
+      ],
+      [
+        104,
+        8
+      ],
+      [
+        112,
+        9
+      ],
+      [
+        120,
+        10
+      ]
+    ],
+    "ai": [
+      {
+        "event": "turn",
+        "vblanks": 180
+      },
+      {
+        "event": "letter",
+        "vblanks": 180
+      },
+      {
+        "event": "answer",
+        "vblanks": 180
+      },
+      {
+        "event": "result",
+        "vblanks": 180
+      }
+    ]
+  },
+  "pacing_actual": {
+    "spins": [
+      {
+        "seed": 0,
+        "vblanks": 372,
+        "trace": [
+          [
+            4,
+            12,
+            0,
+            30,
+            1
+          ],
+          [
+            5,
+            12,
+            1,
+            30,
+            1
+          ],
+          [
+            10,
+            11,
+            0,
+            29,
+            1
+          ],
+          [
+            15,
+            11,
+            1,
+            29,
+            1
+          ],
+          [
+            20,
+            10,
+            0,
+            28,
+            1
+          ],
+          [
+            25,
+            10,
+            1,
+            28,
+            1
+          ],
+          [
+            30,
+            9,
+            0,
+            27,
+            1
+          ],
+          [
+            35,
+            9,
+            1,
+            27,
+            1
+          ],
+          [
+            40,
+            8,
+            0,
+            26,
+            1
+          ],
+          [
+            45,
+            8,
+            1,
+            26,
+            1
+          ],
+          [
+            50,
+            7,
+            0,
+            25,
+            1
+          ],
+          [
+            55,
+            7,
+            1,
+            25,
+            1
+          ],
+          [
+            60,
+            6,
+            0,
+            24,
+            1
+          ],
+          [
+            65,
+            6,
+            1,
+            24,
+            1
+          ],
+          [
+            70,
+            5,
+            0,
+            23,
+            1
+          ],
+          [
+            75,
+            5,
+            1,
+            23,
+            1
+          ],
+          [
+            80,
+            4,
+            0,
+            22,
+            1
+          ],
+          [
+            85,
+            4,
+            1,
+            22,
+            1
+          ],
+          [
+            90,
+            3,
+            0,
+            21,
+            1
+          ],
+          [
+            95,
+            3,
+            1,
+            21,
+            1
+          ],
+          [
+            100,
+            2,
+            0,
+            20,
+            1
+          ],
+          [
+            105,
+            2,
+            1,
+            20,
+            1
+          ],
+          [
+            110,
+            1,
+            0,
+            19,
             1
           ],
           [
             115,
             1,
             1,
-            12,
+            19,
             1
           ],
           [
             120,
             0,
             0,
-            11,
+            18,
             1
           ],
           [
             125,
             0,
             1,
-            11,
+            18,
             1
           ],
           [
             130,
             15,
             0,
-            10,
+            17,
             1
           ],
           [
             135,
             15,
             1,
-            10,
+            17,
             1
           ],
           [
             140,
             14,
             0,
-            9,
+            16,
             1
           ],
           [
             145,
             14,
             1,
-            9,
+            16,
             1
           ],
           [
             150,
             13,
             0,
-            8,
+            15,
             1
           ],
           [
             155,
             13,
             1,
-            8,
+            15,
             1
           ],
           [
             160,
             12,
             0,
-            7,
-            4
+            14,
+            1
           ],
           [
             165,
             12,
             1,
-            7,
-            4
+            14,
+            1
           ],
           [
             170,
             11,
             0,
-            6,
-            6
+            13,
+            1
           ],
           [
-            176,
+            175,
             11,
             1,
-            6,
-            6
+            13,
+            1
           ],
           [
-            182,
+            180,
             10,
             0,
-            5,
-            8
+            12,
+            1
+          ],
+          [
+            185,
+            10,
+            1,
+            12,
+            1
           ],
           [
             190,
+            9,
+            0,
+            11,
+            1
+          ],
+          [
+            195,
+            9,
+            1,
+            11,
+            1
+          ],
+          [
+            200,
+            8,
+            0,
             10,
+            1
+          ],
+          [
+            205,
+            8,
+            1,
+            10,
+            1
+          ],
+          [
+            210,
+            7,
+            0,
+            9,
+            1
+          ],
+          [
+            215,
+            7,
+            1,
+            9,
+            1
+          ],
+          [
+            220,
+            6,
+            0,
+            8,
+            1
+          ],
+          [
+            225,
+            6,
+            1,
+            8,
+            1
+          ],
+          [
+            230,
+            5,
+            0,
+            7,
+            4
+          ],
+          [
+            235,
+            5,
+            1,
+            7,
+            4
+          ],
+          [
+            240,
+            4,
+            0,
+            6,
+            6
+          ],
+          [
+            246,
+            4,
+            1,
+            6,
+            6
+          ],
+          [
+            252,
+            3,
+            0,
+            5,
+            8
+          ],
+          [
+            260,
+            3,
             1,
             5,
             8
           ],
           [
-            198,
-            9,
+            268,
+            2,
             0,
             4,
             10
           ],
           [
-            208,
-            9,
+            278,
+            2,
             1,
             4,
             10
           ],
           [
-            218,
-            8,
+            288,
+            1,
             0,
             3,
             12
           ],
           [
-            230,
-            8,
+            300,
+            1,
             1,
             3,
             12
           ],
           [
-            242,
-            7,
+            312,
+            0,
             0,
             2,
             14
           ],
           [
-            256,
-            7,
+            326,
+            0,
             1,
             2,
             14
           ],
           [
-            270,
-            6,
+            340,
+            15,
             0,
             1,
             16
           ],
           [
-            286,
+            356,
+            15,
+            1,
+            1,
+            16
+          ]
+        ]
+      },
+      {
+        "seed": 1,
+        "vblanks": 372,
+        "trace": [
+          [
+            4,
+            12,
+            0,
+            30,
+            1
+          ],
+          [
+            5,
+            12,
+            1,
+            30,
+            1
+          ],
+          [
+            10,
+            11,
+            0,
+            29,
+            1
+          ],
+          [
+            15,
+            11,
+            1,
+            29,
+            1
+          ],
+          [
+            20,
+            10,
+            0,
+            28,
+            1
+          ],
+          [
+            25,
+            10,
+            1,
+            28,
+            1
+          ],
+          [
+            30,
+            9,
+            0,
+            27,
+            1
+          ],
+          [
+            35,
+            9,
+            1,
+            27,
+            1
+          ],
+          [
+            40,
+            8,
+            0,
+            26,
+            1
+          ],
+          [
+            45,
+            8,
+            1,
+            26,
+            1
+          ],
+          [
+            50,
+            7,
+            0,
+            25,
+            1
+          ],
+          [
+            55,
+            7,
+            1,
+            25,
+            1
+          ],
+          [
+            60,
             6,
+            0,
+            24,
+            1
+          ],
+          [
+            65,
+            6,
+            1,
+            24,
+            1
+          ],
+          [
+            70,
+            5,
+            0,
+            23,
+            1
+          ],
+          [
+            75,
+            5,
+            1,
+            23,
+            1
+          ],
+          [
+            80,
+            4,
+            0,
+            22,
+            1
+          ],
+          [
+            85,
+            4,
+            1,
+            22,
+            1
+          ],
+          [
+            90,
+            3,
+            0,
+            21,
+            1
+          ],
+          [
+            95,
+            3,
+            1,
+            21,
+            1
+          ],
+          [
+            100,
+            2,
+            0,
+            20,
+            1
+          ],
+          [
+            105,
+            2,
+            1,
+            20,
+            1
+          ],
+          [
+            110,
+            1,
+            0,
+            19,
+            1
+          ],
+          [
+            115,
+            1,
+            1,
+            19,
+            1
+          ],
+          [
+            120,
+            0,
+            0,
+            18,
+            1
+          ],
+          [
+            125,
+            0,
+            1,
+            18,
+            1
+          ],
+          [
+            130,
+            15,
+            0,
+            17,
+            1
+          ],
+          [
+            135,
+            15,
+            1,
+            17,
+            1
+          ],
+          [
+            140,
+            14,
+            0,
+            16,
+            1
+          ],
+          [
+            145,
+            14,
+            1,
+            16,
+            1
+          ],
+          [
+            150,
+            13,
+            0,
+            15,
+            1
+          ],
+          [
+            155,
+            13,
+            1,
+            15,
+            1
+          ],
+          [
+            160,
+            12,
+            0,
+            14,
+            1
+          ],
+          [
+            165,
+            12,
+            1,
+            14,
+            1
+          ],
+          [
+            170,
+            11,
+            0,
+            13,
+            1
+          ],
+          [
+            175,
+            11,
+            1,
+            13,
+            1
+          ],
+          [
+            180,
+            10,
+            0,
+            12,
+            1
+          ],
+          [
+            185,
+            10,
+            1,
+            12,
+            1
+          ],
+          [
+            190,
+            9,
+            0,
+            11,
+            1
+          ],
+          [
+            195,
+            9,
+            1,
+            11,
+            1
+          ],
+          [
+            200,
+            8,
+            0,
+            10,
+            1
+          ],
+          [
+            205,
+            8,
+            1,
+            10,
+            1
+          ],
+          [
+            210,
+            7,
+            0,
+            9,
+            1
+          ],
+          [
+            215,
+            7,
+            1,
+            9,
+            1
+          ],
+          [
+            220,
+            6,
+            0,
+            8,
+            1
+          ],
+          [
+            225,
+            6,
+            1,
+            8,
+            1
+          ],
+          [
+            230,
+            5,
+            0,
+            7,
+            4
+          ],
+          [
+            235,
+            5,
+            1,
+            7,
+            4
+          ],
+          [
+            240,
+            4,
+            0,
+            6,
+            6
+          ],
+          [
+            246,
+            4,
+            1,
+            6,
+            6
+          ],
+          [
+            252,
+            3,
+            0,
+            5,
+            8
+          ],
+          [
+            260,
+            3,
+            1,
+            5,
+            8
+          ],
+          [
+            268,
+            2,
+            0,
+            4,
+            10
+          ],
+          [
+            278,
+            2,
+            1,
+            4,
+            10
+          ],
+          [
+            288,
+            1,
+            0,
+            3,
+            12
+          ],
+          [
+            300,
+            1,
+            1,
+            3,
+            12
+          ],
+          [
+            312,
+            0,
+            0,
+            2,
+            14
+          ],
+          [
+            326,
+            0,
+            1,
+            2,
+            14
+          ],
+          [
+            340,
+            15,
+            0,
+            1,
+            16
+          ],
+          [
+            356,
+            15,
+            1,
+            1,
+            16
+          ]
+        ]
+      },
+      {
+        "seed": 2,
+        "vblanks": 372,
+        "trace": [
+          [
+            4,
+            12,
+            0,
+            30,
+            1
+          ],
+          [
+            5,
+            12,
+            1,
+            30,
+            1
+          ],
+          [
+            10,
+            11,
+            0,
+            29,
+            1
+          ],
+          [
+            15,
+            11,
+            1,
+            29,
+            1
+          ],
+          [
+            20,
+            10,
+            0,
+            28,
+            1
+          ],
+          [
+            25,
+            10,
+            1,
+            28,
+            1
+          ],
+          [
+            30,
+            9,
+            0,
+            27,
+            1
+          ],
+          [
+            35,
+            9,
+            1,
+            27,
+            1
+          ],
+          [
+            40,
+            8,
+            0,
+            26,
+            1
+          ],
+          [
+            45,
+            8,
+            1,
+            26,
+            1
+          ],
+          [
+            50,
+            7,
+            0,
+            25,
+            1
+          ],
+          [
+            55,
+            7,
+            1,
+            25,
+            1
+          ],
+          [
+            60,
+            6,
+            0,
+            24,
+            1
+          ],
+          [
+            65,
+            6,
+            1,
+            24,
+            1
+          ],
+          [
+            70,
+            5,
+            0,
+            23,
+            1
+          ],
+          [
+            75,
+            5,
+            1,
+            23,
+            1
+          ],
+          [
+            80,
+            4,
+            0,
+            22,
+            1
+          ],
+          [
+            85,
+            4,
+            1,
+            22,
+            1
+          ],
+          [
+            90,
+            3,
+            0,
+            21,
+            1
+          ],
+          [
+            95,
+            3,
+            1,
+            21,
+            1
+          ],
+          [
+            100,
+            2,
+            0,
+            20,
+            1
+          ],
+          [
+            105,
+            2,
+            1,
+            20,
+            1
+          ],
+          [
+            110,
+            1,
+            0,
+            19,
+            1
+          ],
+          [
+            115,
+            1,
+            1,
+            19,
+            1
+          ],
+          [
+            120,
+            0,
+            0,
+            18,
+            1
+          ],
+          [
+            125,
+            0,
+            1,
+            18,
+            1
+          ],
+          [
+            130,
+            15,
+            0,
+            17,
+            1
+          ],
+          [
+            135,
+            15,
+            1,
+            17,
+            1
+          ],
+          [
+            140,
+            14,
+            0,
+            16,
+            1
+          ],
+          [
+            145,
+            14,
+            1,
+            16,
+            1
+          ],
+          [
+            150,
+            13,
+            0,
+            15,
+            1
+          ],
+          [
+            155,
+            13,
+            1,
+            15,
+            1
+          ],
+          [
+            160,
+            12,
+            0,
+            14,
+            1
+          ],
+          [
+            165,
+            12,
+            1,
+            14,
+            1
+          ],
+          [
+            170,
+            11,
+            0,
+            13,
+            1
+          ],
+          [
+            175,
+            11,
+            1,
+            13,
+            1
+          ],
+          [
+            180,
+            10,
+            0,
+            12,
+            1
+          ],
+          [
+            185,
+            10,
+            1,
+            12,
+            1
+          ],
+          [
+            190,
+            9,
+            0,
+            11,
+            1
+          ],
+          [
+            195,
+            9,
+            1,
+            11,
+            1
+          ],
+          [
+            200,
+            8,
+            0,
+            10,
+            1
+          ],
+          [
+            205,
+            8,
+            1,
+            10,
+            1
+          ],
+          [
+            210,
+            7,
+            0,
+            9,
+            1
+          ],
+          [
+            215,
+            7,
+            1,
+            9,
+            1
+          ],
+          [
+            220,
+            6,
+            0,
+            8,
+            1
+          ],
+          [
+            225,
+            6,
+            1,
+            8,
+            1
+          ],
+          [
+            230,
+            5,
+            0,
+            7,
+            4
+          ],
+          [
+            235,
+            5,
+            1,
+            7,
+            4
+          ],
+          [
+            240,
+            4,
+            0,
+            6,
+            6
+          ],
+          [
+            246,
+            4,
+            1,
+            6,
+            6
+          ],
+          [
+            252,
+            3,
+            0,
+            5,
+            8
+          ],
+          [
+            260,
+            3,
+            1,
+            5,
+            8
+          ],
+          [
+            268,
+            2,
+            0,
+            4,
+            10
+          ],
+          [
+            278,
+            2,
+            1,
+            4,
+            10
+          ],
+          [
+            288,
+            1,
+            0,
+            3,
+            12
+          ],
+          [
+            300,
+            1,
+            1,
+            3,
+            12
+          ],
+          [
+            312,
+            0,
+            0,
+            2,
+            14
+          ],
+          [
+            326,
+            0,
+            1,
+            2,
+            14
+          ],
+          [
+            340,
+            15,
+            0,
+            1,
+            16
+          ],
+          [
+            356,
+            15,
+            1,
+            1,
+            16
+          ]
+        ]
+      },
+      {
+        "seed": 5,
+        "vblanks": 252,
+        "trace": [
+          [
+            4,
+            12,
+            0,
+            18,
+            1
+          ],
+          [
+            5,
+            12,
+            1,
+            18,
+            1
+          ],
+          [
+            10,
+            11,
+            0,
+            17,
+            1
+          ],
+          [
+            15,
+            11,
+            1,
+            17,
+            1
+          ],
+          [
+            20,
+            10,
+            0,
+            16,
+            1
+          ],
+          [
+            25,
+            10,
+            1,
+            16,
+            1
+          ],
+          [
+            30,
+            9,
+            0,
+            15,
+            1
+          ],
+          [
+            35,
+            9,
+            1,
+            15,
+            1
+          ],
+          [
+            40,
+            8,
+            0,
+            14,
+            1
+          ],
+          [
+            45,
+            8,
+            1,
+            14,
+            1
+          ],
+          [
+            50,
+            7,
+            0,
+            13,
+            1
+          ],
+          [
+            55,
+            7,
+            1,
+            13,
+            1
+          ],
+          [
+            60,
+            6,
+            0,
+            12,
+            1
+          ],
+          [
+            65,
+            6,
+            1,
+            12,
+            1
+          ],
+          [
+            70,
+            5,
+            0,
+            11,
+            1
+          ],
+          [
+            75,
+            5,
+            1,
+            11,
+            1
+          ],
+          [
+            80,
+            4,
+            0,
+            10,
+            1
+          ],
+          [
+            85,
+            4,
+            1,
+            10,
+            1
+          ],
+          [
+            90,
+            3,
+            0,
+            9,
+            1
+          ],
+          [
+            95,
+            3,
+            1,
+            9,
+            1
+          ],
+          [
+            100,
+            2,
+            0,
+            8,
+            1
+          ],
+          [
+            105,
+            2,
+            1,
+            8,
+            1
+          ],
+          [
+            110,
+            1,
+            0,
+            7,
+            4
+          ],
+          [
+            115,
+            1,
+            1,
+            7,
+            4
+          ],
+          [
+            120,
+            0,
+            0,
+            6,
+            6
+          ],
+          [
+            126,
+            0,
+            1,
+            6,
+            6
+          ],
+          [
+            132,
+            15,
+            0,
+            5,
+            8
+          ],
+          [
+            140,
+            15,
+            1,
+            5,
+            8
+          ],
+          [
+            148,
+            14,
+            0,
+            4,
+            10
+          ],
+          [
+            158,
+            14,
+            1,
+            4,
+            10
+          ],
+          [
+            168,
+            13,
+            0,
+            3,
+            12
+          ],
+          [
+            180,
+            13,
+            1,
+            3,
+            12
+          ],
+          [
+            192,
+            12,
+            0,
+            2,
+            14
+          ],
+          [
+            206,
+            12,
+            1,
+            2,
+            14
+          ],
+          [
+            220,
+            11,
+            0,
+            1,
+            16
+          ],
+          [
+            236,
+            11,
+            1,
+            1,
+            16
+          ]
+        ]
+      },
+      {
+        "seed": 17,
+        "vblanks": 252,
+        "trace": [
+          [
+            4,
+            12,
+            0,
+            18,
+            1
+          ],
+          [
+            5,
+            12,
+            1,
+            18,
+            1
+          ],
+          [
+            10,
+            11,
+            0,
+            17,
+            1
+          ],
+          [
+            15,
+            11,
+            1,
+            17,
+            1
+          ],
+          [
+            20,
+            10,
+            0,
+            16,
+            1
+          ],
+          [
+            25,
+            10,
+            1,
+            16,
+            1
+          ],
+          [
+            30,
+            9,
+            0,
+            15,
+            1
+          ],
+          [
+            35,
+            9,
+            1,
+            15,
+            1
+          ],
+          [
+            40,
+            8,
+            0,
+            14,
+            1
+          ],
+          [
+            45,
+            8,
+            1,
+            14,
+            1
+          ],
+          [
+            50,
+            7,
+            0,
+            13,
+            1
+          ],
+          [
+            55,
+            7,
+            1,
+            13,
+            1
+          ],
+          [
+            60,
+            6,
+            0,
+            12,
+            1
+          ],
+          [
+            65,
+            6,
+            1,
+            12,
+            1
+          ],
+          [
+            70,
+            5,
+            0,
+            11,
+            1
+          ],
+          [
+            75,
+            5,
+            1,
+            11,
+            1
+          ],
+          [
+            80,
+            4,
+            0,
+            10,
+            1
+          ],
+          [
+            85,
+            4,
+            1,
+            10,
+            1
+          ],
+          [
+            90,
+            3,
+            0,
+            9,
+            1
+          ],
+          [
+            95,
+            3,
+            1,
+            9,
+            1
+          ],
+          [
+            100,
+            2,
+            0,
+            8,
+            1
+          ],
+          [
+            105,
+            2,
+            1,
+            8,
+            1
+          ],
+          [
+            110,
+            1,
+            0,
+            7,
+            4
+          ],
+          [
+            115,
+            1,
+            1,
+            7,
+            4
+          ],
+          [
+            120,
+            0,
+            0,
+            6,
+            6
+          ],
+          [
+            126,
+            0,
+            1,
+            6,
+            6
+          ],
+          [
+            132,
+            15,
+            0,
+            5,
+            8
+          ],
+          [
+            140,
+            15,
+            1,
+            5,
+            8
+          ],
+          [
+            148,
+            14,
+            0,
+            4,
+            10
+          ],
+          [
+            158,
+            14,
+            1,
+            4,
+            10
+          ],
+          [
+            168,
+            13,
+            0,
+            3,
+            12
+          ],
+          [
+            180,
+            13,
+            1,
+            3,
+            12
+          ],
+          [
+            192,
+            12,
+            0,
+            2,
+            14
+          ],
+          [
+            206,
+            12,
+            1,
+            2,
+            14
+          ],
+          [
+            220,
+            11,
+            0,
+            1,
+            16
+          ],
+          [
+            236,
+            11,
+            1,
+            1,
+            16
+          ]
+        ]
+      },
+      {
+        "seed": 31,
+        "vblanks": 252,
+        "trace": [
+          [
+            4,
+            12,
+            0,
+            18,
+            1
+          ],
+          [
+            5,
+            12,
+            1,
+            18,
+            1
+          ],
+          [
+            10,
+            11,
+            0,
+            17,
+            1
+          ],
+          [
+            15,
+            11,
+            1,
+            17,
+            1
+          ],
+          [
+            20,
+            10,
+            0,
+            16,
+            1
+          ],
+          [
+            25,
+            10,
+            1,
+            16,
+            1
+          ],
+          [
+            30,
+            9,
+            0,
+            15,
+            1
+          ],
+          [
+            35,
+            9,
+            1,
+            15,
+            1
+          ],
+          [
+            40,
+            8,
+            0,
+            14,
+            1
+          ],
+          [
+            45,
+            8,
+            1,
+            14,
+            1
+          ],
+          [
+            50,
+            7,
+            0,
+            13,
+            1
+          ],
+          [
+            55,
+            7,
+            1,
+            13,
+            1
+          ],
+          [
+            60,
+            6,
+            0,
+            12,
+            1
+          ],
+          [
+            65,
+            6,
+            1,
+            12,
+            1
+          ],
+          [
+            70,
+            5,
+            0,
+            11,
+            1
+          ],
+          [
+            75,
+            5,
+            1,
+            11,
+            1
+          ],
+          [
+            80,
+            4,
+            0,
+            10,
+            1
+          ],
+          [
+            85,
+            4,
+            1,
+            10,
+            1
+          ],
+          [
+            90,
+            3,
+            0,
+            9,
+            1
+          ],
+          [
+            95,
+            3,
+            1,
+            9,
+            1
+          ],
+          [
+            100,
+            2,
+            0,
+            8,
+            1
+          ],
+          [
+            105,
+            2,
+            1,
+            8,
+            1
+          ],
+          [
+            110,
+            1,
+            0,
+            7,
+            4
+          ],
+          [
+            115,
+            1,
+            1,
+            7,
+            4
+          ],
+          [
+            120,
+            0,
+            0,
+            6,
+            6
+          ],
+          [
+            126,
+            0,
+            1,
+            6,
+            6
+          ],
+          [
+            132,
+            15,
+            0,
+            5,
+            8
+          ],
+          [
+            140,
+            15,
+            1,
+            5,
+            8
+          ],
+          [
+            148,
+            14,
+            0,
+            4,
+            10
+          ],
+          [
+            158,
+            14,
+            1,
+            4,
+            10
+          ],
+          [
+            168,
+            13,
+            0,
+            3,
+            12
+          ],
+          [
+            180,
+            13,
+            1,
+            3,
+            12
+          ],
+          [
+            192,
+            12,
+            0,
+            2,
+            14
+          ],
+          [
+            206,
+            12,
+            1,
+            2,
+            14
+          ],
+          [
+            220,
+            11,
+            0,
+            1,
+            16
+          ],
+          [
+            236,
+            11,
             1,
             1,
             16

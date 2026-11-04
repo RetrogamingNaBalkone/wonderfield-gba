@@ -10,6 +10,14 @@ $taskBytecode=$env:PYTHONDONTWRITEBYTECODE
 try {
  $env:PYTHONDONTWRITEBYTECODE='1'
  & "$PSScriptRoot/build.ps1" -ZigExe $ZigExe -PythonExe $PythonExe
+ & $PythonExe scripts/verify_rng.py
+ if($LASTEXITCODE) {throw 'mGBA input timing, startup release and spin history verification failed'}
+ & $PythonExe scripts/audit_rng.py
+ if($LASTEXITCODE) {throw 'DOS RNG and first spin candidate verification failed'}
+ & $PythonExe scripts/verify_rng_cold.py
+ if($LASTEXITCODE) {throw 'mGBA blank-SRAM first-round verification failed'}
+ & $PythonExe scripts/verify_rng_live_mash.py
+ if($LASTEXITCODE) {throw 'mGBA normal fast-A gameplay verification failed'}
  & $PythonExe scripts/verify.py
  if($LASTEXITCODE) {throw 'mGBA verification failed'}
  & $PythonExe scripts/verify_scene.py
@@ -36,6 +44,10 @@ try {
  if($LASTEXITCODE) {throw 'Resource contact sheet failed'}
  New-Item -ItemType Directory -Force -Path dist,docs/media,docs/reports | Out-Null
  Copy-Item -LiteralPath build/gba/pole.gba -Destination 'dist/pole 1.1.gba'
+ Copy-Item -LiteralPath build/qa/rng-verification.json -Destination docs/reports/rng-verification.json
+ Copy-Item -LiteralPath build/qa/rng-audit.json -Destination docs/reports/rng-audit.json
+ Copy-Item -LiteralPath build/qa/rng-cold.json -Destination docs/reports/rng-cold.json
+ Copy-Item -LiteralPath build/qa/rng-live-mash.json -Destination docs/reports/rng-live-mash.json
  Copy-Item -LiteralPath build/qa/report.json -Destination docs/reports/verification.json
  Copy-Item -LiteralPath build/qa/layout-fixed.png -Destination docs/media/gameplay.png
  Copy-Item -LiteralPath build/qa/keyboard.png -Destination docs/media/keyboard.png

@@ -1,0 +1,3298 @@
+{
+  "status": "passed",
+  "rom_sha256": "f4ca9f79753b73e8cdb32c5cadf0971983c980faaf2b1d81bab4117d9c64e7d4",
+  "summary": [
+    {
+      "party": 0,
+      "spins": 93,
+      "counts": {
+        "-1": 6,
+        "0": 7,
+        "20": 14,
+        "5": 10,
+        "10": 14,
+        "15": 12,
+        "300": 9,
+        "25": 8,
+        "100": 7,
+        "204": 5,
+        "202": 1
+      }
+    },
+    {
+      "party": 1,
+      "spins": 122,
+      "counts": {
+        "10": 17,
+        "300": 10,
+        "20": 15,
+        "0": 17,
+        "5": 17,
+        "25": 9,
+        "15": 13,
+        "202": 6,
+        "-1": 4,
+        "204": 6,
+        "100": 8
+      }
+    },
+    {
+      "party": 2,
+      "spins": 148,
+      "counts": {
+        "202": 6,
+        "20": 20,
+        "0": 24,
+        "10": 13,
+        "15": 14,
+        "5": 21,
+        "-1": 14,
+        "204": 7,
+        "100": 10,
+        "300": 6,
+        "25": 13
+      }
+    }
+  ],
+  "samples": [
+    {
+      "boot_delay": 4,
+      "cadence": 2,
+      "party": 0,
+      "counts": {
+        "-1": 2,
+        "0": 5,
+        "20": 3,
+        "5": 3,
+        "10": 3,
+        "15": 2,
+        "300": 2,
+        "25": 1
+      },
+      "spins": [
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 3593575483
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 2,
+          "award": 0,
+          "rng": 2793118956
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 2664315093
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 3846855138
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 4176668196
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 7,
+          "award": 10,
+          "rng": 1866489755
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 3911684090
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 293778439
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 7,
+          "award": 10,
+          "rng": 3096929230
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 3329483598
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 6,
+          "award": 300,
+          "rng": 3352917906
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 9,
+          "award": 20,
+          "rng": 3866928298
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 4,
+          "award": 25,
+          "rng": 4024689389
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 1,
+          "award": 5,
+          "rng": 2499719259
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 6,
+          "award": 300,
+          "rng": 4112159508
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 2449582415
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 5,
+          "award": 15,
+          "rng": 706817899
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 2,
+          "award": 0,
+          "rng": 3249391873
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 10878273
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 1989752759
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 7,
+          "award": 10,
+          "rng": 1486023791
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 4,
+      "cadence": 2,
+      "party": 1,
+      "counts": {
+        "10": 6,
+        "300": 5,
+        "20": 3,
+        "0": 4,
+        "5": 6,
+        "25": 1,
+        "15": 1,
+        "202": 1,
+        "-1": 2
+      },
+      "spins": [
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 7,
+          "award": 10,
+          "rng": 3253348091
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 6,
+          "award": 300,
+          "rng": 1466057641
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 9,
+          "award": 20,
+          "rng": 99822836
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 8,
+          "award": 0,
+          "rng": 601896574
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 11,
+          "award": 5,
+          "rng": 50076744
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 8,
+          "award": 0,
+          "rng": 3648929137
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 2,
+          "award": 0,
+          "rng": 4092068242
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 3,
+          "award": 10,
+          "rng": 745926258
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 7,
+          "award": 10,
+          "rng": 314939781
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 6,
+          "award": 300,
+          "rng": 2046923424
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 1474117691
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 3,
+          "award": 10,
+          "rng": 2499421245
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 2028813900
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 2667076469
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 1699594220
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 93591191
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 3,
+          "award": 10,
+          "rng": 2047046563
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 8,
+          "award": 0,
+          "rng": 3492069600
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 3554422608
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 5,
+          "award": 15,
+          "rng": 3855841506
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 7,
+          "award": 10,
+          "rng": 1682256875
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 753754022
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 12,
+          "award": 202,
+          "rng": 2959863333
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 1,
+          "award": 5,
+          "rng": 1871970458
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 3688052960
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 14,
+          "award": -1,
+          "rng": 1238611886
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 2379802953
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 2051515481
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 6,
+          "award": 300,
+          "rng": 3614468797
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 4,
+      "cadence": 2,
+      "party": 2,
+      "counts": {
+        "202": 2,
+        "20": 4,
+        "0": 4,
+        "10": 1,
+        "15": 2,
+        "5": 3,
+        "-1": 1,
+        "204": 1
+      },
+      "spins": [
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 12,
+          "award": 202,
+          "rng": 776507680
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 656844212
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 3917781157
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 8,
+          "award": 0,
+          "rng": 2243936033
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 2537674961
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 2663963844
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 3,
+          "award": 10,
+          "rng": 1436393560
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 13,
+          "award": 15,
+          "rng": 2015103460
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 1,
+          "award": 5,
+          "rng": 2613336917
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 99664630
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 13,
+          "award": 15,
+          "rng": 2012958789
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 10,
+          "award": 204,
+          "rng": 2814511620
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 2564950756
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 12,
+          "award": 202,
+          "rng": 2797073283
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 11,
+          "award": 5,
+          "rng": 3919607124
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 8,
+          "award": 0,
+          "rng": 2922529556
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 11,
+          "award": 5,
+          "rng": 1031292387
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 2780114486
+        }
+      ],
+      "x2_distances": [
+        13
+      ]
+    },
+    {
+      "boot_delay": 4,
+      "cadence": 4,
+      "party": 0,
+      "counts": {
+        "5": 1,
+        "100": 2,
+        "25": 1,
+        "15": 1
+      },
+      "spins": [
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 1247423051
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 0,
+          "award": 100,
+          "rng": 3508546155
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 0,
+          "award": 100,
+          "rng": 3653520221
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 4,
+          "award": 25,
+          "rng": 2641741159
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 563400454
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 4,
+      "cadence": 4,
+      "party": 1,
+      "counts": {
+        "0": 6,
+        "15": 6,
+        "10": 5,
+        "300": 3,
+        "25": 3,
+        "20": 3,
+        "204": 1,
+        "5": 3,
+        "100": 4,
+        "202": 1,
+        "-1": 1
+      },
+      "spins": [
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 8,
+          "award": 0,
+          "rng": 2822582243
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 3501641281
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 5,
+          "award": 15,
+          "rng": 1353670794
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 3,
+          "award": 10,
+          "rng": 3815781392
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 3,
+          "award": 10,
+          "rng": 1756595875
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 6,
+          "award": 300,
+          "rng": 2280769897
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 5,
+          "award": 15,
+          "rng": 1159025715
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 4,
+          "award": 25,
+          "rng": 2350819885
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 15,
+          "award": 20,
+          "rng": 3595293175
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 13,
+          "award": 15,
+          "rng": 2623925298
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 10,
+          "award": 204,
+          "rng": 3905567816
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 11,
+          "award": 5,
+          "rng": 3114397098
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 11,
+          "award": 5,
+          "rng": 74253903
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 0,
+          "award": 100,
+          "rng": 2370054008
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 3,
+          "award": 10,
+          "rng": 2799864927
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 5,
+          "award": 15,
+          "rng": 3954005717
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 8,
+          "award": 0,
+          "rng": 2723787653
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 0,
+          "target": 2,
+          "award": 0,
+          "rng": 3195794601
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 1,
+          "target": 12,
+          "award": 202,
+          "rng": 2592340423
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 1743952124
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 0,
+          "target": 1,
+          "award": 5,
+          "rng": 3692645334
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 1,
+          "target": 6,
+          "award": 300,
+          "rng": 544830773
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 2,
+          "award": 0,
+          "rng": 3697304816
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 1009813717
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 1,
+          "target": 3,
+          "award": 10,
+          "rng": 1197935751
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 1037959680
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 4,
+          "award": 25,
+          "rng": 2649041107
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 0,
+          "award": 100,
+          "rng": 371086523
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 2,
+          "award": 0,
+          "rng": 2243033299
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 0,
+          "target": 2,
+          "award": 0,
+          "rng": 2553619355
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 1,
+          "target": 3,
+          "award": 10,
+          "rng": 1103164731
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 2697990394
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 2,
+          "target": 15,
+          "award": 20,
+          "rng": 4100452707
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 0,
+          "target": 0,
+          "award": 100,
+          "rng": 501121330
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 0,
+          "target": 13,
+          "award": 15,
+          "rng": 2629159475
+        },
+        {
+          "game": 1,
+          "round": 1,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 2616906362
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 4,
+      "cadence": 4,
+      "party": 2,
+      "counts": {
+        "5": 3,
+        "202": 1,
+        "0": 3,
+        "15": 1,
+        "204": 1,
+        "-1": 3,
+        "20": 3,
+        "100": 2,
+        "300": 1,
+        "10": 1,
+        "25": 1
+      },
+      "spins": [
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 1,
+          "award": 5,
+          "rng": 1527337372
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 12,
+          "award": 202,
+          "rng": 3563404989
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 11,
+          "award": 5,
+          "rng": 2705159382
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 8,
+          "award": 0,
+          "rng": 414994998
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 5,
+          "award": 15,
+          "rng": 1234342258
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 10,
+          "award": 204,
+          "rng": 3789927200
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 3277834537
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 1798922333
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 1919693166
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 0,
+          "award": 100,
+          "rng": 4141041977
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 0,
+          "award": 100,
+          "rng": 2919012618
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 15,
+          "award": 20,
+          "rng": 1133249118
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 2201171538
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 1418639136
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 841966984
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 3513000411
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 9,
+          "award": 20,
+          "rng": 2079092352
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 8,
+          "award": 0,
+          "rng": 4003655517
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 3,
+          "award": 10,
+          "rng": 2051260607
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 2194266593
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 8,
+      "cadence": 2,
+      "party": 0,
+      "counts": {
+        "300": 1,
+        "15": 2,
+        "20": 1,
+        "5": 1,
+        "-1": 1,
+        "204": 1,
+        "25": 2,
+        "10": 2,
+        "0": 1
+      },
+      "spins": [
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 2818737243
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 5,
+          "award": 15,
+          "rng": 2120818581
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 967345080
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 11,
+          "award": 5,
+          "rng": 3206924232
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 1234860706
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 10,
+          "award": 204,
+          "rng": 1875968445
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 5,
+          "award": 15,
+          "rng": 775428612
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 4,
+          "award": 25,
+          "rng": 2451573514
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 7,
+          "award": 10,
+          "rng": 3584787269
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 2,
+          "award": 0,
+          "rng": 1629609675
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 3,
+          "award": 10,
+          "rng": 169972034
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 3820430463
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 8,
+      "cadence": 2,
+      "party": 1,
+      "counts": {
+        "20": 3,
+        "15": 1,
+        "0": 3,
+        "100": 1,
+        "25": 1,
+        "5": 3,
+        "202": 1,
+        "204": 1
+      },
+      "spins": [
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 1932745341
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 5,
+          "award": 15,
+          "rng": 1549090870
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 2,
+          "award": 0,
+          "rng": 1264458337
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 733633310
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 1903905080
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 1,
+          "award": 5,
+          "rng": 1478465602
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 12,
+          "award": 202,
+          "rng": 2276493306
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 3154004942
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 2,
+          "award": 0,
+          "rng": 3717415509
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 15,
+          "award": 20,
+          "rng": 2047034299
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 1,
+          "award": 5,
+          "rng": 459894927
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 4145086610
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 10,
+          "award": 204,
+          "rng": 3848783286
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 11,
+          "award": 5,
+          "rng": 3693192811
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 8,
+      "cadence": 2,
+      "party": 2,
+      "counts": {
+        "204": 3,
+        "300": 2,
+        "5": 4,
+        "-1": 6,
+        "15": 2,
+        "20": 3,
+        "25": 3,
+        "0": 1,
+        "10": 1,
+        "100": 1
+      },
+      "spins": [
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 10,
+          "award": 204,
+          "rng": 298446043
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 6,
+          "award": 300,
+          "rng": 284146271
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 11,
+          "award": 5,
+          "rng": 1776988340
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 3713465712
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 459370575
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 14,
+          "award": -1,
+          "rng": 2036021322
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 1,
+          "award": 5,
+          "rng": 844844224
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 650603205
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 6,
+          "award": 300,
+          "rng": 1752603348
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 333501361
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 625324266
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 4003720423
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 4224258801
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 2843187213
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 1007986914
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 10,
+          "award": 204,
+          "rng": 1122995645
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 4,
+          "award": 25,
+          "rng": 4284172027
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 3530146576
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 8,
+          "award": 0,
+          "rng": 373929406
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 3,
+          "award": 10,
+          "rng": 2298702614
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 0,
+          "award": 100,
+          "rng": 1019579962
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 427247316
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 2350638468
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 14,
+          "award": -1,
+          "rng": 2342234093
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 10,
+          "award": 204,
+          "rng": 4206599187
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 740995303
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 12,
+      "cadence": 4,
+      "party": 0,
+      "counts": {
+        "300": 3,
+        "10": 6,
+        "25": 3,
+        "15": 2,
+        "20": 4,
+        "100": 2,
+        "5": 4,
+        "-1": 1
+      },
+      "spins": [
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 2253281256
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 3,
+          "award": 10,
+          "rng": 1711496954
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 7,
+          "award": 10,
+          "rng": 2475880476
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 4,
+          "award": 25,
+          "rng": 276867986
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 1359314473
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 13,
+          "award": 15,
+          "rng": 4144634309
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 2688116996
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 7,
+          "award": 10,
+          "rng": 198072512
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 3,
+          "award": 10,
+          "rng": 1332673849
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 0,
+          "award": 100,
+          "rng": 2403632454
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 3,
+          "award": 10,
+          "rng": 4211828676
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 3,
+          "award": 10,
+          "rng": 3463461893
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 1,
+          "award": 5,
+          "rng": 2953953537
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 0,
+          "award": 100,
+          "rng": 3660846656
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 11,
+          "award": 5,
+          "rng": 2637291327
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 11,
+          "award": 5,
+          "rng": 2526082235
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 13,
+          "award": 15,
+          "rng": 3710071463
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 3462683546
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 6,
+          "award": 300,
+          "rng": 3405232450
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 1,
+          "award": 5,
+          "rng": 409557157
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 15,
+          "award": 20,
+          "rng": 73554363
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 2661175815
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 9,
+          "award": 20,
+          "rng": 170084894
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 2677224665
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 2473025499
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 12,
+      "cadence": 4,
+      "party": 1,
+      "counts": {
+        "300": 2,
+        "0": 2,
+        "15": 1,
+        "10": 4,
+        "20": 1
+      },
+      "spins": [
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 2777627171
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 3906225011
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 8,
+          "award": 0,
+          "rng": 414228264
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 1348536597
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 7,
+          "award": 10,
+          "rng": 1594640794
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 7,
+          "award": 10,
+          "rng": 2054620351
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 866433479
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 7,
+          "award": 10,
+          "rng": 245786864
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 3712996636
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 3,
+          "award": 10,
+          "rng": 531176999
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 12,
+      "cadence": 4,
+      "party": 2,
+      "counts": {
+        "0": 4,
+        "10": 4,
+        "5": 5,
+        "300": 1,
+        "100": 3,
+        "15": 3,
+        "20": 2,
+        "25": 5
+      },
+      "spins": [
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 8,
+          "award": 0,
+          "rng": 1759944138
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 7,
+          "award": 10,
+          "rng": 1607270382
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 11,
+          "award": 5,
+          "rng": 577227476
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 2871338416
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 2,
+          "award": 0,
+          "rng": 3132267088
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 1163852670
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 5,
+          "award": 15,
+          "rng": 1658060113
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 1657581249
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 0,
+          "award": 100,
+          "rng": 2805686474
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 0,
+          "award": 100,
+          "rng": 1447578936
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 1048233974
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 4009282554
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 4040071317
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 9,
+          "award": 20,
+          "rng": 4258549610
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 4,
+          "award": 25,
+          "rng": 3112646969
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 13,
+          "award": 15,
+          "rng": 2471753776
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 7,
+          "award": 10,
+          "rng": 3457442795
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 7,
+          "award": 10,
+          "rng": 886719693
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 2714734488
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 2987276891
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 2586184071
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 7,
+          "award": 10,
+          "rng": 1722101450
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 1058725203
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 2,
+          "award": 0,
+          "rng": 2488833111
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 1,
+          "award": 5,
+          "rng": 163681592
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 2310550778
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 1466373146
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 20,
+      "cadence": 6,
+      "party": 0,
+      "counts": {
+        "15": 3,
+        "100": 2,
+        "10": 1,
+        "-1": 1,
+        "0": 1,
+        "300": 2,
+        "20": 1,
+        "204": 1,
+        "25": 1
+      },
+      "spins": [
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 13,
+          "award": 15,
+          "rng": 2841829015
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 13,
+          "award": 15,
+          "rng": 2085807667
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 1243342727
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 2161736682
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 3,
+          "award": 10,
+          "rng": 3988780127
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 13,
+          "award": 15,
+          "rng": 699168217
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 3692509154
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 8,
+          "award": 0,
+          "rng": 302567563
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 2838805992
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 1036308861
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 3935443257
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 10,
+          "award": 204,
+          "rng": 401703828
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 270779164
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 20,
+      "cadence": 6,
+      "party": 1,
+      "counts": {
+        "5": 4,
+        "204": 2,
+        "-1": 1,
+        "100": 2,
+        "0": 2,
+        "20": 2,
+        "202": 1,
+        "15": 3,
+        "25": 1
+      },
+      "spins": [
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 3617251422
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 10,
+          "award": 204,
+          "rng": 4249104347
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 2611138690
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 3025414213
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 2308690993
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 679588931
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 2,
+          "award": 0,
+          "rng": 1158349698
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 15,
+          "award": 20,
+          "rng": 2621360209
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 10,
+          "award": 204,
+          "rng": 3027427321
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 12,
+          "award": 202,
+          "rng": 1398114160
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 8,
+          "award": 0,
+          "rng": 3540881226
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 1328215316
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 2981863451
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 3204187344
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 1502091733
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 5,
+          "award": 15,
+          "rng": 1033873698
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 1035068156
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 3746278292
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 20,
+      "cadence": 6,
+      "party": 2,
+      "counts": {
+        "15": 3,
+        "20": 2
+      },
+      "spins": [
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 13,
+          "award": 15,
+          "rng": 3354188970
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 3239232598
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 2311947106
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 2391957194
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 5,
+          "award": 15,
+          "rng": 675832855
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 5,
+      "cadence": 8,
+      "party": 0,
+      "counts": {
+        "300": 1,
+        "204": 3,
+        "20": 5,
+        "15": 2,
+        "5": 1,
+        "10": 2,
+        "100": 1,
+        "-1": 1,
+        "202": 1
+      },
+      "spins": [
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 831213267
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 10,
+          "award": 204,
+          "rng": 2593145597
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 3356210909
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 10,
+          "award": 204,
+          "rng": 4179226247
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 5,
+          "award": 15,
+          "rng": 672859170
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 1,
+          "award": 5,
+          "rng": 2779175591
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 1854973091
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 10,
+          "award": 204,
+          "rng": 1778307965
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 3370866590
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 7,
+          "award": 10,
+          "rng": 2917234464
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 3,
+          "award": 10,
+          "rng": 180646196
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 5,
+          "award": 15,
+          "rng": 4115347766
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 1361632468
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 3566570893
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 1118270235
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 0,
+          "target": 12,
+          "award": 202,
+          "rng": 105647602
+        },
+        {
+          "game": 0,
+          "round": 0,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 4070596950
+        }
+      ],
+      "x2_distances": []
+    },
+    {
+      "boot_delay": 5,
+      "cadence": 8,
+      "party": 1,
+      "counts": {
+        "10": 2,
+        "5": 1,
+        "202": 2,
+        "204": 2,
+        "15": 1,
+        "20": 3,
+        "25": 3,
+        "100": 1
+      },
+      "spins": [
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 7,
+          "award": 10,
+          "rng": 3449242534
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 3,
+          "award": 10,
+          "rng": 2382949051
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 4214859270
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 12,
+          "award": 202,
+          "rng": 660445939
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 10,
+          "award": 204,
+          "rng": 3934512987
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 12,
+          "award": 202,
+          "rng": 1478894982
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 13,
+          "award": 15,
+          "rng": 3080165972
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 2130732280
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 10,
+          "award": 204,
+          "rng": 2977028202
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 4150781005
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 0,
+          "award": 100,
+          "rng": 3991098796
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 2,
+          "target": 15,
+          "award": 20,
+          "rng": 1110744011
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 1065714282
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 4,
+          "award": 25,
+          "rng": 1734070026
+        },
+        {
+          "game": 1,
+          "round": 0,
+          "player": 0,
+          "target": 9,
+          "award": 20,
+          "rng": 2548440969
+        }
+      ],
+      "x2_distances": [
+        2
+      ]
+    },
+    {
+      "boot_delay": 5,
+      "cadence": 8,
+      "party": 2,
+      "counts": {
+        "20": 6,
+        "5": 6,
+        "10": 6,
+        "25": 4,
+        "100": 4,
+        "0": 12,
+        "300": 2,
+        "15": 3,
+        "204": 2,
+        "-1": 4,
+        "202": 3
+      },
+      "spins": [
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 841633154
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 11,
+          "award": 5,
+          "rng": 917194502
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 7,
+          "award": 10,
+          "rng": 1672057539
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 466790638
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 4,
+          "award": 25,
+          "rng": 2940863484
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 0,
+          "award": 100,
+          "rng": 272187463
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 2,
+          "award": 0,
+          "rng": 94427252
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 1623823310
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 6,
+          "award": 300,
+          "rng": 108435257
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 2,
+          "award": 0,
+          "rng": 993772980
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 2,
+          "award": 0,
+          "rng": 3868283318
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 1,
+          "award": 5,
+          "rng": 1959959246
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 7,
+          "award": 10,
+          "rng": 38861565
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 8,
+          "award": 0,
+          "rng": 1694856912
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 1465716796
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 5,
+          "award": 15,
+          "rng": 2944156858
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 7,
+          "award": 10,
+          "rng": 235212010
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 10,
+          "award": 204,
+          "rng": 3148010785
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 2313124968
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 9,
+          "award": 20,
+          "rng": 2992674370
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 3346860330
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 0,
+          "target": 7,
+          "award": 10,
+          "rng": 2946720550
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 1,
+          "target": 2,
+          "award": 0,
+          "rng": 1478604650
+        },
+        {
+          "game": 2,
+          "round": 0,
+          "player": 2,
+          "target": 0,
+          "award": 100,
+          "rng": 1964955785
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 1249069298
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 7,
+          "award": 10,
+          "rng": 2982708272
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 1,
+          "award": 5,
+          "rng": 3706733870
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 2,
+          "target": 3,
+          "award": 10,
+          "rng": 3037678543
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 2904526142
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 10,
+          "award": 204,
+          "rng": 1390698936
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 8,
+          "award": 0,
+          "rng": 1611582248
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 2,
+          "target": 13,
+          "award": 15,
+          "rng": 1606446227
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 1875529895
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 8,
+          "award": 0,
+          "rng": 4104640398
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 2,
+          "target": 8,
+          "award": 0,
+          "rng": 2908137602
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 14,
+          "award": -1,
+          "rng": 1273002736
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 12,
+          "award": 202,
+          "rng": 2947610180
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 2,
+          "target": 14,
+          "award": -1,
+          "rng": 2249348952
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 12,
+          "award": 202,
+          "rng": 2048097602
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 12,
+          "award": 202,
+          "rng": 1667447050
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 11,
+          "award": 5,
+          "rng": 236900566
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 2,
+          "target": 11,
+          "award": 5,
+          "rng": 2635758548
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 6,
+          "award": 300,
+          "rng": 1746848261
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 2,
+          "award": 0,
+          "rng": 3133131597
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 2365624441
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 15,
+          "award": 20,
+          "rng": 144826526
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 0,
+          "award": 100,
+          "rng": 2457757299
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 11,
+          "award": 5,
+          "rng": 3369462430
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 2,
+          "target": 9,
+          "award": 20,
+          "rng": 3596930877
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 13,
+          "award": 15,
+          "rng": 1955714395
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 0,
+          "target": 8,
+          "award": 0,
+          "rng": 2259273502
+        },
+        {
+          "game": 2,
+          "round": 1,
+          "player": 1,
+          "target": 4,
+          "award": 25,
+          "rng": 3521985540
+        }
+      ],
+      "x2_distances": [
+        2,
+        1
+      ]
+    }
+  ],
+  "limitation": "Read-only mGBA observation of normal games driven by physical button inputs.\n\nBlank SRAM is installed before boot, then only input APIs are used. A repeats\non a fixed cadence; RIGHT advances past used letters and START saves a record\nname so play can continue. No mode, player, RNG or timing fixtures are used.\nRecorded wheel awards come from the immutable spin target, once per spin.\nInput remains frame-granular and does not model all real human timings.\n"
+}

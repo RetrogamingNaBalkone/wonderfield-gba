@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "rom_sha256": "ff23d19569bbd2be833a7fe66da32660e4c91768f120854b88e4b0e7de68a235",
+  "rom_sha256": "f4ca9f79753b73e8cdb32c5cadf0971983c980faaf2b1d81bab4117d9c64e7d4",
   "original_sha256": "37c2a9d340206687b4200412080be5ef56f7dbedfd01c6ebc443b0957e899bb4",
   "dos_rng_instruction_comparisons": 65536,
   "word_output_space": {
@@ -111,18 +111,18 @@
     "cold_boots": [
       {
         "vblanks_before_A": 220,
-        "word_id": 234,
-        "rng": 3587076592
+        "word_id": 80,
+        "rng": 852757400
       },
       {
         "vblanks_before_A": 220,
-        "word_id": 234,
-        "rng": 3587076592
+        "word_id": 80,
+        "rng": 852757400
       },
       {
         "vblanks_before_A": 221,
-        "word_id": 424,
-        "rng": 2682756314
+        "word_id": 486,
+        "rng": 3817969927
       }
     ]
   }
