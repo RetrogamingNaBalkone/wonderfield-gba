@@ -112,12 +112,12 @@ static void people(void){
  if(eyes>=0)half_image(eyes,204,eye_y+6,-1);
  if(mp.humans==1)score_badge(2,164,142);
 }
-/* Fixed identities, ordered from the current viewer's perspective. Full-width
+/* Fixed player-one, player-two, player-three order on every console. Full-width
  * 80-pixel cells fit all ten name characters without touching the studio. */
 static void multiplayer_panel(void){
  if(mp.humans==1||(game.keyboard&&game.mode==LETTER))return;
  for(int slot=0;slot<3;slot++){
-  int who=slot==1?mp.viewer:perspective(slot==0?0:1),x=slot*80;
+  int who=(slot+2)%3,x=slot*80;
   int out=mp.eliminated&(1<<who),active=game.player==who&&!out;
   u8 color=out?8:active?15:0;
   rect(x,144,80,16,active?1:7);
@@ -173,7 +173,7 @@ static void keyboard(void){
  rect(3,84,234,66,1);border(3,84,234,66,0);
  for(int i=0;i<32;i++){
   int x=8+(i%8)*28,y=86+(i/8)*16;
-  int used=game.mode==SOLVE?fixed_letter(i):game.mode!=NAME&&game.used[i];
+  int used=game.mode==SOLVE?fixed_letter(i):game.mode==LETTER&&game.used[i];
   rect(x,y,26,15,i==game.cursor?14:11);border(x,y,26,15,0);
   /* The first row of CP866 0x89 is its breve: keep it off the key border. */
   glyph(x+9,y+1,128+i,0,used?8:0);

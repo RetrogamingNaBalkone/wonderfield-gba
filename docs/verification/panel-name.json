@@ -1,0 +1,11 @@
+{
+  "rom_sha256": "aea6da539193bf909e23c590ccd3497a279aa050426ddfd5624c2e3a8ca8cf49",
+  "test": "scripts/test-panel-name.py",
+  "status": "passed",
+  "checks": [
+    "fixed panel for all 9 player/viewer combinations",
+    "active highlight follows player",
+    "name keyboard after actual restart ignores used letters",
+    "game letter keyboard retains used marks"
+  ]
+}
