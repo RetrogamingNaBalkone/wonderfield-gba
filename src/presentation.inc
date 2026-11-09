@@ -342,8 +342,8 @@ static void render(void){
   line(8,108,224,8);
   if(prefs.choice==0){
    centered(112,prefs.dictionary?"Слова из Поля чудес 2.":"Слова из первой игры.",1,0);
-   centered(122,prefs.dictionary?"Добавлено 191 слово:":"Привычный словарь порта.",1,0);
-   if(prefs.dictionary)centered(132,"еда и напитки.",1,0);
+   centered(122,prefs.dictionary?"Добавлены темы":"Привычный словарь порта.",1,0);
+   if(prefs.dictionary)centered(132,"Кулинария и Напитки",1,0);
   }else if(prefs.choice==1){
    centered(112,"3 верные буквы подряд",1,0);
    centered(122,"дают выбор шкатулки.",1,0);
