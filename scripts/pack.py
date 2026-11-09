@@ -54,6 +54,14 @@ def main():
   code.append(arr(f'small_data_{s["id"]}',small));half.append((sw,sh,small));half_refs.append(f'{{{sw},{sh},small_data_{s["id"]}}}')
  code.append('const Sprite sprites[57]={'+','.join(sprites)+'};\n')
  code.append('const Sprite sprites_half[57]={'+','.join(half_refs)+'};\n')
+ # Extra DOS characters and human back poses; the original 57 assets are untouched.
+ extra_refs=[]
+ for index,item in enumerate(json.loads((OUT/'mp-sprites.json').read_text())):
+  w,h=item['width'],item['height'];raw=(OUT/f"mp-sprite-{item['id']:02}.bin").read_bytes()
+  scale=min(.5,29/((99 if item['id'] in (21,22,57,58,59) else w)*35/48));sw=max(1,round(w*35/48*scale));sh=max(1,round(h*scale))
+  pixels=outlined_resize(raw,w,h,sw,sh,2)
+  code.append(arr(f'extra_data_{index}',pixels));extra_refs.append(f'{{{sw},{sh},extra_data_{index}}}')
+ code.append('const Sprite extra_sprites[13]={'+','.join(extra_refs)+'};\n')
  # Reduce each logo directly from the repaired source mask, preserving fine
  # joins at both title and certificate sizes. Extracted DOS assets stay lossless.
  title_refs=[];certificate_refs=[]
@@ -132,8 +140,10 @@ def main():
  (GEN/'wheel-labels.json').write_text(json.dumps(wheel_labels,indent=2))
  code.append(arr('stage_background',stage))
  for h in (6,8,14):code.append(arr(f'font{h}',(OUT/f'font-{h}.bin').read_bytes()))
- words=json.loads((OUT/'words.json').read_text(encoding='utf-8'))
- code.append('const Word words[495]={'+','.join('{'+cstr(bytes.fromhex(s['word_hex']))+','+cstr(bytes.fromhex(s['topic_hex']))+'}' for s in words)+'};\n')
+ words=json.loads((OUT/'words-expanded.json').read_text(encoding='utf-8'))
+ base_words=json.loads((OUT/'words.json').read_text(encoding='utf-8'))
+ assert len(base_words)==495 and len(words)==686 and words[:495]==base_words, 'Dictionary prefix changed'
+ code.append(f'const Word words[{len(words)}]={{'+','.join('{'+cstr(bytes.fromhex(s['word_hex']))+','+cstr(bytes.fromhex(s['topic_hex']))+'}' for s in words)+'};\n')
  exe=(SRC/'POLE.EXE').read_bytes(); header=struct.unpack_from('<H',exe,8)[0]*16; ds=header+0xc790
  for name,off,n in [('wheel_sectors',0x50,16),('sector_values',0x70,12)]:
   vals=struct.unpack_from('<'+'h'*n,exe,ds+off); code.append(f'const short {name}[{n}]={{'+','.join(map(str,vals))+'};\n')
@@ -164,15 +174,17 @@ def main():
   if 0<n<=120 and all(x>=32 for x in b):literals.append((off,b))
  for off,b in literals:code.append(f'const char msg_{off:x}[]={cstr(b)};\n')
  (GEN/'assets.c').write_text(''.join(code),encoding='ascii')
- hdr='#pragma once\ntypedef struct {int w,h;const unsigned char *data;} Sprite;\ntypedef struct {const char *word,*topic;} Word;\nextern const Sprite sprites[57];\nextern const Word words[495];\nextern const unsigned char font6[],font8[],font14[],opponent_sprites[6];\nextern const char *const opponent_names[6];\nextern const short wheel_sectors[16],sector_values[12];\nextern const unsigned short palette[16];\n'
- hdr+='extern const Sprite sprites_half[57];\nextern const unsigned char wheel_bitmaps[],stage_background[];\nextern const char *const gift_names[10];\nextern const char *const initial_names[8];\nextern const unsigned short initial_scores[8];\n'
+ fingerprint=int.from_bytes(__import__('hashlib').sha256(b''.join((ROOT/'src'/n).read_bytes() for n in ('main.c','presentation.inc','scene.inc','link.inc'))+''.join(code).encode('ascii')).digest()[:4],'little')
+ hdr=f'#define BASE_WORD_COUNT 495\n#define WORD_COUNT {len(words)}\n#define MULTIPLAYER_BUILD 0x{fingerprint:08x}u\n'
+ hdr+='#pragma once\ntypedef struct {int w,h;const unsigned char *data;} Sprite;\ntypedef struct {const char *word,*topic;} Word;\nextern const Sprite sprites[57];\nextern const Word words[WORD_COUNT];\nextern const unsigned char font6[],font8[],font14[],opponent_sprites[6];\nextern const char *const opponent_names[6];\nextern const short wheel_sectors[16],sector_values[12];\nextern const unsigned short palette[16];\n'
+ hdr+='extern const Sprite extra_sprites[13];\nextern const Sprite sprites_half[57];\nextern const unsigned char wheel_bitmaps[],stage_background[];\nextern const char *const gift_names[10];\nextern const char *const initial_names[8];\nextern const unsigned short initial_scores[8];\n'
  hdr+='extern const unsigned char cash_finished_bitmap[];\n'
  hdr+='extern const Sprite title_logos[2];\n'
  hdr+='extern const Sprite certificate_logos[2];\n'
  hdr+='extern const unsigned char channel_qr[106];\n'
  hdr+=''.join(f'extern const char msg_{off:x}[];\n' for off,b in literals)
  (GEN/'assets.h').write_text(hdr)
- for name in ('main.c','presentation.inc','scene.inc'):
+ for name in ('main.c','presentation.inc','scene.inc','link.inc'):
   source=(ROOT/'src'/name).read_text(encoding='utf-8')
   source=re.sub(r'"(?:[^"\\]|\\.)*"',lambda m:cstr(m.group()[1:-1].encode('cp866')) if any(ord(c)>127 for c in m.group()) else m.group(),source)
   (GEN/name).write_text(source,encoding='ascii')

@@ -42,3 +42,6 @@ Thumbs.db
 Desktop.ini
 
 # Keep source assets, analysis exports and documentation.
+
+# Task scratch and downloaded analysis tools
+/work/

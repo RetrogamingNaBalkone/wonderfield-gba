@@ -43,7 +43,7 @@ try {
  & $PythonExe scripts/contact.py
  if($LASTEXITCODE) {throw 'Resource contact sheet failed'}
  New-Item -ItemType Directory -Force -Path dist,docs/media,docs/reports | Out-Null
- Copy-Item -LiteralPath build/gba/pole.gba -Destination 'dist/pole 1.1.gba'
+ Copy-Item -LiteralPath build/gba/pole.gba -Destination 'dist/pole 2.0.gba'
  Copy-Item -LiteralPath build/qa/rng-verification.json -Destination docs/reports/rng-verification.json
  Copy-Item -LiteralPath build/qa/rng-audit.json -Destination docs/reports/rng-audit.json
  Copy-Item -LiteralPath build/qa/rng-cold.json -Destination docs/reports/rng-cold.json
@@ -108,5 +108,5 @@ try {
  Copy-Item -LiteralPath assets/generated/blue-stone-extension.prompt.txt -Destination docs/media/stone-texture.prompt.txt
  & $PythonExe scripts/prepare_release.py
  if($LASTEXITCODE) {throw 'Release file preparation failed'}
- Write-Output "Release: build/release/pole.1.1.gba; checksum: build/release/SHA256SUMS"
+ Write-Output "Release: build/release/pole.2.0.gba; checksum: build/release/SHA256SUMS"
 } finally {$env:PYTHONDONTWRITEBYTECODE=$taskBytecode; Pop-Location}

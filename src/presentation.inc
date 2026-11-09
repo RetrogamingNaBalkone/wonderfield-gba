@@ -17,14 +17,14 @@ static void studio(void){
 }
 static int speech_visible(void){
  if(!message1||!*message1||game.mode==SPIN||(game.mode==REVEAL&&scene.now-scene.start>=MESSAGE_TICKS))return 0;
- if(game.mode==TURN&&game.player==2&&scene.now-scene.speech_at>120)return 0;
+ if(game.mode==TURN&&human(game.player)&&scene.now-scene.speech_at>120)return 0;
  return 1;
 }
 static void board(void){
  /* Three coherent rows: 8 px, 16 px, 8 px. Letters belong to the middle row. */
  rect(30,2,181,33,7);
  if(game.mode==INTRO&&scene.phase<4){
-  const char*t=game.round==0?msg_568e:game.round==1?msg_569c:msg_56a8;while(*t==' ')t++;
+  const char*t=mp.humans>1?mp_stage():game.round==0?msg_568e:game.round==1?msg_569c:msg_56a8;while(*t==' ')t++;
   int n=len(t),x=30+((20-n)/2)*9;
   for(int i=0;i<n;i++)glyph(x+i*9+1,11,(u8)t[i],0,0);
  }else{
@@ -32,7 +32,7 @@ static void board(void){
   for(int i=0;i<n;i++){
    rect(x+i*cw+1,11,cw-1,15,game.revealed[i]?7:8);
    if(game.revealed[i])glyph(x+i*cw+1,11,(u8)word()[i],0,0);
-   if(game.mode==PLUS&&game.player==2&&game.cursor==i){
+   if(game.mode==PLUS&&human(game.player)&&game.cursor==i){
     int selected_x=x+i*cw+1;
     rect(selected_x,11,cw-1,15,14);border(selected_x,11,cw-1,15,15);
     for(int row=0;row<3;row++)line(selected_x+1+row,5+row,6-row*2,0);
@@ -43,7 +43,7 @@ static void board(void){
  for(int y=2;y<=34;y+=8)if(y!=18)line(30,y,181,0);
  rect(30,35,181,9,7);
  if(game.mode!=INTRO)text(30,35,words[game.word_id].topic,1,0);
- if(len(words[game.word_id].topic)<=18){text(194,35,"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
+ if(len(words[game.word_id].topic)<=18){text(194,35,mp.humans>1?"/8":"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
  line(30,43,181,8);
 }
 static void wheel(void){
@@ -82,20 +82,26 @@ static void people(void){
  for(int player=0;player<2;player++){
   int visible=game.mode!=INTRO||scene.phase>=player+1;
   if(!visible)continue;
-  int id=opponent_sprites[game.opponent[game.round*2+player]];
+  int who=mp.humans>1?perspective(player):player;
+  int character=mp.humans>1?opponent_pool[mp_ai_index]:game.opponent[game.round*2+player];
   int x=player?153:3,y=83;
-  if(game.mode==INTRO&&scene.phase==player+1&&scene.now-scene.phase_at<54){
+  if(mp.humans>1&&human(who)){
+   int pose=6;if(game.player==who)pose=player?2:4;
+   image(&extra_sprites[pose],x+(29-extra_sprites[pose].w)/2,y,2);
+  }else if(game.mode==INTRO&&scene.phase==player+1&&scene.now-scene.phase_at<54){
    int phase=(scene.now-scene.phase_at)/18;
    half_image(53+phase,x,y,2);
-  }else half_image(id,x,y,2);
-  score_badge(player,player?141:1,73);
+  }else if(!prefs.characters)half_image(opponent_sprites[character],x,y,2);else{const u8 portraits[8]={11,12,9,7,8,10,0,1};image(&extra_sprites[portraits[character]],x,y,2);}
+  score_badge(who,player?141:1,73);
+  if(mp.humans>1)text(player?132:1,64,player_name(who),1,mp.eliminated&(1<<who)?8:15);
  }
  /* Host rectangle: [185,240), separate from the widest contestant [153,182). */
  half_image(27,185,62,-1);
  int face,eyes,eye_y;host_pose(&face,&eyes,&eye_y);
  half_image(face,196,63,-1);
  if(eyes>=0)half_image(eyes,204,eye_y+6,-1);
- score_badge(2,164,142);
+ score_badge(mp.humans>1?mp.viewer:2,164,142);
+ if(mp.humans>1)text(152,132,player_name(mp.viewer),1,15);
 }
 static void speech_shape(int x,int y,const int*left,const int*right,int height){
  /* Outline the final silhouette, so no black stroke is lost to resampling. */
@@ -119,7 +125,7 @@ static void speech_strip(const Sprite*s,int x,int y,int width,int transparent){
 static void speech(void){
  if(!speech_visible())return;
  if(game.mode==AI_ANSWER||game.mode==AI_CHEST){
-  const Sprite*s=&sprites[39];int x=game.player?141:1,w=98;
+  const Sprite*s=&sprites[39];int x=(mp.humans>1?game.player==perspective(1):game.player!=0)?141:1,w=98;
   speech_strip(s,x,35,w,2);
   label_center(x+3,44,w-6,message1,0,0);return;
  }
@@ -169,7 +175,7 @@ static void title(void){
  if(age>=100)text(40,124,"КАПИТАЛ-ШОУ",1,0);centered(139,"A: Играть",1,1);
  if(age>=100){
   /* The original compact font fits wholly inside the final grid cell. */
-  const char*version="1.1";
+  const char*version="2.0";
   for(int i=0;i<3;i++)for(int y=0;y<6;y++)for(int x=0;x<4;x++)
    if(font6[(u8)version[i]*6+y]&(128>>x))pixel(218+i*4+x,122+y,0);
  }
@@ -208,10 +214,10 @@ static void restart_confirm(void){
 static void footer(void){
  rect(0,152,240,8,7);
  const char*t=0;
- if((game.mode==ROUND_END&&!(game.player==2&&game.round==2))||
+ if((game.mode==ROUND_END&&!(mp.humans==1&&human(game.player)&&game.round==2))||
     (game.mode==GAME_OVER&&game.deal!=6)||
     (game.mode==CASH&&cash.drawn==cash.total))t="A: Продолжить";
- if(game.player==2){
+ if(human(game.player)){
   if(game.mode==LETTER)t="A: Выбрать букву";
   if(game.mode==PLUS)t="A: Открыть букву";
   if(game.mode==CHEST)t="A: Выбрать шкатулку";
@@ -279,7 +285,7 @@ static void gift_certificate(void){
  int y=50;
  if(scene.gift_page==0){
   if(scene.gift_final){
-   char score[12],reverse[12];int n=0;unsigned value=game.score[2];
+   char score[12],reverse[12];int n=0;unsigned value=game.score[mp.humans>1?game.player:2];
    do{reverse[n++]='0'+value%10;value/=10;}while(value);
    for(int i=0;i<n;i++)score[i]=reverse[n-1-i];score[n]=0;
    y=certificate_paragraph(y,msg_46aa,score,msg_46ca,0);
@@ -294,6 +300,28 @@ static void gift_certificate(void){
  page_footer(scene.gift_page,4);
 }
 static void render(void){
+ if(game.mode==MP_OPTIONS){
+  rect(0,0,240,160,7);border(3,3,234,143,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
+  for(int i=0;i<4;i++){int y=29+i*29;if(prefs.choice==i){rect(8,y-2,224,i==3?23:27,8);border(8,y-2,224,i==3?23:27,0);}
+   u8 color=prefs.choice==i?15:0;
+   if(i==0){centered(y,"Словарь",1,color);centered(y+12,prefs.dictionary?"Поле чудес 2: 686":"Поле чудес: 495",1,color);}
+   else if(i==1){centered(y,"Учитывать + для шкатулок",1,color);centered(y+12,prefs.plus?"Да":"Нет",1,color);}
+   else if(i==2){centered(y,"Персонажи",1,color);centered(y+12,prefs.characters?"Версия 2":"Версия 1",1,color);}
+   else centered(y,"Начать игру",0,color);
+  }
+  centered(151,"A: Выбрать  B: Назад",1,0);return;
+ }
+ if(game.mode==MP_SETUP){
+  rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,"Режим игры",0,0);
+  const char*options[]={"Один игрок","Вдвоём на одной GBA","Втроём на одной GBA","Кабель: два игрока","Кабель: три игрока"};
+  for(int i=0;i<5;i++){if(mp.choice==i){rect(8,35+i*21,224,19,8);border(8,35+i*21,224,19,0);}centered(39+i*21,options[i],1,mp.choice==i?15:0);}
+  centered(149,"A: Выбрать  B: Назад",1,0);return;
+ }
+ if(game.mode==MP_NAME){rect(0,0,240,160,7);centered(5,mp.link?"Ваше имя":player_name(mp.edit),0,1);centered(23,"Пожалуйста,",0,0);centered(39,"представтесь!",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: Пробел START: Готово",1,0);keyboard();centered(151,"A: Буква B: Стереть",1,0);return;}
+ if(game.mode==MP_PASS){rect(0,0,240,160,7);border(3,3,234,143,0);centered(40,"Передайте GBA игроку",0,1);centered(70,player_name(game.player),0,0);centered(115,"A: Готов",0,1);return;}
+ if(game.mode==MP_LOBBY||game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,game.mode==MP_ERROR?"Связь потеряна":"Подключите GBA",0,1);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);centered(120,game.mode==MP_ERROR?"B: В меню":"Ожидание участников...",1,0);return;}
+
+
  if(game.mode==CASH){
   dma_words((u32*)framebuffer,(const u32*)cash_canvas,9600);
   /* During the short opening line the host speaks; banknotes then cover
@@ -339,7 +367,7 @@ static void render(void){
   int phase=(scene.now-scene.speech_at)/6;
   int animate=game.mode==CHEST&&scene.now-scene.speech_at<90;
   image(&sprites[animate&&!(phase&1)?37:36],18,96,7);image(&sprites[animate&&(phase&1)?37:36],115,96,7);
-  if(game.player==2||game.mode==AI_CHEST)border(game.choice?113:16,94,40,42,14);
+  if(human(game.player)||game.mode==AI_CHEST)border(game.choice?113:16,94,40,42,14);
  }
  if(game.mode==RESULT&&scene.now<scene.chest_until){
   image(&sprites[scene.chest_money?38:37],game.choice?115:18,96,7);image(&sprites[36],game.choice?18:115,96,7);
@@ -354,7 +382,7 @@ static void render(void){
    label_center(x,127,w,t,0,selected?15:0);
   }
  }
- if(game.mode==TURN&&game.player==2){
+ if(game.mode==TURN&&human(game.player)){
   rect(6,110,150,37,0);
   for(int option=0;option<2;option++){
    int x=option?81:7,w=option?74:73,selected=game.choice==option;

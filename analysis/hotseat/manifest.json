@@ -1,0 +1,10 @@
+{
+  "input": "Pole_Chudes_hotseat.rar / Wonderfield 2 / POLE2.EXE",
+  "sha256": "0ed70c840a0d0a22e6e6a5260cfa1ab3a4a7fae478f63bc78088ea975d30da3d",
+  "ghidra": "11.3.2 PUBLIC",
+  "jdk": "Temurin 21.0.7+6",
+  "functions": 234,
+  "script": "scripts/ExportHotseat.java",
+  "language": "x86:LE:16:Real Mode",
+  "note": "Default MZ loader and auto-analysis. Generated names are not asserted semantic labels."
+}

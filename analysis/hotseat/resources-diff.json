@@ -1,0 +1,425 @@
+{
+  "old": {
+    "characters": [
+      {
+        "name": "ПЯТАЧОК",
+        "sprite": 21
+      },
+      {
+        "name": "ВИННИ-ПУХ",
+        "sprite": 22
+      },
+      {
+        "name": "КРОЛИК",
+        "sprite": 48
+      },
+      {
+        "name": "ИА-ИА",
+        "sprite": 49
+      },
+      {
+        "name": "КАРЛСОН",
+        "sprite": 50
+      },
+      {
+        "name": "СОВА",
+        "sprite": 51
+      }
+    ],
+    "gifts": [
+      "ЗУБНУЮ ЩЕТКУ",
+      "Порошок ARIEL",
+      "Расчестку для усов",
+      "Зубочистку",
+      "Круг для унитаза",
+      "Рулон мягкой бумаги",
+      "Шнурки для калош",
+      "Подтяжки для носков",
+      "Беруши для ушей",
+      "Пивную открывашку"
+    ]
+  },
+  "new": {
+    "characters": [
+      {
+        "name": "ИА-ИА",
+        "sprite": 48
+      },
+      {
+        "name": "КАРЛСОН",
+        "sprite": 49
+      },
+      {
+        "name": "КРОЛИК",
+        "sprite": 51
+      },
+      {
+        "name": "СОВА",
+        "sprite": 50
+      },
+      {
+        "name": "ПЯТАЧОК",
+        "sprite": 53
+      },
+      {
+        "name": "ВИННИ-ПУХ",
+        "sprite": 54
+      },
+      {
+        "name": "ФРЕКЕН БОК",
+        "sprite": 55
+      },
+      {
+        "name": "БАГИРА",
+        "sprite": 56
+      }
+    ],
+    "gifts": [
+      "ЗУБНУЮ ЩЕТКУ",
+      "Порошок ARIEL",
+      "Расчестку для усов",
+      "Зубочистку",
+      "Круг для унитаза",
+      "Рулон мягкой бумаги",
+      "Шнурки для калош",
+      "Подтяжки для носков",
+      "Беруши для ушей",
+      "Пивную открывашку"
+    ]
+  },
+  "old_sprite_count": 57,
+  "new_sprite_count": 61,
+  "pixel_matches": [
+    {
+      "new_id": 0,
+      "old_ids": [
+        0
+      ]
+    },
+    {
+      "new_id": 1,
+      "old_ids": [
+        1
+      ]
+    },
+    {
+      "new_id": 2,
+      "old_ids": [
+        2
+      ]
+    },
+    {
+      "new_id": 3,
+      "old_ids": [
+        3
+      ]
+    },
+    {
+      "new_id": 4,
+      "old_ids": [
+        4
+      ]
+    },
+    {
+      "new_id": 5,
+      "old_ids": [
+        5
+      ]
+    },
+    {
+      "new_id": 6,
+      "old_ids": [
+        6
+      ]
+    },
+    {
+      "new_id": 7,
+      "old_ids": [
+        7
+      ]
+    },
+    {
+      "new_id": 8,
+      "old_ids": [
+        8
+      ]
+    },
+    {
+      "new_id": 9,
+      "old_ids": [
+        9
+      ]
+    },
+    {
+      "new_id": 10,
+      "old_ids": [
+        10
+      ]
+    },
+    {
+      "new_id": 11,
+      "old_ids": [
+        11
+      ]
+    },
+    {
+      "new_id": 12,
+      "old_ids": [
+        12
+      ]
+    },
+    {
+      "new_id": 13,
+      "old_ids": [
+        13
+      ]
+    },
+    {
+      "new_id": 14,
+      "old_ids": [
+        14
+      ]
+    },
+    {
+      "new_id": 15,
+      "old_ids": [
+        15
+      ]
+    },
+    {
+      "new_id": 16,
+      "old_ids": [
+        16
+      ]
+    },
+    {
+      "new_id": 17,
+      "old_ids": [
+        17
+      ]
+    },
+    {
+      "new_id": 18,
+      "old_ids": [
+        18
+      ]
+    },
+    {
+      "new_id": 19,
+      "old_ids": [
+        19
+      ]
+    },
+    {
+      "new_id": 20,
+      "old_ids": [
+        20
+      ]
+    },
+    {
+      "new_id": 21,
+      "old_ids": []
+    },
+    {
+      "new_id": 22,
+      "old_ids": []
+    },
+    {
+      "new_id": 23,
+      "old_ids": [
+        23
+      ]
+    },
+    {
+      "new_id": 24,
+      "old_ids": [
+        24
+      ]
+    },
+    {
+      "new_id": 25,
+      "old_ids": [
+        25
+      ]
+    },
+    {
+      "new_id": 26,
+      "old_ids": [
+        26
+      ]
+    },
+    {
+      "new_id": 27,
+      "old_ids": [
+        27
+      ]
+    },
+    {
+      "new_id": 28,
+      "old_ids": [
+        28
+      ]
+    },
+    {
+      "new_id": 29,
+      "old_ids": [
+        29
+      ]
+    },
+    {
+      "new_id": 30,
+      "old_ids": [
+        30
+      ]
+    },
+    {
+      "new_id": 31,
+      "old_ids": []
+    },
+    {
+      "new_id": 32,
+      "old_ids": []
+    },
+    {
+      "new_id": 33,
+      "old_ids": []
+    },
+    {
+      "new_id": 34,
+      "old_ids": [
+        34
+      ]
+    },
+    {
+      "new_id": 35,
+      "old_ids": [
+        35
+      ]
+    },
+    {
+      "new_id": 36,
+      "old_ids": [
+        36
+      ]
+    },
+    {
+      "new_id": 37,
+      "old_ids": [
+        37
+      ]
+    },
+    {
+      "new_id": 38,
+      "old_ids": []
+    },
+    {
+      "new_id": 39,
+      "old_ids": [
+        39
+      ]
+    },
+    {
+      "new_id": 40,
+      "old_ids": []
+    },
+    {
+      "new_id": 41,
+      "old_ids": []
+    },
+    {
+      "new_id": 42,
+      "old_ids": [
+        42
+      ]
+    },
+    {
+      "new_id": 43,
+      "old_ids": [
+        43
+      ]
+    },
+    {
+      "new_id": 44,
+      "old_ids": [
+        44
+      ]
+    },
+    {
+      "new_id": 45,
+      "old_ids": [
+        45
+      ]
+    },
+    {
+      "new_id": 46,
+      "old_ids": [
+        46
+      ]
+    },
+    {
+      "new_id": 47,
+      "old_ids": [
+        47
+      ]
+    },
+    {
+      "new_id": 48,
+      "old_ids": []
+    },
+    {
+      "new_id": 49,
+      "old_ids": []
+    },
+    {
+      "new_id": 50,
+      "old_ids": []
+    },
+    {
+      "new_id": 51,
+      "old_ids": []
+    },
+    {
+      "new_id": 52,
+      "old_ids": [
+        52
+      ]
+    },
+    {
+      "new_id": 53,
+      "old_ids": []
+    },
+    {
+      "new_id": 54,
+      "old_ids": []
+    },
+    {
+      "new_id": 55,
+      "old_ids": []
+    },
+    {
+      "new_id": 56,
+      "old_ids": []
+    },
+    {
+      "new_id": 57,
+      "old_ids": []
+    },
+    {
+      "new_id": 58,
+      "old_ids": []
+    },
+    {
+      "new_id": 59,
+      "old_ids": []
+    },
+    {
+      "new_id": 60,
+      "old_ids": [
+        56
+      ]
+    }
+  ],
+  "unchanged_legacy_library": true,
+  "unchanged_font": true,
+  "gifts_identical": true
+}

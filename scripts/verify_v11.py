@@ -15,6 +15,7 @@ e=Emulator();e.run(220)
 e.screenshot('title-v11.png')
 title_raw=e.raw
 e.tap(8)
+if e.state()[3]==32:e.tap(8)
 while e.state()[3]==15:e.tap(8)
 rom=(ROOT/'build/gba/pole.gba').read_bytes()
 palette=struct.unpack_from('<16H',rom,e.sym['palette']-0x08000000)
@@ -42,7 +43,7 @@ def letter(ch):e.poke(70,ch-128);e.tap(8)
 def answer():return c.string_at(e.ramgame+352,21)
 
 title_pixels=ppu(title_raw);font6=asset('font6',256*6)
-check('compact version fits the final grid cell',all(title_pixels[(122+y)*240+218+i*4+x]==(0 if font6[ch*6+y]&(128>>x) else 7) for i,ch in enumerate(b'1.1') for y in range(6) for x in range(4)))
+check('compact version fits the final grid cell',all(title_pixels[(122+y)*240+218+i*4+x]==(0 if font6[ch*6+y]&(128>>x) else 7) for i,ch in enumerate(b'2.0') for y in range(6) for x in range(4)))
 check('version keeps the grid cell border intact',all(title_pixels[y*240+234]==6 for y in range(115,134)) and all(title_pixels[134*240+x]==6 for x in range(213,235)))
 check('version no longer touches the dedication',all(title_pixels[y*240+x]==7 for y in range(8) for x in range(208,232)))
 

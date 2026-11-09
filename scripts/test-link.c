@@ -1,0 +1,82 @@
+/* ROM test in mGBA cores with a test cable bus. Requires the mGBA headers/library.
+ * The bus models multi registers, transfer duration, player IDs and SIO IRQ;
+ * it is not a substitute for testing a physical GBA cable. */
+#include <mgba/core/core.h>
+#include <mgba/internal/gba/gba.h>
+#include <mgba/internal/gba/io.h>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#undef assert
+#define assert(x) do {if(!(x)){fprintf(stderr,"FAIL line %d: %s\n",__LINE__,#x);exit(1);}}while(0)
+static void quiet(struct mLogger*l,int c,enum mLogLevel level,const char*f,va_list a){(void)l;(void)c;(void)level;(void)f;(void)a;}
+static struct mLogger logger={quiet,0};
+static struct mCore*c[3];static struct GBA*g[3];static int count,disconnected=-1;
+static struct Node{struct GBASIODriver d;int id;}nodes[3];
+static uint16_t sent[4];static uint64_t deadline;static int pending,transfers;
+static uint32_t game_addr,mp_addr;
+static bool yes(struct GBASIODriver*d){(void)d;return true;}
+static void nothing(struct GBASIODriver*d){(void)d;}
+static uint16_t cable_write(struct GBASIODriver*d,uint32_t address,uint16_t value){
+ struct Node*n=(struct Node*)d;
+ if(address==REG_SIOCNT){
+  if(!n->id&&(value&128)&&!pending){
+   for(int i=0;i<4;i++)sent[i]=i<count&&i!=disconnected?g[i]->memory.io[REG_SIOMLT_SEND/2]:0xffff;
+   deadline=mTimingGlobalTime(&g[0]->timing)+GBASIOCyclesPerTransfer[value&3][count-1];pending=1;
+   for(int i=0;i<count;i++)g[i]->sio.siocnt|=128;
+  }
+  return (value&0xff83)|8|(n->id?4:0)|(n->id<<4);
+ }
+ return value;
+}
+static uint32_t rd(int i,uint32_t a){return c[i]->busRead32(c[i],a);}
+static void wr(int i,uint32_t a,uint32_t v){c[i]->busWrite32(c[i],a,v);}
+static void run(unsigned frames){
+ uint64_t end=mTimingGlobalTime(&g[0]->timing)+(uint64_t)frames*280896;
+ while(mTimingGlobalTime(&g[0]->timing)<end){
+  uint64_t min=UINT64_MAX;int who=0;
+  for(int i=0;i<count;i++){uint64_t t=mTimingGlobalTime(&g[i]->timing);if(t<min){min=t;who=i;}}
+  if(pending&&min>=deadline){
+   for(int i=0;i<count;i++){
+    for(int j=0;j<4;j++)g[i]->memory.io[(REG_SIOMULTI0/2)+j]=sent[j];
+    g[i]->sio.siocnt=(g[i]->sio.siocnt&~0xb0)|(i<<4);g[i]->sio.rcnt|=1;
+    if(i!=disconnected&&(g[i]->sio.siocnt&0x4000))GBARaiseIRQ(g[i],GBA_IRQ_SIO,0);
+   }pending=0;transfers++;
+  }
+  c[who]->runLoop(c[who]);
+ }
+}
+int main(int argc,char**argv){
+ mLogSetDefaultLogger(&logger);assert(argc==6);uint32_t prefs_addr=strtoul(argv[5],0,16);count=atoi(argv[2]);game_addr=strtoul(argv[3],0,16);mp_addr=strtoul(argv[4],0,16);
+ for(int i=0;i<count;i++){
+  c[i]=mCoreFind(argv[1]);assert(c[i]);assert(c[i]->init(c[i]));mCoreInitConfig(c[i],NULL);
+  mCoreConfigSetDefaultIntValue(&c[i]->config,"useBios",0);mCoreConfigSetDefaultIntValue(&c[i]->config,"skipBios",1);
+  mCoreConfigSetDefaultValue(&c[i]->config,"idleOptimization","ignore");mCoreLoadConfig(c[i]);
+  c[i]->setVideoBuffer(c[i],calloc(240*160,sizeof(color_t)),240);assert(mCoreLoadFile(c[i],argv[1]));c[i]->reset(c[i]);g[i]=c[i]->board;
+  nodes[i].id=i;nodes[i].d.init=yes;nodes[i].d.deinit=nothing;nodes[i].d.load=yes;nodes[i].d.unload=yes;nodes[i].d.writeRegister=cable_write;
+  GBASIOSetDriver(&g[i]->sio,&nodes[i].d,SIO_MULTI);
+ }
+ run(100);
+ for(int i=0;i<count;i++){
+  for(int option=0;option<3;option++)wr(i,prefs_addr+option*4,i==0);
+  wr(i,mp_addr,count);wr(i,mp_addr+4,1);wr(i,mp_addr+16,2);wr(i,game_addr+12,27);wr(i,game_addr+80*4,1);
+  wr(i,game_addr+88*4,128+i);c[i]->setKeys(c[i],8);
+ }
+ run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
+ run(160);
+ for(int i=0;i<count;i++)printf("device %d mode %u player %u local %u viewer %u word %u transfers %d\n",i,rd(i,game_addr+12),rd(i,game_addr+20),rd(i,mp_addr+12),rd(i,mp_addr+8),rd(i,game_addr+24),transfers);
+ for(int i=0;i<count;i++){assert(rd(i,game_addr+12)!=31);assert(rd(i,game_addr+12)!=30);assert(rd(i,mp_addr+12)==(i+2)%3);assert(rd(i,mp_addr+8)==(i+2)%3);assert(rd(i,game_addr+24)==rd(0,game_addr+24));}
+ for(int i=0;i<count;i++)for(int option=0;option<3;option++)assert(rd(i,prefs_addr+option*4)==1);
+ printf("PASS: host dictionary, Plus and character settings synchronized\n");
+ /* A spectator cannot choose for player two. The owning console can. */
+ wr(0,game_addr+12,1);wr(0,game_addr+20,0);wr(0,game_addr+81*4,1);run(30);
+ c[0]->setKeys(c[0],1);run(30);c[0]->setKeys(c[0],0);assert(rd(0,game_addr+12)==1);
+ c[1]->setKeys(c[1],1);run(90);c[1]->setKeys(c[1],0);assert(rd(0,game_addr+12)!=1);run(30);
+ for(int i=1;i<count;i++){assert(rd(i,game_addr+20)==rd(0,game_addr+20));assert(rd(i,game_addr+24)==rd(0,game_addr+24));}
+ printf("PASS: %d consoles, perspectives, dictionary/word sync, owner-only input (%d transfers)\n",count,transfers);
+ disconnected=count-1;run(300);
+ for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==31);
+ printf("PASS: disconnect reports error without continuing the game\n");
+ return 0;
+}

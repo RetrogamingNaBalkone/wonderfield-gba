@@ -1,10 +1,10 @@
 /* Non-blocking versions of DOS introduction, face movement and letter reveal. */
 static void intro_phrase(void){
  switch(scene.phase){
- case 0:say(msg_1011,msg_101d);break;
- case 1:say(msg_5384,opponent_names[game.opponent[game.round*2]]);break;
- case 2:say(msg_5391,opponent_names[game.opponent[game.round*2+1]]);break;
- case 3:say(msg_539e,msg_53ab);break;
+ case 0:if(mp.humans>1)say(mp_stage(),"");else say(msg_1011,msg_101d);break;
+ case 1:if(mp.humans>1)say(player_name(perspective(0)),"");else say(msg_5384,character_name(game.opponent[game.round*2]));break;
+ case 2:if(mp.humans>1)say(player_name(perspective(1)),"");else say(msg_5391,character_name(game.opponent[game.round*2+1]));break;
+ case 3:if(mp.humans>1)say(player_name(mp.viewer),"");else say(msg_539e,msg_53ab);break;
  case 4:say(msg_f30,msg_f20);break;
  default:say(msg_f3f,words[game.word_id].topic);break;
  }
@@ -50,7 +50,7 @@ static void cash_note(void){
   if(c!=2&&(unsigned)dx<240&&(unsigned)dy<150)cash_canvas[dy*240+dx]=c;
  }
  unsigned before=cash.drawn*5672/1000;cash.drawn++;
- speaker_queue_tone(hz,cash.drawn*5672/1000-before);
+ if(!mp.link||mp.local==2)speaker_queue_tone(hz,cash.drawn*5672/1000-before);
 }
 static void cash_skip(void){
  if(cash.total>=10000){
@@ -59,14 +59,24 @@ static void cash_skip(void){
   dma_words((u32*)cash_canvas,(const u32*)cash_finished_bitmap,9600);
   cash.drawn=cash.total;
  }else while(cash.drawn<cash.total)cash_note();
- cash.ready=1;scene.host_active=0;speaker_tone(0,1);dirty=1;
+ cash.ready=1;scene.host_active=0;game_tone(0,1);dirty=1;
 }
-static void cash_begin(void){
- game.deal=5;game.keyboard=0;set_mode(CASH);say(msg_ffa,msg_1004);
- cash.drawn=0;cash.total=game.prize/10;cash.rng=game.rng;cash.ready=0;cash.credit=0;cash.next_at=video_ticks+120;
+static void cash_background(void){
  rect(0,0,240,160,7);half_image(46,4,4,7);half_image(47,73,4,7);
  half_image(27,185,75,-1);half_image(45,196,76,-1);half_image(43,204,94,-1);
  dma_words((u32*)cash_canvas,(const u32*)framebuffer,9600);
+}
+static void cash_remote_sync(const Cash*target,u32 seed){
+ static u32 previous_seed;static int valid;
+ if(!valid||previous_seed!=seed||cash.drawn>target->drawn){cash_background();cash.drawn=0;cash.rng=seed;previous_seed=seed;valid=1;}
+ if(target->total>=10000&&target->drawn==target->total){dma_words((u32*)cash_canvas,(const u32*)cash_finished_bitmap,9600);}
+ else while(cash.drawn<target->drawn)cash_note();
+ link_copy(&cash,target,sizeof cash);
+}
+static void cash_begin(void){
+ game.deal=5;game.keyboard=0;set_mode(CASH);say(msg_ffa,msg_1004);
+ cash.drawn=0;cash.total=game.prize/10;cash.rng=cash_initial_seed=game.rng;cash.ready=0;cash.credit=0;cash.next_at=video_ticks+120;
+ cash_background();
 }
 static void visual_tick(void){
  /* One transition per displayed pose; never skip a short mouth pulse
@@ -97,7 +107,7 @@ static int scene_tick(u16 pressed){
   if(pressed&A){
    if(cash.drawn<cash.total){
     cash_skip();
-   }else farewell();
+   }else if(mp.humans>1)mp_depart(0);else farewell();
    return 1;
   }
   if(cash.drawn<cash.total&&(int)(scene.now-cash.next_at)>=0){
