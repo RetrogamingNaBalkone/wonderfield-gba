@@ -87,7 +87,8 @@ def tournament():
   assert e.state()[4]==stage,e.state()[:12]
   picked.append(e.state()[6]);assert 0<=picked[-1]<686
   e.poke(3,9);e.poke(5,0);e.poke(9,9000);e.poke(79,1)
-  e.run(20);assert e.state()[3]==36
+  e.run(20);assert e.state()[3]==9
+  tap(e,8);assert e.state()[3]==36
   tap(e,8)
   if stage<7:
    assert e.state()[3]==17;e.run(620)

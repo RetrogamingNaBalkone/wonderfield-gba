@@ -554,7 +554,7 @@ static void update(u16 pressed,u16 repeat){
  if(game.mode==MP_ERROR){if(pressed&B){link_close();mp.link=0;mp.humans=1;set_mode(TITLE);}return;}
  if(game.mode==MP_PASS){if(pressed&A)set_mode(TURN);return;}
 
- if(mp.humans>1&&game.mode==ROUND_END){mp_settle();set_mode(MP_SUMMARY);return;}
+ if(mp.humans>1&&game.mode==ROUND_END){if(pressed&A){mp_settle();set_mode(MP_SUMMARY);}return;}
  if(start_pending){
   if(pressed&A_RELEASE){int select_mode=start_pending==2;start_pending=0;ui.active=ui.viewer=0;if(select_mode)mp_setup();else{mp.humans=1;mp.link=0;mp.viewer=2;options_begin();}}
   return;

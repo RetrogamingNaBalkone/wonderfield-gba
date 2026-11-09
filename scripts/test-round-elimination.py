@@ -75,13 +75,15 @@ def depart(e, reason):
         tap(e, 8)
 
     if mp(e)[6] == 7:
-        assert e.state()[3] == 36 and e.state()[4] == stage
+        assert e.state()[3] == 9 and e.state()[4] == stage
         assert message(e, 'message1') == 'Все игроки'
         assert message(e, 'message2') == 'покинули раунд!'
         e.run(200)
-        assert e.state()[3] == 36  # Same acknowledgement as a winning round.
+        assert e.state()[3] == 9  # Same acknowledgement as a winning round.
         if stage == 0:
             e.screenshot('all-players-departed.png')
+        tap(e, 8)
+        assert e.state()[3] == 36  # Separate results acknowledgement.
         tap(e, 8)
         if stage < 7:
             assert e.state()[3] == 17 and e.state()[4] == stage

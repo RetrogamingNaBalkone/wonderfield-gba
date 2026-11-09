@@ -30,6 +30,10 @@ def finish(e,p=2,solved=True):
   c.memmove(e.ramgame+88*4,word+b'\0',len(word)+1);e.poke(80,len(word));tap(e,8)
  else:
   m['setmp'](e,6,7);e.poke(79,0);e.poke(3,35);tap(e,8)
+ assert e.state()[3]==9,e.state()[:12]
+ e.run(240);assert e.state()[3]==9 # Announcement never auto-skips.
+ if solved and p==2:e.screenshot('round-winner-announcement.png')
+ tap(e,8)
  assert e.state()[3]==36,e.state()[:12]
  return ints(e,'match',16)
 
@@ -132,6 +136,9 @@ for value in (100,25):
  for i,ch in enumerate(word):e.poke(18+i,int(ch!=letter))
  e.poke(5,2);e.poke(3,3);e.poke(8,value);e.poke(70,letter-128)
  tap(e,8);tap(e,8);e.run(30)
+ assert e.state()[3]==9
+ e.run(240);assert e.state()[3]==9
+ tap(e,8)
  assert e.state()[3]==36 and ints(e,'match',16)[8]==1
  assert e.state()[11]==(0 if value==100 else word.count(letter)*25)
  e.close()

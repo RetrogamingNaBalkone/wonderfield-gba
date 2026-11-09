@@ -152,6 +152,8 @@ int main(int argc,char**argv){
   wr(0,game_addr+9*4,500);wr(0,game_addr+10*4,100);wr(0,game_addr+11*4,500);
   wr(0,match+6*4,1);wr(0,match+7*4,0);wr(0,match+8*4,0);
   wr(0,game_addr+12,9);run(80);
+  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==9);
+  c[0]->setKeys(c[0],1);run(30);c[0]->setKeys(c[0],0);run(60);
   for(int i=0;i<count;i++){
    assert(rd(i,game_addr+12)==36);assert(rd(i,match+10*4)==5);assert(rd(i,match+14*4)==1);
    for(int j=0;j<16;j++)assert(rd(i,match+j*4)==rd(0,match+j*4));
@@ -160,9 +162,13 @@ int main(int argc,char**argv){
   for(int i=0;i<count;i++){assert(rd(i,match+9*4)==1);assert(rd(i,mp_addr+24)==2);assert(rd(i,game_addr+20)==2);}
   /* Empty shootout repeats with identical membership, even after scores change. */
   wr(0,mp_addr+24,7);wr(0,game_addr+79*4,0);wr(0,game_addr+12,9);run(60);
+  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==9);
+  c[0]->setKeys(c[0],1);run(30);c[0]->setKeys(c[0],0);run(60);
   c[0]->setKeys(c[0],1);run(30);c[0]->setKeys(c[0],0);run(60);
   for(int i=0;i<count;i++){assert(rd(i,match+10*4)==5);assert(rd(i,mp_addr+24)==2);assert(rd(i,game_addr+16)==7);}
   wr(0,game_addr+9*4,9000);wr(0,game_addr+20,2);wr(0,game_addr+79*4,1);wr(0,game_addr+12,9);run(80);
+  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==9);
+  c[0]->setKeys(c[0],1);run(30);c[0]->setKeys(c[0],0);run(60);
   for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==36);assert(rd(i,match+13*4)==2);assert(rd(i,match+14*4)==2);}
   printf("PASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\n");
  }
