@@ -316,7 +316,7 @@ static void start_spin(void){
  /* Resolve all draws before animation so skipping preserves the result. */
  game.spin_steps=16+(draw&15);game.spin_ticks=0;game.spin_wait=1;scene.spin_half=0;scene.spin_at=video_ticks;
 }
-static void mp_depart_message(void){set_mode(MP_DEPART);say(player_name(game.player),"ПОКИДАЕТ РАУНД");}
+static void mp_depart_message(void){set_mode(MP_DEPART);say(player_name(game.player),"покидает раунд");}
 static void end_result(void){int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(!human(game.player))game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==FINAL_RECORDS)final_records();else if(next==MP_DEPART)mp_depart_message();else set_mode(next);}
 static void open_chest(void){
  int reward=random_n(2)==(unsigned)game.choice?100:0;
