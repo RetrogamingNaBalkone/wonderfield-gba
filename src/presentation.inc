@@ -326,7 +326,7 @@ static void gift_certificate(void){
 static void render(void){
  if(game.mode==MP_OPTIONS){
   rect(0,0,240,160,7);border(3,3,234,148,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
-  const char*items[]={"Словарь","+ приближает шкатулки","Персонажи","Начать игру"};
+  const char*items[]={"Словарь","Сектор Плюс для шкатулок","Персонажи","Начать игру"};
   for(int i=0;i<4;i++){
    int y=26+i*22,selected=prefs.choice==i;
    rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
@@ -340,7 +340,7 @@ static void render(void){
   }else if(prefs.choice==1){
    centered(115,prefs.plus?"Да":"Нет",0,0);
    centered(132,"3 буквы подряд - шкатулки.",1,0);
-   centered(142,"Считать букву с сектора +?",1,0);
+   centered(142,"Засчитывать Сектор Плюс?",1,0);
   }else if(prefs.choice==2){
    centered(115,prefs.characters?"Версия 2":"Версия 1",0,0);
    centered(132,prefs.characters?"8 персонажей, новые рисунки.":"6 персонажей и рисунки",1,0);
