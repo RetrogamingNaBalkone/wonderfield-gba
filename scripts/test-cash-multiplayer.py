@@ -16,6 +16,8 @@ for humans in (2,3):
    for _ in range(3):
     if e.state()[3]==21:tap(e,8)
    assert mp(e)[6]&(1<<actor),(humans,actor,offer,mp(e),e.state()[:10])
+   assert e.state()[3]==35 and e.state()[5]==actor
+   tap(e,8)
    assert e.state()[5]!=actor
    # Exercise actual zero-sector transitions through two complete cycles.
    for _ in range(6):

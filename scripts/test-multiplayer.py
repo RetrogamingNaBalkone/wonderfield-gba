@@ -47,7 +47,8 @@ def check(humans):
  words=json.loads((ROOT/'assets/words-expanded.json').read_text());n=len(words[e.state()[6]]['word'])
  e.poke(80,n)
  tap(e,8);assert mp(e)[6]&4,mp(e)
- e.run(280);assert e.state()[5]==0,e.state()[:12]
+ e.run(280);assert e.state()[3]==35 and e.state()[5]==2,e.state()[:12]
+ e.run(200);assert e.state()[5]==0,e.state()[:12]
  assert e.state()[3]==28,e.state()[:12]
  assert mp(e)[2]==0
  tap(e,8);assert e.state()[3]==1

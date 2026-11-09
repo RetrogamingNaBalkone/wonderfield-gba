@@ -17,7 +17,7 @@ typedef unsigned int u32;
 #define R 256
 #define L 512
 #define A_RELEASE 0x8000
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
 /* Read-only diagnostic state is also used by the emulator integration checks. */
@@ -316,7 +316,8 @@ static void start_spin(void){
  /* Resolve all draws before animation so skipping preserves the result. */
  game.spin_steps=16+(draw&15);game.spin_ticks=0;game.spin_wait=1;scene.spin_half=0;scene.spin_at=video_ticks;
 }
-static void end_result(void){int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(!human(game.player))game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==FINAL_RECORDS)final_records();else set_mode(next);}
+static void mp_depart_message(void){set_mode(MP_DEPART);say(player_name(game.player),"ПОКИДАЕТ РАУНД");}
+static void end_result(void){int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(!human(game.player))game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==FINAL_RECORDS)final_records();else if(next==MP_DEPART)mp_depart_message();else set_mode(next);}
 static void open_chest(void){
  int reward=random_n(2)==(unsigned)game.choice?100:0;
  game.score[game.player]+=reward;scene.chest_until=scene.now+180;scene.chest_money=reward!=0;
@@ -328,13 +329,14 @@ static void solve_advance(void){while(game.solve_pos<len(word())&&game.revealed[
 static void solve_word(void){set_mode(SOLVE);game.solve_pos=0;solve_fixed=0;int n=len(word());for(int i=0;i<21;i++){game.answer[i]=i<n&&game.revealed[i]?word()[i]:0;if(i<n&&game.revealed[i])solve_fixed|=1u<<((u8)word()[i]-128);}solve_advance();game.cursor=0;while(game.cursor<31&&fixed_letter(game.cursor))game.cursor++;game.keyboard=1;say(msg_f20,"");}
 static void mp_depart(int wrong){
  mp.eliminated|=1<<game.player;game.keyboard=0;game.streak=0;
+ if(wrong){result_reason=WRONG_WORD;result(msg_f5b,msg_f6b,MP_DEPART,game.player);}
+ else mp_depart_message();
+}
+static void mp_depart_finish(void){
  int p=nextplayer();
  if(p==game.player){
   if(game.round<7){game.round++;new_round();}else farewell();
-  return;
- }
- if(wrong){result_reason=WRONG_WORD;result(msg_f5b,msg_f6b,TURN,p);}
- else{game.player=p;begin_turn();}
+ }else{game.player=p;begin_turn();}
 }
 static void confirm_word(void){int good=1;for(int i=0;word()[i];i++)if(game.answer[i]!=word()[i])good=0;if(good)finish_round();else{game.keyboard=0;game.streak=0;result_reason=WRONG_WORD;if(mp.humans>1)mp_depart(1);else result(msg_f5b,msg_f6b,GAME_OVER,game.player);}}
 static void cancel_record(void){
@@ -484,6 +486,7 @@ static void update(u16 pressed,u16 repeat){
   }return;
  }
  if(game.mode==AI_ANSWER){if(message_done(pressed,MESSAGE_TICKS))choose_letter(scene.ai_letter);return;}
+ if(game.mode==MP_DEPART){if(message_done(pressed,MESSAGE_TICKS))mp_depart_finish();return;}
  if(game.mode==RESULT){
   unsigned duration=result_reason==BANKRUPT||result_reason==WRONG_WORD?LONG_MESSAGE_TICKS:MESSAGE_TICKS;
   if(message_done(pressed,duration))end_result();return;
