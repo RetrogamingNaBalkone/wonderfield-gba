@@ -323,32 +323,33 @@ static void gift_certificate(void){
  }
  page_footer(scene.gift_page,4);
 }
+static void setup_player_heading(void){
+ if(mp.link){centered(7,"ВАШ ИГРОК",0,0);return;}
+ text(72,7,"ИГРОК",0,0);glyph(120,7,'1'+(mp.edit+1)%3,0,0);
+ text(136,7,"ИЗ",0,0);glyph(160,7,'0'+mp.humans,0,0);
+}
 static void render(void){
  if(game.mode==MP_OPTIONS){
   rect(0,0,240,160,7);border(3,3,234,148,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
-  const char*items[]={prefs.dictionary?"Словарь: v2":"Словарь: v1",prefs.plus?"Две шкатулки: v2":"Две шкатулки: v1",prefs.characters?"Персонажи: v2":"Персонажи: v1","Начать игру"};
-  for(int i=0;i<4;i++){
-   int y=26+i*22,selected=prefs.choice==i;
-   rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
+  const char*items[]={prefs.dictionary?"Словарь: 686 слов":"Словарь: 495 слов",prefs.plus?"Шкатулки: с Плюсом":"Шкатулки: без Плюса",prefs.characters?"Персонажи: 8":"Персонажи: 6"};
+  for(int i=0;i<3;i++){
+   int y=26+i*20,selected=prefs.choice==i;
+   rect(20,y-2,200,20,selected?8:7);if(selected)border(20,y-2,200,20,0);
    centered(y,items[i],0,selected?15:0);
   }
-  line(8,112,224,8);
   if(prefs.choice==0){
-   centered(115,prefs.dictionary?"Поле чудес 2: 686 слов":"Поле чудес: 495 слов",0,0);
-   centered(132,prefs.dictionary?"Добавлены темы":"Слова из первой игры.",1,0);
-   if(prefs.dictionary)centered(142,"Кулинария и Напитки",1,0);
+   centered(88,prefs.dictionary?"Включает темы":"Словарь первой игры",0,0);
+   if(prefs.dictionary)centered(104,"Кулинария и Напитки",0,0);
   }else if(prefs.choice==1){
-   centered(115,"3 верные буквы подряд",0,0);
-   centered(132,"дают выбор шкатулки.",1,0);
-   centered(142,prefs.plus?"Сектор Плюс считается.":"Сектор Плюс не считается.",1,0);
+   centered(88,"За 3 верные буквы подряд",0,0);
+   centered(104,prefs.plus?"Плюс идёт в зачёт":"Плюс не идёт в зачёт",0,0);
   }else if(prefs.choice==2){
-   centered(115,prefs.characters?"8 персонажей, графика v2":"6 персонажей, графика v1",0,0);
-   centered(132,prefs.characters?"Добавлены Фрекен Бок":"Графика первой игры.",1,0);
-   if(prefs.characters)centered(142,"и Багира.",1,0);
-  }else{
-   centered(115,"С выбранными параметрами",0,0);
-   centered(132,mp.humans>1?"Далее - имя и аватар.":"Начать одиночную игру.",1,0);
+   centered(88,prefs.characters?"С Фрекен Бок и Багирой":"Без Фрекен Бок и Багиры",0,0);
   }
+  line(20,121,200,8);
+  rect(20,125,200,22,prefs.choice==3?8:7);
+  if(prefs.choice==3)border(20,125,200,22,0);
+  centered(129,"НАЧАТЬ ИГРУ",0,prefs.choice==3?15:0);
   centered(151,prefs.choice==3?"A: Играть  B: Назад":"A: Изменить  B: Назад",1,0);return;
  }
  if(game.mode==MP_SETUP){
@@ -366,16 +367,15 @@ static void render(void){
  }
  if(game.mode==MP_AVATAR){
   rect(0,0,240,160,7);border(3,3,234,143,0);
-  centered(7,"АВАТАР ИГРОКА",0,0);centered(27,player_name(mp.edit),0,0);
+  setup_player_heading();centered(27,player_name(mp.edit),0,0);
   int avatar=avatars[mp.edit];
   rect(91,44,58,54,7);border(91,44,58,54,0);
   if(avatar)character_portrait(avatar-1,105,54);else image(&extra_sprites[6],105,54,2);
   text(64,65,"<",0,0);text(168,65,">",0,0);
   centered(105,avatar?character_name(avatar-1):"Затылок",0,0);
-  centered(122,prefs.characters?"Персонажи: Версия 2":"Персонажи: Версия 1",1,0);
   centered(151,"A: Готово  B: К имени",1,0);return;
  }
- if(game.mode==MP_NAME){rect(0,0,240,160,7);centered(5,mp.link?"Ваше имя":player_name(mp.edit),0,1);centered(23,"Пожалуйста,",0,0);centered(39,"представтесь!",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: Пробел START: Готово",1,0);keyboard();centered(151,"A: Буква B: Стереть",1,0);return;}
+ if(game.mode==MP_NAME){rect(0,0,240,160,7);setup_player_heading();centered(32,"Введите имя",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: Пробел START: Готово",1,0);keyboard();centered(151,"A: Буква B: Стереть",1,0);return;}
  if(game.mode==MP_PASS){rect(0,0,240,160,7);border(3,3,234,143,0);centered(40,"Передайте GBA игроку",0,0);centered(70,player_name(game.player),0,0);centered(115,"A: Готов",0,0);return;}
  if(game.mode==MP_LOBBY){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(16,"Мультиплеер по кабелю",0,0);
