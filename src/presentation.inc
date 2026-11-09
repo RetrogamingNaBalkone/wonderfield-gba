@@ -350,7 +350,7 @@ static void render(void){
   rect(0,0,240,160,7);border(3,3,234,145,0);centered(7,mp_stage(),0,0);
   if(match.round_winner>=0){text(12,27,"Раунд:",1,0);text(68,27,player_name(match.round_winner),1,0);}
   else centered(27,"Раунд без победителя",1,0);
-  text(12,44,"ИГРОК",1,0);compact_text(99,44,"ИЗМЕНЕНИЕ",60,0);compact_text(163,44,"ВСЕГО",36,0);
+  text(12,44,"ИГРОК",1,0);compact_text(99,44,"ЗА РАУНД",60,0);compact_text(163,44,"ВСЕГО",36,0);
   if(prefs.rule==MP_WINS)compact_text(205,44,"ПОБЕД",30,0);
   for(int slot=0;slot<3;slot++){
    int who=(slot+2)%3,y=56+slot*16;
@@ -359,9 +359,13 @@ static void render(void){
    compact_number(163,y,game.score[who],38,0,0);
    if(prefs.rule==MP_WINS)compact_number(211,y,match.wins[who],20,0,0);
   }
-  centered(103,"Изменение общего счета",1,0);
-  line(12,114,216,8);
-  if(match.next==2){centered(118,"Победитель партии",1,0);centered(132,player_name(match.winner),0,0);}
+  line(12,103,216,8);
+  if(match.next==2){
+   int early=prefs.rule==MP_WINS&&!match.shootout&&game.round+1<prefs.rounds;
+   centered(108,early?"Досрочная победа":"Победитель партии",1,0);
+   centered(121,player_name(match.winner),0,0);
+   if(early)centered(138,"Соперники уже не догонят",1,0);
+  }
   else centered(124,match.next==1?"Далее: перестрелка":"Далее: рекламная пауза",1,0);
   centered(151,"A: Продолжить",1,0);return;
  }

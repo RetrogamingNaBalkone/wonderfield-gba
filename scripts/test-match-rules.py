@@ -91,6 +91,7 @@ for rule in (0,1,2):
  e=start(rule,1);e.poke(9,900);e.poke(11,120)
  if rule==2:put(e,'match',6,1)
  a=finish(e,2);assert a[13]==0 and e.state()[11]==120
+ if rule==2:e.screenshot('match-regular-win.png')
  records=read(e,'record_names',88)+read(e,'record_scores',32)
  sram=e.core.retro_get_memory_data(0);before=c.string_at(sram,128)
  tap(e,8);assert e.state()[3]==19 and e.state()[5]==0
@@ -119,6 +120,7 @@ e.close()
 for wins,early in ((1,False),(2,True)):
  e=start(2,3);e.poke(4,1);put(e,'match',8,wins-1)
  a=finish(e,2);assert (a[14]==2)==early,a
+ if early:e.screenshot('match-human-early-win.png')
  e.close()
 # AI is stable, starts at zero, earns wins and can finish early.
 e=start(2,3,2);ai=read(e,'opponent_pool',32);assert e.state()[9:12]==(0,0,0)
