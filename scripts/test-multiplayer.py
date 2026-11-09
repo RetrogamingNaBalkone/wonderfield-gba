@@ -5,7 +5,10 @@ from emulator import Emulator, ROOT
 def read(e,name,n):
  if name=='prefs' and name not in e.sym:return b''.join(c.string_at(e.ram+e.sym[f'prefs.{i}']-0x02000000,4) for i in range(n//4))
  return c.string_at(e.ram+e.sym[name]-0x02000000,n)
-def write(e,name,data):c.memmove(e.ram+e.sym[name]-0x02000000,data,len(data))
+def write(e,name,data):
+ if name=='prefs' and name not in e.sym:
+  for i in range(len(data)//4):c.memmove(e.ram+e.sym[f'prefs.{i}']-0x02000000,bytes(data[i*4:i*4+4]),4)
+ else:c.memmove(e.ram+e.sym[name]-0x02000000,bytes(data),len(data))
 def mp(e):return struct.unpack('<7i',read(e,'mp',28))
 def setmp(e,index,value):
  data=bytearray(read(e,'mp',64));struct.pack_into('<i',data,index*4,value);write(e,'mp',bytes(data))
@@ -68,26 +71,26 @@ if __name__=='__main__':
  print(check(2));print(check(3))
 
 def tournament():
- e=Emulator();menu(e,1);accept_name(e);accept_name(e)
- # Full eight-stage progression; the host's new_round selects real dictionary IDs.
+ e=Emulator();options(e,3)
+ tap(e,4) # rounds
+ for _ in range(5):tap(e,7)
+ tap(e,5);tap(e,8);accept_name(e);accept_name(e);accept_name(e)
+ records=read(e,'record_names',88)+read(e,'record_scores',32)
  picked=[]
  for stage in range(8):
   assert e.state()[4]==stage,e.state()[:12]
-  picked.append(e.state()[6])
-  assert 0<=picked[-1]<686
-  e.poke(3,9);e.poke(5,0);e.poke(9,9000)
+  picked.append(e.state()[6]);assert 0<=picked[-1]<686
+  e.poke(3,9);e.poke(5,0);e.poke(9,9000);e.poke(79,1)
+  e.run(20);assert e.state()[3]==36
   tap(e,8)
   if stage<7:
-   assert e.state()[3]==17
-   e.run(620)
+   assert e.state()[3]==17;e.run(620)
   else:assert e.state()[3]==19
  assert len(set(picked))==8
  for _ in range(4):tap(e,8)
- assert e.state()[3]==12,e.state()[:12]
- assert 9000 in struct.unpack('<8i',read(e,'record_scores',32)),struct.unpack('<8i',read(e,'record_scores',32))
- index=struct.unpack('<8i',read(e,'record_scores',32)).index(9000)
- assert read(e,'record_names',88)[index*11:(index+1)*11].split(b'\0')[0]=='Б'.encode('cp866')
- e.close();return {'eight_stages':True,'unique_words':picked,'named_winner_record':True}
+ assert e.state()[3]==0,e.state()[:12]
+ assert read(e,'record_names',88)+read(e,'record_scores',32)==records
+ e.close();return {'eight_rounds':True,'unique_words':picked,'no_multiplayer_records':True}
 
 def plus_series(humans):
  e=Emulator()
@@ -119,11 +122,13 @@ if __name__=='__main__':
 def parameters(humans):
  e=Emulator();options(e,humans)
  assert e.state()[3]==32
- defaults=struct.unpack('<4i',read(e,'prefs',16));assert defaults==(int(humans>1),int(humans>1),int(humans>1),3)
+ defaults=struct.unpack('<4i',read(e,'prefs',16));assert defaults==(int(humans>1),int(humans>1),int(humans>1),5 if humans>1 else 3)
  e.screenshot(f'parameters-{humans}-defaults.png')
+ if humans>1:tap(e,4);tap(e,4)
  tap(e,4);tap(e,7);tap(e,4);tap(e,7);tap(e,4);tap(e,7)
  custom=struct.unpack('<4i',read(e,'prefs',16));assert custom[:3]==(int(humans==1),)*3
- tap(e,5);tap(e,5);tap(e,5);tap(e,8)
+ for _ in range(5 if humans>1 else 3):tap(e,5)
+ tap(e,8)
  if humans>1:
   accept_name(e);accept_name(e)
   if humans==3:accept_name(e)

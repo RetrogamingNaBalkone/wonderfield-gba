@@ -17,7 +17,7 @@ typedef unsigned int u32;
 #define R 256
 #define L 512
 #define A_RELEASE 0x8000
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
 /* Read-only diagnostic state is also used by the emulator integration checks. */
@@ -54,7 +54,14 @@ typedef struct {
 static Scene scene;
 /* Stable player ids: 2 is player one, 0 player two, 1 player three/AI. */
 static struct {int humans,link,viewer,local,edit,choice,eliminated;char names[3][11];} mp={1,0,2,2,0,0,0,{{0}}};
-static struct {int dictionary,plus,characters,choice;} prefs;
+static struct {int dictionary,plus,characters,choice,rule,rounds;} prefs;
+enum {MP_POINTS,MP_RISK,MP_WINS};
+typedef struct {
+ int bank[3],start[3],wins[3];
+ int shootout,participants,settled,round_winner,winner,next;
+ int previous_word;
+} Match;
+static Match match;
 static int opponent_pool[8],mp_ai_index;
 static int avatars[3];
 static int mp_name_error;
@@ -64,7 +71,12 @@ static const char*player_intro(int p){return p==2?msg_5384:p==0?msg_5391:msg_539
 static int perspective(int slot){return (mp.viewer+slot+1)%3;}
 static const char* character_name(int id){return id<6?opponent_names[id]:id==6?"ФРЕКЕН БОК":"БАГИРА";}
 static const char* player_name(int p){return !human(p)?character_name(opponent_pool[mp_ai_index]):mp.names[p];}
-static const char*mp_stage(void){const char*names[]={"1/64 ФИНАЛА","1/32 ФИНАЛА","1/16 ФИНАЛА","1/8 ФИНАЛА","1/4 ФИНАЛА","ПОЛУФИНАЛ","ФИНАЛ","СУПЕРФИНАЛ"};return names[game.round];}
+static const char*mp_stage(void){
+ static char title[]="Раунд 1 из 3";
+ if(match.shootout)return "Перестрелка";
+ if(game.round+1==prefs.rounds)return "Последний раунд";
+ title[6]='1'+game.round;title[11]='0'+prefs.rounds;return title;
+}
 static void link_irq(void);
 static void link_close(void);
 static int link_frame(void);
@@ -200,15 +212,58 @@ static void say(const char*a,const char*b){
 static void farewell(void){set_mode(GAME_OVER);game.keyboard=0;game.deal=0;say(msg_f9a,msg_fa9);}
 static void result(const char*a,const char*b,int next,int player){say(a,b);set_mode(RESULT);game.next_mode=next;game.next_player=player;game.wait=human(game.player)?0:65;}
 static int nextplayer(void){int p=game.player;for(int i=0;i<3;i++){p=(p+1)%3;if(!(mp.eliminated&(1<<p)))return p;}return game.player;}
-static void begin_turn(void){int pass=mp.humans>1&&!mp.link&&human(game.player)&&mp.viewer!=game.player;if(mp.humans>1&&!mp.link&&human(game.player))mp.viewer=game.player;set_mode(TURN);game.choice=1;const char*a=mp.humans>1?(game.player==2?"Первый":game.player==0?"Второй":"Третий"):human(game.player)?msg_d9a:game.player==0?msg_d8c:msg_d93;int p=0;while(a[p]){turn_line[p]=a[p];p++;}for(int i=0;msg_da1[i];i++)turn_line[p++]=msg_da1[i];turn_line[p]=0;say(turn_line,msg_da9);if(!human(game.player))game.wait=65;if((mp.humans>1||prefs.plus)&&game.streak==3&&human(game.player)){game.streak=0;result_reason=BONUS;result(msg_eb5,msg_ec8,CHEST,game.player);}else if(pass)set_mode(MP_PASS);}
-static void new_round(void){if(mp.humans==2&&game.round&&game.player!=1)mp_ai_index=(mp_ai_index+1)%(prefs.characters?8:6);spin_history.count=0;if(game.round)seed_from_input();int duplicate;do{game.word_id=random_n(prefs.dictionary?WORD_COUNT:BASE_WORD_COUNT);duplicate=0;for(int i=0;i<game.round;i++)if(selected_words[i]==game.word_id)duplicate=1;}while(duplicate);selected_words[game.round]=game.word_id;for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;
- /* DOS 1000:5799..57d4: each opponent starts with round * (Random(4)*15+5). */
- mp.eliminated=0;
+static void begin_turn(void){int pass=mp.humans>1&&!mp.link&&human(game.player)&&mp.viewer!=game.player;if(mp.humans>1&&!mp.link&&human(game.player))mp.viewer=game.player;set_mode(TURN);game.choice=1;const char*a=mp.humans>1?(game.player==2?"Первый":game.player==0?"Второй":"Третий"):human(game.player)?msg_d9a:game.player==0?msg_d8c:msg_d93;int p=0;while(a[p]){turn_line[p]=a[p];p++;}for(int i=0;msg_da1[i];i++)turn_line[p++]=msg_da1[i];turn_line[p]=0;say(turn_line,msg_da9);if(!human(game.player))game.wait=65;if((mp.humans>1||prefs.plus)&&game.streak==3&&(mp.humans>1||human(game.player))){game.streak=0;result_reason=BONUS;result(msg_eb5,msg_ec8,CHEST,game.player);}else if(pass)set_mode(MP_PASS);}
+static void new_round(void){
+ spin_history.count=0;if(game.round||match.shootout)seed_from_input();
+ int duplicate,previous=match.previous_word;
+ do{game.word_id=random_n(prefs.dictionary?WORD_COUNT:BASE_WORD_COUNT);duplicate=0;
+  for(int i=0;i<game.round+match.shootout&&i<8;i++)if(selected_words[i]==game.word_id)duplicate=1;
+  if(match.shootout&&previous==game.word_id)duplicate=1;
+ }while(duplicate);
+ if(!match.shootout)selected_words[game.round]=game.word_id;
+ match.previous_word=game.word_id;
+ for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;
+ mp.eliminated=mp.humans>1?(7^match.participants):0;
  if(mp.humans==1)for(int i=0;i<2;i++)game.score[i]=game.round*(random_n(4)*15+5);
- else if(mp.humans==2)game.score[1]=random_n(game.round+1)*15;
- game.player=2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
+ for(int i=0;i<3;i++){match.start[i]=game.score[i];match.bank[i]=game.score[i];}
+ match.settled=0;match.round_winner=-1;
+ game.player=2;while(mp.eliminated&(1<<game.player))game.player=(game.player+1)%3;
+ game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();
+}
+/* Total is authoritative; bank protects only completed rounds in points mode.
+ * Saturate at the representable integer boundary, never wrap into a loss. */
+static void score_add(int p,int amount){game.score[p]=game.score[p]>2147483647-amount?2147483647:game.score[p]+amount;}
+static void score_multiply(int p,int factor){
+ int base=mp.humans>1&&prefs.rule==MP_POINTS?match.bank[p]:0;
+ int value=game.score[p]-base,room=2147483647-base;
+ game.score[p]=base+(value>room/factor?room:value*factor);
+}
+static void mp_settle(void){
+ if(match.settled)return;
+ match.settled=1;match.round_winner=game.solved?game.player:-1;match.winner=-1;
+ if(match.shootout){
+  if(game.solved){match.winner=game.player;match.next=2;}else match.next=1;
+ }else{
+  if(game.solved)match.wins[game.player]++;
+  int remaining=prefs.rounds-game.round-1,leaders=0,best=-1;
+  for(int p=0;p<3;p++){
+   int better=best<0||(prefs.rule==MP_WINS&&match.wins[p]>match.wins[best])||
+    ((prefs.rule!=MP_WINS||match.wins[p]==match.wins[best])&&game.score[p]>game.score[best]);
+   if(better){best=p;leaders=1<<p;}
+   else if((prefs.rule!=MP_WINS||match.wins[p]==match.wins[best])&&game.score[p]==game.score[best])leaders|=1<<p;
+  }
+  int early=prefs.rule==MP_WINS;
+  for(int p=0;p<3;p++)if(p!=best&&match.wins[best]<=match.wins[p]+remaining)early=0;
+  match.next=0;
+  if(remaining==0||early){
+   if(leaders==(1<<best)){match.winner=best;match.next=2;}
+   else{match.participants=leaders;match.next=1;}
+  }
+ }
+ for(int p=0;p<3;p++)match.bank[p]=game.score[p];
+}
 static void new_game(void){
- fast_input=0;seed_from_input();game.round=0;for(int i=0;i<3;i++)game.score[i]=0;game.sector=12;
+ fast_input=0;seed_from_input();match=(Match){0};match.participants=7;match.winner=match.round_winner=match.previous_word=-1;game.round=0;for(int i=0;i<3;i++)game.score[i]=0;game.sector=12;
  int count=prefs.characters?8:6;mp_ai_index=0;
  for(int i=0;i<count;i++)opponent_pool[i]=i;
  for(int i=0;i<20;i++){int a=random_n(count),b=random_n(count),t=opponent_pool[a];opponent_pool[a]=opponent_pool[b];opponent_pool[b]=t;}
@@ -235,7 +290,8 @@ static void gift_begin(int final){
  set_mode(GIFT_PAGES);
 }
 static void final_records(void){
- int winner=mp.humans>1?game.player:2;
+ if(mp.humans>1){set_mode(TITLE);return;}
+ int winner=2;
  ui.viewer=0;
  record_entry=-1;for(int i=7;i>=0;i--)if(game.score[winner]>record_scores[i])record_entry=i;
  if(record_entry<0){set_mode(RECORDS);return;}
@@ -243,7 +299,7 @@ static void final_records(void){
  pending_last_score=record_scores[7];record_pending=1;
  for(int i=7;i>record_entry;i--){record_scores[i]=record_scores[i-1];for(int j=0;j<11;j++)record_names[i][j]=record_names[i-1][j];}
  record_scores[record_entry]=game.score[winner];for(int j=0;j<11;j++)record_names[record_entry][j]=0;
- if(mp.humans>1){for(int i=0;i<11;i++)record_names[record_entry][i]=i<len(player_name(winner))?player_name(winner)[i]:0;game.best=record_scores[0];save();record_pending=0;set_mode(RECORDS);return;}
+
  for(int j=0;j<21;j++)game.answer[j]=0;game.cursor=game.solve_pos=0;set_mode(NAME);
 }
 static void award_letter(int letter){
@@ -251,8 +307,8 @@ static void award_letter(int letter){
  for(int i=0;word()[i];i++)if((u8)word()[i]==128+letter&&!game.revealed[i]){game.revealed[i]=1;count++;}
  game.used[letter]=1;game.keyboard=0;
  if(count){
-  if(game.sector_value<100)game.score[game.player]+=game.sector_value*count;
-  else if(game.sector_value/100==2)game.score[game.player]*=game.sector_value%100;
+  if(game.sector_value<100)score_add(game.player,game.sector_value*count);
+  else if(game.sector_value/100==2)score_multiply(game.player,game.sector_value%100);
   effect(1);
   if(game.sector_value==100){
    /* DOS 1fcf returns straight to 1698. Only ordinary letter selection
@@ -289,7 +345,7 @@ static void prize_offer(void){
  for(int i=0;msg_ff1[i];i++)sector_message[p++]=msg_ff1[i];sector_message[p]=0;say(msg_fe8,sector_message);
 }
 static void open_letter(void){set_mode(LETTER);game.cursor=0;game.keyboard=human(game.player);if(game.sector_value<100){int p=0;while(msg_dbb[p]){sector_message[p]=msg_dbb[p];p++;}int v=game.sector_value;if(v>=10)sector_message[p++]='0'+v/10;sector_message[p++]='0'+v%10;for(int i=0;msg_dc2[i];i++)sector_message[p++]=msg_dc2[i];sector_message[p]=0;say(sector_message,msg_dca);}else say(game.sector_value==300?msg_e47:msg_e12,msg_dca);if(!human(game.player))game.wait=55;}
-static void stop_spin(void){int sector=game.sector;game.sector_value=sector_values[wheel_sectors[sector]-4];if(prefs.plus||game.sector_value!=100)game.streak++;if(game.sector_value<0){game.streak=0;game.score[game.player]=0;result_reason=BANKRUPT;result(msg_dfe,msg_dea,TURN,nextplayer());}else if(!game.sector_value){game.streak=0;result_reason=ZERO;result(msg_dda,msg_dea,TURN,nextplayer());}else if(game.sector_value==100){set_mode(PLUS);game.cursor=0;while(game.revealed[game.cursor])game.cursor++;say(msg_e26,msg_e33);if(!human(game.player))game.wait=60;}else if(game.sector_value==300&&human(game.player)){set_mode(PRIZE);game.choice=1;game.deal=0;game.prize=10;say(msg_e47,msg_e54);}else{open_letter();}}
+static void stop_spin(void){int sector=game.sector;game.sector_value=sector_values[wheel_sectors[sector]-4];if(prefs.plus||game.sector_value!=100)game.streak++;if(game.sector_value<0){game.streak=0;game.score[game.player]=mp.humans>1&&prefs.rule==MP_POINTS?match.bank[game.player]:0;result_reason=BANKRUPT;result(msg_dfe,msg_dea,TURN,nextplayer());}else if(!game.sector_value){game.streak=0;result_reason=ZERO;result(msg_dda,msg_dea,TURN,nextplayer());}else if(game.sector_value==100){set_mode(PLUS);game.cursor=0;while(game.revealed[game.cursor])game.cursor++;say(msg_e26,msg_e33);if(!human(game.player))game.wait=60;}else if(game.sector_value==300&&human(game.player)){set_mode(PRIZE);game.choice=1;game.deal=0;game.prize=10;say(msg_e47,msg_e54);}else{open_letter();}}
 static int spin_draw(void){
  /* DOS four speed stages; the fifth duration is drawn although unused. */
  unsigned limit=10+random_n(20),half_steps=0;
@@ -325,7 +381,7 @@ static void end_result(void){
  int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(!human(game.player))game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==FINAL_RECORDS)final_records();else if(next==MP_DEPART)mp_depart_message();else set_mode(next);}
 static void open_chest(void){
  int reward=random_n(2)==(unsigned)game.choice?100:0;
- game.score[game.player]+=reward;scene.chest_until=scene.now+180;scene.chest_money=reward!=0;
+ score_add(game.player,reward);scene.chest_until=scene.now+180;scene.chest_money=reward!=0;
  result_reason=CHEST_RESULT;
  result(reward?msg_ef1:msg_f07,reward?msg_efa:msg_f10,TURN,game.player);
 }
@@ -340,7 +396,7 @@ static void mp_depart(int wrong){
 static void mp_depart_finish(void){
  int p=nextplayer();
  if(p==game.player){
-  set_mode(ROUND_END);say("Все игроки","покинули раунд!");
+  game.solved=0;set_mode(ROUND_END);say("Все игроки","покинули раунд!");
  }else{game.player=p;begin_turn();}
 }
 static void confirm_word(void){int good=1;for(int i=0;word()[i];i++)if(game.answer[i]!=word()[i])good=0;if(good)finish_round();else{game.keyboard=0;game.streak=0;result_reason=WRONG_WORD;if(mp.humans>1)mp_depart(1);else result(msg_f5b,msg_f6b,GAME_OVER,game.player);}}
@@ -367,7 +423,7 @@ static void menu_close(void){
 /* Keep START available for saving a name, including while its menu is open. */
 static u16 menu_button(void){return (ui.active?ui.origin:game.mode)==NAME?SELECT:START;}
 static void mp_setup(void){mp.choice=0;mp.link=0;mp.humans=1;mp.viewer=mp.local=2;ui.active=0;set_mode(MP_SETUP);}
-static void options_begin(void){prefs.dictionary=prefs.plus=prefs.characters=mp.humans>1;prefs.choice=3;set_mode(MP_OPTIONS);}
+static void options_begin(void){prefs.dictionary=prefs.plus=prefs.characters=mp.humans>1;prefs.rule=MP_POINTS;prefs.rounds=3;prefs.choice=mp.humans>1?5:3;set_mode(MP_OPTIONS);}
 /* Names use the game's single-byte CP866 alphabet, not UTF-8. */
 static void name_clean(char out[11],const char*in){
  int n=0,space=0;
@@ -383,8 +439,7 @@ static int name_equal(const char*a,const char*b){
  for(int i=0;i<11;i++){if(x[i]!=y[i])return 0;if(!x[i])return 1;}
  return 1;
 }
-/* Reserve the whole AI roster: a replacement in a later round must not
- * acquire a human's name. Three-human games have no AI. */
+/* Reserve the roster before the fixed AI is drawn. Three humans have no AI. */
 static int name_reserved(const char*n){
  if(mp.humans==3)return 0;
  for(int i=0;i<(prefs.characters?8:6);i++)if(name_equal(n,character_name(i)))return 1;
@@ -440,11 +495,19 @@ static void update(u16 pressed,u16 repeat){
  }
  if(game.mode==MP_OPTIONS){
   if(pressed&B){set_mode(mp.humans>1&&!mp.link?MP_COUNT:MP_SETUP);return;}
-  if(repeat&UP){prefs.choice=(prefs.choice+3)%4;dirty=1;}
-  if(repeat&DOWN){prefs.choice=(prefs.choice+1)%4;dirty=1;}
-  if(repeat&(LEFT|RIGHT)){if(prefs.choice==0)prefs.dictionary^=1;else if(prefs.choice==1)prefs.plus^=1;else if(prefs.choice==2)prefs.characters^=1;dirty=1;}
-  if(pressed&A){if(prefs.choice==0)prefs.dictionary^=1;else if(prefs.choice==1)prefs.plus^=1;else if(prefs.choice==2)prefs.characters^=1;
-   else if(mp.humans==1)new_game();else{mp.edit=2;mp_name_begin();}dirty=1;}
+  int count=mp.humans>1?6:4;
+  if(repeat&UP){prefs.choice=(prefs.choice+count-1)%count;dirty=1;}
+  if(repeat&DOWN){prefs.choice=(prefs.choice+1)%count;dirty=1;}
+  if((repeat&(LEFT|RIGHT))||(pressed&A)){
+   int delta=repeat&LEFT?-1:1;
+   if(prefs.choice==0)prefs.dictionary^=1;
+   else if(prefs.choice==1)prefs.plus^=1;
+   else if(prefs.choice==2)prefs.characters^=1;
+   else if(mp.humans>1&&prefs.choice==3)prefs.rule=(prefs.rule+3+delta)%3;
+   else if(mp.humans>1&&prefs.choice==4)prefs.rounds=(prefs.rounds+7+delta)%8+1;
+   else if(pressed&A){if(mp.humans==1)new_game();else{mp.edit=2;mp_name_begin();}}
+   dirty=1;
+  }
   return;
  }
  if(game.mode==MP_NAME){
@@ -479,7 +542,7 @@ static void update(u16 pressed,u16 repeat){
  if(game.mode==MP_ERROR){if(pressed&B){link_close();mp.link=0;mp.humans=1;set_mode(TITLE);}return;}
  if(game.mode==MP_PASS){if(pressed&A)set_mode(TURN);return;}
 
- if(mp.humans>1&&game.mode==ROUND_END){if(pressed&A){if(game.round<7){credits_begin();}else if(mp.eliminated==7)farewell();else gift_begin(1);}return;}
+ if(mp.humans>1&&game.mode==ROUND_END){mp_settle();set_mode(MP_SUMMARY);return;}
  if(start_pending){
   if(pressed&A_RELEASE){int select_mode=start_pending==2;start_pending=0;ui.active=ui.viewer=0;if(select_mode)mp_setup();else{mp.humans=1;mp.link=0;mp.viewer=2;options_begin();}}
   return;
@@ -521,6 +584,14 @@ static void update(u16 pressed,u16 repeat){
  }
  if(game.mode==TITLE){if(pressed&A){fast_input=1;start_pending=2;}return;}
  if(game.mode==RECORDS){if(pressed&(A|B))set_mode(ui.viewer?MENU:TITLE);return;}
+ if(game.mode==MP_SUMMARY){
+  if(pressed&A){
+   if(match.next==2){game.player=match.winner;gift_begin(1);}
+   else if(match.next==1){match.shootout=1;new_round();}
+   else credits_begin();
+  }
+  return;
+ }
  if(scene_tick(pressed))return;
  if(game.mode==GIFT_PAGES){
   if((pressed&B)&&scene.gift_page>0){scene.gift_page--;dirty=1;}

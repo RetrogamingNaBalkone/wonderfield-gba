@@ -44,7 +44,7 @@ static void board(void){
  rect(30,35,181,9,7);
  if(game.mode!=INTRO)text(30,35,words[game.word_id].topic,1,0);
  if(mp.humans>1){
-  if(game.mode!=INTRO&&len(words[game.word_id].topic)<=16){glyph(162,35,'1'+game.round,1,0);text(170,35," из 8",1,0);}
+  if(game.mode!=INTRO&&!match.shootout&&len(words[game.word_id].topic)<=16){glyph(162,35,'1'+game.round,1,0);text(170,35," из ",1,0);glyph(202,35,'0'+prefs.rounds,1,0);}
  }else if(len(words[game.word_id].topic)<=18){text(194,35,"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
  line(30,43,181,8);
 }
@@ -112,6 +112,19 @@ static void people(void){
  if(eyes>=0)half_image(eyes,204,eye_y+6,-1);
  if(mp.humans==1)score_badge(2,164,142);
 }
+/* Six-pixel statistics use the original font; unusually long values compress
+ * within their own fixed field, retaining every digit rather than clipping. */
+static void compact_text(int x,int y,const char*s,int width,u8 color){
+ int n=len(s),step=n*6<=width?6:width/n;if(step<1)step=1;
+ for(int k=0;k<n;k++)for(int row=0;row<8;row++)for(int col=0;col<8;col++)
+  if(font8[(u8)s[k]*8+row]&(128>>col))pixel(x+k*step+col*step/8,y+row,color);
+}
+static void compact_number(int x,int y,int value,int width,u8 color,int sign){
+ char reverse[12],out[13];unsigned v=value<0?-(unsigned)value:(unsigned)value;int n=0,j=0;
+ do{reverse[n++]='0'+v%10;v/=10;}while(v);
+ if(value<0)out[j++]='-';else if(sign)out[j++]='+';
+ while(n)out[j++]=reverse[--n];out[j]=0;compact_text(x,y,out,width,color);
+}
 /* Fixed player-one, player-two, player-three order on every console. Full-width
  * 80-pixel cells fit all ten name characters without touching the studio. */
 static void multiplayer_panel(void){
@@ -123,9 +136,13 @@ static void multiplayer_panel(void){
   rect(x,144,80,16,active?1:7);
   const char*name=player_name(who);int n=len(name);if(n>10)n=10;
   for(int i=0;i<n;i++)glyph(x+(80-n*8)/2+i*8,144,(u8)name[i],1,color);
-  int value=game.score[who],digits=value<0?1:0;unsigned v=value<0?-value:value;
-  do{digits++;v=divide(v,10);}while(v);
-  number(x+(80-digits*8)/2,152,value,1,color);
+  if(prefs.rule==MP_POINTS){
+   compact_number(x+3,152,game.score[who],32,color,0);
+   compact_number(x+39,152,game.score[who]-match.bank[who],38,color,1);
+  }else if(prefs.rule==MP_WINS){
+   compact_number(x+3,152,game.score[who],43,color,0);
+   compact_text(x+49,152,"П:",12,color);compact_number(x+61,152,match.wins[who],16,color,0);
+  }else compact_number(x+4,152,game.score[who],72,color,0);
  }
 }
 static void speech_shape(int x,int y,const int*left,const int*right,int height){
@@ -329,6 +346,38 @@ static void setup_player_heading(void){
  text(136,7,"ИЗ",0,0);glyph(160,7,'0'+mp.humans,0,0);
 }
 static void render(void){
+ if(game.mode==MP_SUMMARY){
+  rect(0,0,240,160,7);border(3,3,234,145,0);centered(7,mp_stage(),0,0);
+  if(match.round_winner>=0){text(12,27,"Раунд:",1,0);text(68,27,player_name(match.round_winner),1,0);}
+  else centered(27,"Раунд без победителя",1,0);
+  text(12,44,"ИГРОК",1,0);compact_text(99,44,"ИЗМЕНЕНИЕ",60,0);compact_text(163,44,"ВСЕГО",36,0);
+  if(prefs.rule==MP_WINS)compact_text(205,44,"ПОБЕД",30,0);
+  for(int slot=0;slot<3;slot++){
+   int who=(slot+2)%3,y=56+slot*16;
+   text(12,y,player_name(who),1,0);
+   compact_number(99,y,game.score[who]-match.start[who],60,0,1);
+   compact_number(163,y,game.score[who],38,0,0);
+   if(prefs.rule==MP_WINS)compact_number(211,y,match.wins[who],20,0,0);
+  }
+  centered(103,"Изменение общего счета",1,0);
+  line(12,114,216,8);
+  if(match.next==2){centered(118,"Победитель партии",1,0);centered(132,player_name(match.winner),0,0);}
+  else centered(124,match.next==1?"Далее: перестрелка":"Далее: рекламная пауза",1,0);
+  centered(151,"A: Продолжить",1,0);return;
+ }
+ if(game.mode==MP_OPTIONS&&mp.humans>1){
+  rect(0,0,240,160,7);border(3,3,234,146,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
+  const char*rules[]={"По очкам","По очкам с риском","По победам"};
+  const char*items[]={prefs.dictionary?"Словарь: v2":"Словарь: v1",prefs.plus?"Две шкатулки: v2":"Две шкатулки: v1",prefs.characters?"Персонажи: v2":"Персонажи: v1",rules[prefs.rule],"Раундов: 3","НАЧАТЬ ИГРУ"};
+  for(int i=0;i<6;i++){
+   int y=28+i*19,selected=prefs.choice==i;u8 color=selected?15:0;
+   if(selected){rect(12,y-2,216,18,8);border(12,y-2,216,18,0);}
+   if(i==4){text(80,y,"Раундов:",0,color);glyph(152,y,'0'+prefs.rounds,0,color);}
+   else centered(y,items[i],0,color);
+  }
+  centered(151,prefs.choice==5?"A: Играть  B: Назад":"A: Изменить  B: Назад",1,0);return;
+ }
+
  if(game.mode==MP_OPTIONS){
   rect(0,0,240,160,7);border(3,3,234,148,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
   const char*items[]={prefs.dictionary?"Словарь: v2":"Словарь: v1",prefs.plus?"Две шкатулки: v2":"Две шкатулки: v1",prefs.characters?"Персонажи: v2":"Персонажи: v1"};

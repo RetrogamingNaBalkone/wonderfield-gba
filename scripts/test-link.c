@@ -48,7 +48,7 @@ static void run(unsigned frames){
  }
 }
 int main(int argc,char**argv){
- mLogSetDefaultLogger(&logger);assert(argc==7||argc==12);int names_case=argc==12?atoi(argv[7]):0;uint32_t avatars_addr=strtoul(argv[6],0,16);uint32_t prefs_addr=strtoul(argv[5],0,16);count=atoi(argv[2]);game_addr=strtoul(argv[3],0,16);mp_addr=strtoul(argv[4],0,16);
+ mLogSetDefaultLogger(&logger);assert(argc==7||argc==12||argc==15);int names_case=argc>=12?atoi(argv[7]):0;uint32_t avatars_addr=strtoul(argv[6],0,16);uint32_t prefs_addr=strtoul(argv[5],0,16);count=atoi(argv[2]);game_addr=strtoul(argv[3],0,16);mp_addr=strtoul(argv[4],0,16);
  for(int i=0;i<count;i++){
   c[i]=mCoreFind(argv[1]);assert(c[i]);assert(c[i]->init(c[i]));mCoreInitConfig(c[i],NULL);
   mCoreConfigSetDefaultIntValue(&c[i]->config,"useBios",0);mCoreConfigSetDefaultIntValue(&c[i]->config,"skipBios",1);
@@ -58,6 +58,7 @@ int main(int argc,char**argv){
   GBASIOSetDriver(&g[i]->sio,&nodes[i].d,SIO_MULTI);
  }
  run(100);
+ if(argc==15)for(int i=0;i<count;i++){wr(i,strtoul(argv[13],0,16),i?0:2);wr(i,strtoul(argv[14],0,16),i?1:8);}
  for(int i=0;i<count;i++){
   for(int option=0;option<3;option++)wr(i,prefs_addr+option*4,i==0);
   wr(i,avatars_addr+8,names_case?1:i+1);
@@ -143,6 +144,28 @@ int main(int argc,char**argv){
  c[1]->setKeys(c[1],1);run(90);c[1]->setKeys(c[1],0);assert(rd(0,game_addr+12)!=1);run(30);
  for(int i=1;i<count;i++){assert(rd(i,game_addr+20)==rd(0,game_addr+20));assert(rd(i,game_addr+24)==rd(0,game_addr+24));}
  printf("PASS: %d consoles, perspectives, dictionary/word sync, owner-only input (%d transfers)\n",count,transfers);
+ if(argc==15){
+  uint32_t match=strtoul(argv[12],0,16),rule=strtoul(argv[13],0,16),rounds=strtoul(argv[14],0,16);
+  for(int i=0;i<count;i++){assert(rd(i,rule)==2);assert(rd(i,rounds)==8);}
+  /* Final main round: two leaders tie on wins and points. Third sits out. */
+  wr(0,game_addr+16,7);wr(0,game_addr+20,2);wr(0,game_addr+79*4,1);
+  wr(0,game_addr+9*4,500);wr(0,game_addr+10*4,100);wr(0,game_addr+11*4,500);
+  wr(0,match+6*4,1);wr(0,match+7*4,0);wr(0,match+8*4,0);
+  wr(0,game_addr+12,9);run(80);
+  for(int i=0;i<count;i++){
+   assert(rd(i,game_addr+12)==36);assert(rd(i,match+10*4)==5);assert(rd(i,match+14*4)==1);
+   for(int j=0;j<16;j++)assert(rd(i,match+j*4)==rd(0,match+j*4));
+  }
+  c[0]->setKeys(c[0],1);run(30);c[0]->setKeys(c[0],0);run(60);
+  for(int i=0;i<count;i++){assert(rd(i,match+9*4)==1);assert(rd(i,mp_addr+24)==2);assert(rd(i,game_addr+20)==2);}
+  /* Empty shootout repeats with identical membership, even after scores change. */
+  wr(0,mp_addr+24,7);wr(0,game_addr+79*4,0);wr(0,game_addr+12,9);run(60);
+  c[0]->setKeys(c[0],1);run(30);c[0]->setKeys(c[0],0);run(60);
+  for(int i=0;i<count;i++){assert(rd(i,match+10*4)==5);assert(rd(i,mp_addr+24)==2);assert(rd(i,game_addr+16)==7);}
+  wr(0,game_addr+9*4,9000);wr(0,game_addr+20,2);wr(0,game_addr+79*4,1);wr(0,game_addr+12,9);run(80);
+  for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==36);assert(rd(i,match+13*4)==2);assert(rd(i,match+14*4)==2);}
+  printf("PASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\n");
+ }
  disconnected=count-1;run(300);
  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==31);
  printf("PASS: disconnect reports error without continuing the game\n");

@@ -31,4 +31,5 @@ for count in ([args.consoles] if args.consoles else (2, 3)):
                        + [hex(s[k]) for k in ('game', 'mp', 'prefs', 'avatars')]
                        + [str(scenario)]
                        + [hex(s[k]) for k in ('link_name_edit', 'link_name_answer',
-                                             'link_name_pos', 'link_name_cursor')], check=True)
+                                             'link_name_pos', 'link_name_cursor')]
+                       + [hex(s['match']),hex(s.get('prefs.4',s['prefs']+16)),hex(s.get('prefs.5',s['prefs']+20))], check=True)

@@ -1,4 +1,4 @@
-"""Exercise real departure handlers across all eight multiplayer stages.
+"""Exercise real departure handlers across all eight multiplayer rounds.
 
 RAM fixtures select Prize offers or a wrong answer; button presses perform
 cash/prize acceptance, departures, and the round transition in the ROM.
@@ -75,11 +75,11 @@ def depart(e, reason):
         tap(e, 8)
 
     if mp(e)[6] == 7:
-        assert e.state()[3] == 9 and e.state()[4] == stage
+        assert e.state()[3] == 36 and e.state()[4] == stage
         assert message(e, 'message1') == 'Все игроки'
         assert message(e, 'message2') == 'покинули раунд!'
         e.run(200)
-        assert e.state()[3] == 9  # Same acknowledgement as a winning round.
+        assert e.state()[3] == 36  # Same acknowledgement as a winning round.
         if stage == 0:
             e.screenshot('all-players-departed.png')
         tap(e, 8)
@@ -93,13 +93,16 @@ def depart(e, reason):
                     e.screenshot('all-departed-advertising.png')
                 tap(e, 8)  # Or skip it with the existing control.
         else:
-            assert e.state()[3] == 10  # No winner's gift or ninth round.
+            assert e.state()[3] == 19  # Standings winner receives the gift.
 
 
 for reasons in (('cash',) * 3, ('prize',) * 3, ('wrong',) * 3,
                 ('prize', 'wrong', 'cash')):
     e = Emulator()
-    m['menu'](e, 2)
+    m['options'](e, 3)
+    tap(e,4)
+    for _ in range(5):tap(e,7)
+    tap(e,5);tap(e,8)
     for _ in range(3):
         m['accept_name'](e)
     for i, score in enumerate((100, 200, 300)):
@@ -127,14 +130,14 @@ for reasons in (('cash',) * 3, ('prize',) * 3, ('wrong',) * 3,
                 assert e.state()[5] == 2
                 assert not any(e.state()[18:70])  # Board and used letters reset.
             else:
-                assert e.state()[3] == 10
+                assert e.state()[3] == 19
                 assert e.state()[4] == 7  # No ninth stage or word-array overrun.
             assert e.state()[9:12] == (100, 200, 300)
             assert read(e, 'mp', 61)[28:61] == names
             assert read(e, 'avatars', 12) == avatars
     assert len(set(selected)) == 8
     assert read(e, 'record_names', 88) + read(e, 'record_scores', 32) == records
-    tap(e, 8)
+    for _ in range(4):tap(e, 8)
     assert e.state()[3] == 0
     e.close()
     print('PASS: eight stages, departure reasons', reasons, flush=True)

@@ -14,7 +14,7 @@ static char link_name[11],link_saved_names[8][11];
 static char link_incoming_names[3][11];
 static int link_saved_scores[8];
 static struct {
- Game game;Scene scene;SoundCommand sound;Cash cash;u32 cash_seed;char names[3][11],first[96],second[96];
+ Match match;int rule,rounds;Game game;Scene scene;SoundCommand sound;Cash cash;u32 cash_seed;char names[3][11],first[96],second[96];
  u8 durations[10];int eliminated,dictionary,plus,characters,pool[8],ai_index,avatars[3],humans,name_conflicts,name_editing;char records[8][11];int scores[8];
 } link_snapshot;
 static u16 link_previous[sizeof link_snapshot/2];
@@ -116,6 +116,7 @@ static int link_frame(void){
   link_snapshot.name_conflicts=link_name_conflicts(link_incoming_names);
   link_snapshot.name_editing=0;
   for(int i=0;i<mp.humans;i++)if(link_remote[i])link_snapshot.name_editing|=1<<((i+2)%3);
+  link_snapshot.match=match;link_snapshot.rule=prefs.rule;link_snapshot.rounds=prefs.rounds;
   link_snapshot.humans=mp.humans;
   link_copy(&link_snapshot.cash,&cash,sizeof cash);link_snapshot.cash_seed=cash_initial_seed;
   link_snapshot.sound=sound_command;link_snapshot.dictionary=prefs.dictionary;link_snapshot.plus=prefs.plus;link_snapshot.characters=prefs.characters;link_snapshot.ai_index=mp_ai_index;link_copy(link_snapshot.pool,opponent_pool,sizeof opponent_pool);
@@ -152,6 +153,7 @@ static int link_frame(void){
  REG16(0x0400012a)=0;
  if(!master){
   if(link_snapshot.humans<2||link_snapshot.humans>3)return 0;
+  match=link_snapshot.match;prefs.rule=link_snapshot.rule;prefs.rounds=link_snapshot.rounds;
   mp.humans=link_connected=link_snapshot.humans;
   link_copy(record_names,link_snapshot.records,sizeof record_names);link_copy(record_scores,link_snapshot.scores,sizeof record_scores);
   link_copy(&game,&link_snapshot.game,sizeof game);link_copy(&scene,&link_snapshot.scene,sizeof scene);

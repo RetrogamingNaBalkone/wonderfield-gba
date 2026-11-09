@@ -1,0 +1,41 @@
+{
+  "rom_sha256": "9fdab1c4ff70fbd69233aa9ff12c395e647a956b2c73a900a012b25d97887eed",
+  "checks": [
+    {
+      "menu_defaults_round_bounds_and_three_modes": true
+    },
+    {
+      "rule": 0,
+      "bankrupt_and_multipliers": true
+    },
+    {
+      "rule": 1,
+      "bankrupt_and_multipliers": true
+    },
+    {
+      "rule": 2,
+      "bankrupt_and_multipliers": true
+    },
+    {
+      "settlement_once_and_return": true
+    },
+    {
+      "winner_by_standings_and_no_sram": true
+    },
+    {
+      "leader_subset_repeat_and_word_wins_shootout": true
+    },
+    {
+      "starting_order_strict_early_finish_fixed_ai": true
+    },
+    {
+      "last_letter_and_plus_win": true
+    },
+    {
+      "all_eliminated_round": true
+    },
+    {
+      "three_way_tie_no_early_points_ai_chest_overflow_and_panels": true
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "rom_sha256": "9fdab1c4ff70fbd69233aa9ff12c395e647a956b2c73a900a012b25d97887eed",
+  "tests": [
+    {
+      "script": "test-match-rules.py",
+      "passed": true
+    },
+    {
+      "script": "test-multiplayer.py",
+      "passed": true
+    },
+    {
+      "script": "test-player-names.py",
+      "passed": true
+    },
+    {
+      "script": "test-chest-transition.py",
+      "passed": true
+    },
+    {
+      "script": "test-avatars.py",
+      "passed": true
+    },
+    {
+      "script": "test-panel-name.py",
+      "passed": true
+    },
+    {
+      "script": "test-round-elimination.py",
+      "passed": true
+    },
+    {
+      "script": "verify_records.py",
+      "passed": true
+    },
+    {
+      "script": "verify_ai_chests.py",
+      "passed": true
+    },
+    {
+      "script": "test-link.py",
+      "passed": true
+    }
+  ],
+  "cable": "mGBA 0.10.5 test SIO bus, 2 and 3 cores, six name scenarios each; not physical hardware"
+}
