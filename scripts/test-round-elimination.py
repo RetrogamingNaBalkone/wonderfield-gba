@@ -74,6 +74,27 @@ def depart(e, reason):
     else:
         tap(e, 8)
 
+    if mp(e)[6] == 7:
+        assert e.state()[3] == 9 and e.state()[4] == stage
+        assert message(e, 'message1') == 'Все игроки'
+        assert message(e, 'message2') == 'покинули раунд!'
+        e.run(200)
+        assert e.state()[3] == 9  # Same acknowledgement as a winning round.
+        if stage == 0:
+            e.screenshot('all-players-departed.png')
+        tap(e, 8)
+        if stage < 7:
+            assert e.state()[3] == 17 and e.state()[4] == stage
+            if stage % 2:
+                e.run(620)  # The existing advertising pause expires normally.
+            else:
+                e.run(40)
+                if stage == 0:
+                    e.screenshot('all-departed-advertising.png')
+                tap(e, 8)  # Or skip it with the existing control.
+        else:
+            assert e.state()[3] == 10  # No winner's gift or ninth round.
+
 
 for reasons in (('cash',) * 3, ('prize',) * 3, ('wrong',) * 3,
                 ('prize', 'wrong', 'cash')):

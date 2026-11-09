@@ -335,7 +335,7 @@ static void mp_depart(int wrong){
 static void mp_depart_finish(void){
  int p=nextplayer();
  if(p==game.player){
-  if(game.round<7){game.round++;new_round();}else farewell();
+  set_mode(ROUND_END);say("Все игроки","покинули раунд!");
  }else{game.player=p;begin_turn();}
 }
 static void confirm_word(void){int good=1;for(int i=0;word()[i];i++)if(game.answer[i]!=word()[i])good=0;if(good)finish_round();else{game.keyboard=0;game.streak=0;result_reason=WRONG_WORD;if(mp.humans>1)mp_depart(1);else result(msg_f5b,msg_f6b,GAME_OVER,game.player);}}
@@ -427,7 +427,7 @@ static void update(u16 pressed,u16 repeat){
  if(game.mode==MP_ERROR){if(pressed&B){link_close();mp.link=0;mp.humans=1;set_mode(TITLE);}return;}
  if(game.mode==MP_PASS){if(pressed&A)set_mode(TURN);return;}
 
- if(mp.humans>1&&game.mode==ROUND_END){if(pressed&A){if(game.round<7){credits_begin();}else gift_begin(1);}return;}
+ if(mp.humans>1&&game.mode==ROUND_END){if(pressed&A){if(game.round<7){credits_begin();}else if(mp.eliminated==7)farewell();else gift_begin(1);}return;}
  if(start_pending){
   if(pressed&A_RELEASE){int select_mode=start_pending==2;start_pending=0;ui.active=ui.viewer=0;if(select_mode)mp_setup();else{mp.humans=1;mp.link=0;mp.viewer=2;options_begin();}}
   return;
