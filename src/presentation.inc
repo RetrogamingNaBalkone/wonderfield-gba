@@ -326,73 +326,64 @@ static void gift_certificate(void){
 static void render(void){
  if(game.mode==MP_OPTIONS){
   rect(0,0,240,160,7);border(3,3,234,148,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
+  const char*items[]={"Словарь","+ приближает шкатулки","Персонажи","Начать игру"};
   for(int i=0;i<4;i++){
-   int y=26+i*23,selected=prefs.choice==i;
-   if(i==3){
-    if(selected){rect(8,y-2,224,13,1);border(8,y-2,224,13,0);}
-    centered(y,"Начать игру",1,selected?15:0);
-    continue;
-   }
-   const char*label=i==0?"Словарь":i==1?"+ приближает шкатулки":"Персонажи";
-   const char*value=i==0?(prefs.dictionary?"Поле чудес 2: 686 слов":"Поле чудес: 495 слов"):i==1?(prefs.plus?"Да":"Нет"):(prefs.characters?"Версия 2":"Версия 1");
-   text(12,y,label,1,0);
-   if(selected){rect(8,y+9,224,11,1);border(8,y+9,224,11,0);text(12,y+10,"<",1,15);text(220,y+10,">",1,15);}
-   centered(y+10,value,1,selected?15:1);
+   int y=26+i*22,selected=prefs.choice==i;
+   rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
+   centered(y,items[i],0,selected?15:0);
   }
-  line(8,108,224,8);
+  line(8,112,224,8);
   if(prefs.choice==0){
-   centered(112,prefs.dictionary?"Слова из Поля чудес 2.":"Слова из первой игры.",1,0);
-   centered(122,prefs.dictionary?"Добавлены темы":"Привычный словарь порта.",1,0);
-   if(prefs.dictionary)centered(132,"Кулинария и Напитки",1,0);
+   centered(115,prefs.dictionary?"Поле чудес 2: 686 слов":"Поле чудес: 495 слов",0,0);
+   centered(132,prefs.dictionary?"Добавлены темы":"Слова из первой игры.",1,0);
+   if(prefs.dictionary)centered(142,"Кулинария и Напитки",1,0);
   }else if(prefs.choice==1){
-   centered(112,"3 верные буквы подряд",1,0);
-   centered(122,"дают выбор шкатулки.",1,0);
-   centered(132,"Засчитывать букву",1,0);
-   centered(142,"с сектора +?",1,0);
+   centered(115,prefs.plus?"Да":"Нет",0,0);
+   centered(132,"3 буквы подряд - шкатулки.",1,0);
+   centered(142,"Считать букву с сектора +?",1,0);
   }else if(prefs.choice==2){
-   centered(112,prefs.characters?"8 персонажей и графика":"6 персонажей и графика",1,0);
-   centered(122,prefs.characters?"второй игры.":"первой игры.",1,0);
-   if(prefs.characters){centered(132,"Добавлены Фрекен Бок",1,0);centered(142,"и Багира.",1,0);}
+   centered(115,prefs.characters?"Версия 2":"Версия 1",0,0);
+   centered(132,prefs.characters?"8 персонажей, новые рисунки.":"6 персонажей и рисунки",1,0);
+   centered(142,prefs.characters?"Фрекен Бок и Багира.":"первой игры.",1,0);
   }else{
-   centered(112,"Начать с выбранными",1,0);
-   centered(122,"параметрами.",1,0);
-   if(mp.humans>1)centered(132,"Далее - ввод имён.",1,0);
+   centered(115,"С выбранными параметрами",0,0);
+   centered(132,mp.humans>1?"Далее - имя и аватар.":"Начать одиночную игру.",1,0);
   }
-  centered(151,"A: Выбрать  B: Назад",1,0);return;
+  centered(151,prefs.choice==3?"A: Играть  B: Назад":"A: Изменить  B: Назад",1,0);return;
  }
  if(game.mode==MP_SETUP){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,"Режим игры",0,0);
   const char*options[]={"Один игрок","Локальный мультиплеер","Мультиплеер по кабелю"};
-  for(int i=0;i<3;i++){int y=42+i*29;if(mp.choice==i){rect(8,y-4,224,23,1);border(8,y-4,224,23,0);}centered(y,options[i],1,mp.choice==i?15:0);}
+  for(int i=0;i<3;i++){int y=42+i*29;if(mp.choice==i){rect(20,y-3,200,22,8);border(20,y-3,200,22,0);}centered(y,options[i],0,mp.choice==i?15:0);}
   centered(151,"A: Выбрать  B: Назад",1,0);return;
  }
  if(game.mode==MP_COUNT){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,"Число игроков",0,0);
-  centered(31,mp.link?"Мультиплеер по кабелю":"Локальный мультиплеер",1,0);
-  for(int i=0;i<2;i++){int y=60+i*27,selected=mp.humans==i+2;if(selected){rect(32,y-4,176,23,1);border(32,y-4,176,23,0);}centered(y,i?"3 игрока":"2 игрока",1,selected?15:0);}
-  centered(121,mp.humans==2?"Третий - компьютер":"Все трое - люди",1,0);
+  centered(31,mp.link?"Мультиплеер по кабелю":"Локальный мультиплеер",0,0);
+  for(int i=0;i<2;i++){int y=60+i*27,selected=mp.humans==i+2;if(selected){rect(20,y-3,200,22,8);border(20,y-3,200,22,0);}centered(y,i?"3 игрока":"2 игрока",0,selected?15:0);}
+  centered(121,mp.humans==2?"Третий - компьютер":"Все трое - люди",0,0);
   centered(151,"A: Выбрать  B: Назад",1,0);return;
  }
  if(game.mode==MP_AVATAR){
   rect(0,0,240,160,7);border(3,3,234,143,0);
-  centered(7,"АВАТАР ИГРОКА",0,0);centered(27,player_name(mp.edit),1,0);
+  centered(7,"АВАТАР ИГРОКА",0,0);centered(27,player_name(mp.edit),0,0);
   int avatar=avatars[mp.edit];
   rect(91,44,58,54,7);border(91,44,58,54,0);
   if(avatar)character_portrait(avatar-1,105,54);else image(&extra_sprites[6],105,54,2);
   text(64,65,"<",0,0);text(168,65,">",0,0);
-  centered(105,avatar?character_name(avatar-1):"Затылок",1,0);
+  centered(105,avatar?character_name(avatar-1):"Затылок",0,0);
   centered(122,prefs.characters?"Персонажи: Версия 2":"Персонажи: Версия 1",1,0);
   centered(151,"A: Готово  B: К имени",1,0);return;
  }
  if(game.mode==MP_NAME){rect(0,0,240,160,7);centered(5,mp.link?"Ваше имя":player_name(mp.edit),0,1);centered(23,"Пожалуйста,",0,0);centered(39,"представтесь!",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: Пробел START: Готово",1,0);keyboard();centered(151,"A: Буква B: Стереть",1,0);return;}
- if(game.mode==MP_PASS){rect(0,0,240,160,7);border(3,3,234,143,0);centered(40,"Передайте GBA игроку",0,1);centered(70,player_name(game.player),0,0);centered(115,"A: Готов",0,1);return;}
+ if(game.mode==MP_PASS){rect(0,0,240,160,7);border(3,3,234,143,0);centered(40,"Передайте GBA игроку",0,0);centered(70,player_name(game.player),0,0);centered(115,"A: Готов",0,0);return;}
  if(game.mode==MP_LOBBY){
-  rect(0,0,240,160,7);border(3,3,234,143,0);centered(16,"Мультиплеер по кабелю",1,0);
-  centered(48,"Подключено игроков:",1,0);number(116,68,link_connected,0,0);
-  centered(96,link_connected==2?"Третий - компьютер":link_connected==3?"Все трое - люди":"Подключите остальные GBA",1,0);
-  centered(122,link_connected<2?"Ожидание участников...":mp.local==2?"START: Начать игру":"Ждём ведущего игрока",1,0);return;
+  rect(0,0,240,160,7);border(3,3,234,143,0);centered(16,"Мультиплеер по кабелю",0,0);
+  centered(48,"Подключено игроков:",0,0);number(116,68,link_connected,0,0);
+  centered(96,link_connected==2?"Третий - компьютер":link_connected==3?"Все трое - люди":"Подключите остальные GBA",0,0);
+  centered(122,link_connected<2?"Ожидание участников...":mp.local==2?"START: Начать игру":"Ждём ведущего игрока",0,0);return;
  }
- if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,1);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);centered(120,"B: В меню",1,0);return;}
+ if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,0);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);centered(120,"B: В меню",1,0);return;}
 
 
  if(game.mode==CASH){

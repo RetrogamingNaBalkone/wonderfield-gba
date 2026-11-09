@@ -1,0 +1,12 @@
+{
+  "rom_sha256": "2cf2d4c09ce40d3312de24285946987e8c0b74d3c3819bb58a52090214d57d74",
+  "reference": "1.1 main menu rendering",
+  "item_font": "font14",
+  "selection_background": 8,
+  "selection_text": 15,
+  "background": 7,
+  "text_and_border": 0,
+  "mode_count_options_grayscale_check": "passed",
+  "navigation_regression": "passed",
+  "screenshots_visually_reviewed": true
+}
