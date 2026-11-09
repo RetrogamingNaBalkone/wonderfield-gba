@@ -205,23 +205,23 @@ static void keyboard(void){
 static void title(void){
  unsigned age=scene.now-scene.title_at;
  rect(0,0,240,160,7);
- for(int x=5;x<240;x+=23){int h=age<40?age*3:120;rect(x,134-h,1,h,6);}
- for(int y=14;y<=134;y+=20){int w=age<40?0:age<80?(age-40)*6:230;line(5,y,w,6);}
+ for(int x=5;x<240;x+=23){int h=age<TITLE_GRID_HALF?age*120/TITLE_GRID_HALF:120;rect(x,134-h,1,h,6);}
+ for(int y=14;y<=134;y+=20){int w=age<TITLE_GRID_HALF?0:age<TITLE_LOGO_AT?(age-TITLE_GRID_HALF)*230/TITLE_GRID_HALF:230;line(5,y,w,6);}
  border(5,14,230,121,6);
  centered(0,"Посвящается друзьям",1,0);
- if(age>=80)for(int i=0;i<2;i++){
+ if(age>=TITLE_LOGO_AT)for(int i=0;i<2;i++){
   const Sprite*s=&title_logos[i];int left=i?104:9;
   for(int y=0;y<s->h;y++)for(int x=0;x<s->w;x++)
    if(s->data[y*s->w+x]!=7)pixel(left+x,23+y,s->data[y*s->w+x]);
  }
- if(age>=100)text(40,124,"КАПИТАЛ-ШОУ",1,0);centered(139,"A: Играть",1,1);
- if(age>=100){
+ if(age>=TITLE_READY_AT){
+  text(40,124,"КАПИТАЛ-ШОУ",1,0);centered(139,"A: Играть",1,1);
+  centered(151,"START: Меню",1,0);
   /* The original compact font fits wholly inside the final grid cell. */
   const char*version="2.0";
   for(int i=0;i<3;i++)for(int y=0;y<6;y++)for(int x=0;x<4;x++)
    if(font6[(u8)version[i]*6+y]&(128>>x))pixel(218+i*4+x,122+y,0);
  }
- centered(151,"START: Меню",1,0);
 }
 static void menu(void){
  const char*title_items[4]={"Играть","Справка","Рекорды","Об авторах"};

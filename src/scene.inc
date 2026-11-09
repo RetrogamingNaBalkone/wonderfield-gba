@@ -87,7 +87,7 @@ static void visual_tick(void){
 }
 static u32 visual_key(void){
  u32 key=(u32)game.mode<<24,age;
- if(game.mode==TITLE){age=scene.now-scene.title_at;return key|(age<80?age:age<100?80:100);}
+ if(game.mode==TITLE){age=scene.now-scene.title_at;return key|(age<TITLE_LOGO_AT?age:age<TITLE_READY_AT?TITLE_LOGO_AT:TITLE_READY_AT);}
  if(game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES||game.mode==HELP||game.mode==MENU||game.mode==RECORDS||game.mode==AUTHORS||game.mode==RESTART_CONFIRM)return key;
  if(speech_visible())key|=1;
  if(host_visible())key|=(scene.host_phase+1)<<1;

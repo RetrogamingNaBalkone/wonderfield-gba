@@ -20,6 +20,7 @@ typedef unsigned int u32;
 enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY,MP_OPTION_HELP};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
+enum {TITLE_GRID_HALF=12,TITLE_LOGO_AT=24,TITLE_READY_AT=36};
 /* Read-only diagnostic state is also used by the emulator integration checks. */
 typedef struct {
  u32 magic,frame,rng; int mode,round,player,word_id,sector,sector_value;
@@ -94,7 +95,7 @@ static volatile u32 input_seed_salt;
 static u32 input_seed_counter;
 static int fast_input=1;
 static volatile u32 startup_input_polls;
-static int start_pending;
+static int start_pending,title_seen;
 static volatile struct {int value,count;u32 rerolls;} spin_history;
 static u32 mix_input(u32 value){
  value^=value>>16;value*=0x7feb352du;value^=value>>15;value*=0x846ca68bu;return value^(value>>16);
@@ -195,7 +196,7 @@ static int load(void){
  return record_scores[0];
 }
 static const char*word(void){return words[game.word_id].word;}
-static void set_mode(int mode){if(mode==TITLE){scene.title_at=video_ticks;fast_input=1;start_pending=0;}game.mode=mode;game.wait=0;dirty=1;}
+static void set_mode(int mode){if(mode==TITLE){scene.title_at=video_ticks-(title_seen?TITLE_READY_AT:0);title_seen=1;fast_input=1;start_pending=0;}game.mode=mode;game.wait=0;dirty=1;}
 static int message_done(u16 pressed,unsigned duration){return (pressed&A)||scene.now-scene.speech_at>=duration;}
 static void say(const char*a,const char*b){
  message1=a;message2=b;scene.speech_at=scene.host_at=scene.host_phase_at=video_ticks;

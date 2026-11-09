@@ -1,0 +1,31 @@
+{
+  "rom_sha256": "2aba10ecde61764b0e65d33fc75cc67d7feb04852c63573c633eab753e324955",
+  "timeline": [
+    {
+      "stage": 6,
+      "displayed_age": 6,
+      "logo": false,
+      "prompt": false
+    },
+    {
+      "stage": 18,
+      "displayed_age": 18,
+      "logo": false,
+      "prompt": false
+    },
+    {
+      "stage": 24,
+      "displayed_age": 30,
+      "logo": true,
+      "prompt": false
+    },
+    {
+      "stage": 36,
+      "displayed_age": 42,
+      "logo": true,
+      "prompt": true
+    }
+  ],
+  "immediate_complete_return": true,
+  "early_A_and_START": true
+}
