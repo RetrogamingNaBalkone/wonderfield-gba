@@ -25,7 +25,8 @@ def check(humans):
  tap(e,3)
  if humans==3:assert mp(e)[4]==1;tap(e,3)
  assert mp(e)[0]==humans
- # Intro starts with the original computer seat; fixtures isolate human turns.
+ assert e.state()[5]==2, "Player one must start multiplayer"
+ # Fixtures isolate subsequent human turns.
  e.poke(3,1);e.poke(5,2);setmp(e,2,2);e.run(30)
  assert mp(e)[2]==2
  # Wrong full-word guess excludes just player one, then turns to player two.

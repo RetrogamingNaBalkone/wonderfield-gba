@@ -43,7 +43,9 @@ static void board(void){
  for(int y=2;y<=34;y+=8)if(y!=18)line(30,y,181,0);
  rect(30,35,181,9,7);
  if(game.mode!=INTRO)text(30,35,words[game.word_id].topic,1,0);
- if(len(words[game.word_id].topic)<=18){text(194,35,mp.humans>1?"/8":"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
+ if(mp.humans>1){
+  if(game.mode!=INTRO&&len(words[game.word_id].topic)<=16){glyph(162,35,'1'+game.round,1,0);text(170,35," из 8",1,0);}
+ }else if(len(words[game.word_id].topic)<=18){text(194,35,"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
  line(30,43,181,8);
 }
 static void wheel(void){
@@ -80,18 +82,21 @@ static void host_pose(int*face,int*eyes,int*eye_y){
 }
 static void people(void){
  for(int player=0;player<2;player++){
-  int visible=game.mode!=INTRO||scene.phase>=player+1;
-  if(!visible)continue;
   int who=mp.humans>1?perspective(player):player;
+  int intro_phase=mp.humans>1?player_number(who):player+1;
+  int visible=game.mode!=INTRO||scene.phase>=intro_phase;
+  if(!visible)continue;
   int character=mp.humans>1?opponent_pool[mp_ai_index]:game.opponent[game.round*2+player];
   int x=player?153:3,y=83;
+  if(!(mp.humans>1&&(mp.eliminated&(1<<who)))){
   if(mp.humans>1&&human(who)){
    int pose=6;if(game.player==who)pose=player?2:4;
    image(&extra_sprites[pose],x+(29-extra_sprites[pose].w)/2,y,2);
-  }else if(game.mode==INTRO&&scene.phase==player+1&&scene.now-scene.phase_at<54){
+  }else if(game.mode==INTRO&&scene.phase==intro_phase&&scene.now-scene.phase_at<54){
    int phase=(scene.now-scene.phase_at)/18;
    half_image(53+phase,x,y,2);
   }else if(!prefs.characters)half_image(opponent_sprites[character],x,y,2);else{const u8 portraits[8]={11,12,9,7,8,10,0,1};image(&extra_sprites[portraits[character]],x,y,2);}
+  }
   score_badge(who,player?141:1,73);
   if(mp.humans>1)text(player?132:1,64,player_name(who),1,mp.eliminated&(1<<who)?8:15);
  }
@@ -101,7 +106,7 @@ static void people(void){
  half_image(face,196,63,-1);
  if(eyes>=0)half_image(eyes,204,eye_y+6,-1);
  score_badge(mp.humans>1?mp.viewer:2,164,142);
- if(mp.humans>1)text(152,132,player_name(mp.viewer),1,15);
+ if(mp.humans>1)text(152,132,player_name(mp.viewer),1,mp.eliminated&(1<<mp.viewer)?8:15);
 }
 static void speech_shape(int x,int y,const int*left,const int*right,int height){
  /* Outline the final silhouette, so no black stroke is lost to resampling. */
@@ -301,13 +306,19 @@ static void gift_certificate(void){
 }
 static void render(void){
  if(game.mode==MP_OPTIONS){
-  rect(0,0,240,160,7);border(3,3,234,143,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
-  for(int i=0;i<4;i++){int y=29+i*29;if(prefs.choice==i){rect(8,y-2,224,i==3?23:27,8);border(8,y-2,224,i==3?23:27,0);}
+  rect(0,0,240,160,7);border(3,3,234,147,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
+  for(int i=0;i<4;i++){int y=26+i*23;if(prefs.choice==i){rect(8,y-2,224,23,8);border(8,y-2,224,23,0);}
    u8 color=prefs.choice==i?15:0;
    if(i==0){centered(y,"Словарь",1,color);centered(y+12,prefs.dictionary?"Поле чудес 2: 686":"Поле чудес: 495",1,color);}
-   else if(i==1){centered(y,"Учитывать + для шкатулок",1,color);centered(y+12,prefs.plus?"Да":"Нет",1,color);}
+   else if(i==1){centered(y,"+ приближает шкатулки",1,color);centered(y+12,prefs.plus?"Да":"Нет",1,color);}
    else if(i==2){centered(y,"Персонажи",1,color);centered(y+12,prefs.characters?"Версия 2":"Версия 1",1,color);}
    else centered(y,"Начать игру",0,color);
+  }
+  if(prefs.choice==1){
+   centered(110,"3 верные буквы подряд",1,0);
+   centered(120,"дают выбор шкатулки.",1,0);
+   centered(130,"Засчитывать букву",1,0);
+   centered(140,"с сектора +?",1,0);
   }
   centered(151,"A: Выбрать  B: Назад",1,0);return;
  }

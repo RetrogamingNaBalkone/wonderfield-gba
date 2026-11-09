@@ -2,9 +2,9 @@
 static void intro_phrase(void){
  switch(scene.phase){
  case 0:if(mp.humans>1)say(mp_stage(),"");else say(msg_1011,msg_101d);break;
- case 1:if(mp.humans>1)say(player_name(perspective(0)),"");else say(msg_5384,character_name(game.opponent[game.round*2]));break;
- case 2:if(mp.humans>1)say(player_name(perspective(1)),"");else say(msg_5391,character_name(game.opponent[game.round*2+1]));break;
- case 3:if(mp.humans>1)say(player_name(mp.viewer),"");else say(msg_539e,msg_53ab);break;
+ case 1:if(mp.humans>1)say(player_intro(2),player_name(2));else say(msg_5384,character_name(game.opponent[game.round*2]));break;
+ case 2:if(mp.humans>1)say(player_intro(0),player_name(0));else say(msg_5391,character_name(game.opponent[game.round*2+1]));break;
+ case 3:if(mp.humans>1)say(player_intro(1),player_name(1));else say(msg_539e,msg_53ab);break;
  case 4:say(msg_f30,msg_f20);break;
  default:say(msg_f3f,words[game.word_id].topic);break;
  }
@@ -91,7 +91,7 @@ static u32 visual_key(void){
  if(game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES||game.mode==HELP||game.mode==MENU||game.mode==RECORDS||game.mode==AUTHORS||game.mode==RESTART_CONFIRM)return key;
  if(speech_visible())key|=1;
  if(host_visible())key|=(scene.host_phase+1)<<1;
- if(game.mode==INTRO&&(scene.phase==1||scene.phase==2)){
+ if(game.mode==INTRO&&(scene.phase==1||scene.phase==2||(mp.humans>1&&scene.phase==3))){
   age=scene.now-scene.phase_at;key|=(age<54?age/18:3)<<5;
  }
  if(game.mode==CHEST){age=scene.now-scene.speech_at;key|=(age<90?(age/6)&1:2)<<7;}

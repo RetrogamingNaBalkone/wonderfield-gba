@@ -57,6 +57,8 @@ static struct {int humans,link,viewer,local,edit,choice,eliminated;char names[3]
 static struct {int dictionary,plus,characters,choice;} prefs;
 static int opponent_pool[8],mp_ai_index;
 static int human(int p){return p==2||mp.humans==3||(mp.humans==2&&p==0);}
+static int player_number(int p){return (p+1)%3+1;}
+static const char*player_intro(int p){return p==2?msg_5384:p==0?msg_5391:msg_539e;}
 static int perspective(int slot){return (mp.viewer+slot+1)%3;}
 static const char* character_name(int id){return id<6?opponent_names[id]:id==6?"ФРЕКЕН БОК":"БАГИРА";}
 static const char* player_name(int p){return !human(p)?character_name(opponent_pool[mp_ai_index]):mp.names[p];}
@@ -202,7 +204,7 @@ static void new_round(void){if(mp.humans==2&&game.round&&game.player!=1)mp_ai_in
  mp.eliminated=0;
  if(mp.humans==1)for(int i=0;i<2;i++)game.score[i]=game.round*(random_n(4)*15+5);
  else if(mp.humans==2)game.score[1]=random_n(game.round+1)*15;
- game.player=mp.humans>1?1:2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
+ game.player=2;game.streak=0;game.solved=0;game.deal=game.prize=game.keyboard=0;begin_turn();intro_begin();}
 static void new_game(void){
  fast_input=0;seed_from_input();game.round=0;for(int i=0;i<3;i++)game.score[i]=0;game.sector=12;
  int count=prefs.characters?8:6;mp_ai_index=0;
