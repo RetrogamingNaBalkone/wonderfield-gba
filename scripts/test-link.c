@@ -93,6 +93,17 @@ int main(int argc,char**argv){
    c[i]->setKeys(c[i],1);run(30);c[i]->setKeys(c[i],0);run(30);assert(rd(i,edit)==2);
    for(unsigned j=0;j<length;j++){c[i]->setKeys(c[i],2);run(20);c[i]->setKeys(c[i],0);run(20);}
    assert(rd(i,pos)==0);
+   /* Empty input and spaces each produce the empty-name message (state 3).
+    * Dismissing via A/B must neither insert nor erase input. */
+   for(int spaces=0;spaces<2;spaces++){
+    if(spaces){c[i]->setKeys(c[i],256);run(20);c[i]->setKeys(c[i],0);run(20);}
+    c[i]->setKeys(c[i],8);run(30);c[i]->setKeys(c[i],0);run(30);
+    assert(rd(i,edit)==3&&rd(i,pos)==(unsigned)spaces);
+    c[i]->setKeys(c[i],spaces?2:1);run(30);c[i]->setKeys(c[i],0);run(30);
+    assert(rd(i,edit)==2&&rd(i,pos)==(unsigned)spaces);
+   }
+   c[i]->setKeys(c[i],2);run(20);c[i]->setKeys(c[i],0);run(20);
+   assert(rd(i,pos)==0);
    for(int j=0;j<=i;j++){c[i]->setKeys(c[i],16);run(20);c[i]->setKeys(c[i],0);run(20);}
    c[i]->setKeys(c[i],1);run(20);c[i]->setKeys(c[i],0);run(20);
    c[i]->setKeys(c[i],8);run(30);c[i]->setKeys(c[i],0);run(60);

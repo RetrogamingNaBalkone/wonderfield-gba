@@ -1,5 +1,5 @@
 {
-  "rom_sha256": "a7975456809408def362c850b8da20bd9d17fbe4c9590e576e28bc02e15876a6",
+  "rom_sha256": "6e17d2319f1fdc40644ba0a08a4ba2006a0caf3b7210cf325961f89d3027d7b7",
   "result": "passed",
   "local_tests": [
     "scripts/test-player-names.py",
@@ -30,10 +30,18 @@
       "host confirmation does not also start game",
       "synchronized names and duplicate avatars",
       "host-only start and turn input",
-      "disconnect reports error"
+      "disconnect reports error",
+      "empty and space-only correction rejected; A/B preserve input"
     ]
   },
   "limitations": [
     "Cable uses emulated SIO test bus, not physical GBA hardware."
+  ],
+  "empty_name_checks": [
+    "empty input",
+    "one and ten spaces",
+    "local and initial cable setup",
+    "connected cable correction",
+    "nonempty name accepted after error"
   ]
 }

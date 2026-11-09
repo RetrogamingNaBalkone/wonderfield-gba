@@ -11,6 +11,9 @@ def setmp(e,index,value):
  data=bytearray(read(e,'mp',64));struct.pack_into('<i',data,index*4,value);write(e,'mp',bytes(data))
 def tap(e,k):e.run(15,(k,));e.run(15)
 def accept_name(e):
+ if not e.state()[80]:
+  for _ in range((mp(e)[4]+1)%3):tap(e,7)
+  tap(e,8)
  tap(e,3);assert e.state()[3]==33
  tap(e,8)
 def options(e,humans=1,link=False):
@@ -83,7 +86,7 @@ def tournament():
  assert e.state()[3]==12,e.state()[:12]
  assert 9000 in struct.unpack('<8i',read(e,'record_scores',32)),struct.unpack('<8i',read(e,'record_scores',32))
  index=struct.unpack('<8i',read(e,'record_scores',32)).index(9000)
- assert read(e,'record_names',88)[index*11:(index+1)*11].split(b'\0')[0]=='2-ой ИГРОК'.encode('cp866')
+ assert read(e,'record_names',88)[index*11:(index+1)*11].split(b'\0')[0]=='Б'.encode('cp866')
  e.close();return {'eight_stages':True,'unique_words':picked,'named_winner_record':True}
 
 def plus_series(humans):
@@ -131,7 +134,7 @@ if __name__=='__main__':
  for humans in (1,2,3):print(parameters(humans))
 
 def cancel_cable_wait():
- e=Emulator();options(e,2,True);tap(e,8);tap(e,3);tap(e,8)
+ e=Emulator();options(e,2,True);tap(e,8);tap(e,8);tap(e,3);tap(e,8)
  records=read(e,'record_names',88)+read(e,'record_scores',32)
  for delay in (1,120):
   assert e.state()[3]==30
@@ -146,7 +149,7 @@ def cancel_cable_wait():
   assert read(e,'record_names',88)+read(e,'record_scores',32)==records
   if delay==1:
    tap(e,8);assert e.state()[3]==32
-   tap(e,8);tap(e,3);tap(e,8)
+   tap(e,8);tap(e,8);tap(e,3);tap(e,8)
  e.close();return {'cable_wait_cancel':True,'retry':True,'records_unchanged':True}
 
 if __name__=='__main__':

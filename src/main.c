@@ -398,9 +398,9 @@ static int link_name_conflicts(char incoming[3][11]){
  int conflicts=0;
  for(int i=0;i<mp.humans;i++){
   int p=(i+2)%3;char clean[11];name_clean(clean,incoming[p]);
-  if(!clean[0]||name_equal(clean,default_name(2)))name_clean(clean,default_name(p));
+  if(name_equal(clean,default_name(2)))name_clean(clean,default_name(p));
   for(int j=0;j<11;j++)mp.names[p][j]=clean[j];
-  int clash=name_reserved(clean);
+  int clash=!clean[0]||name_reserved(clean);
   for(int j=0;j<i;j++)if(name_equal(clean,mp.names[(j+2)%3]))clash=1;
   if(clash)conflicts|=1<<p;
  }
@@ -452,7 +452,7 @@ static void update(u16 pressed,u16 repeat){
   if((pressed&B)&&game.solve_pos)game.answer[--game.solve_pos]=0;
   if(pressed&START){
    char candidate[11];name_clean(candidate,(const char*)game.answer);
-   if(!candidate[0])name_clean(candidate,mp.names[mp.edit]);
+   if(!candidate[0]){mp_name_error=2;dirty=1;return;}
    if(!mp.link&&name_taken(candidate,mp.edit)){mp_name_error=1;dirty=1;return;}
    for(int i=0;i<11;i++)mp.names[mp.edit][i]=candidate[i];
    set_mode(MP_AVATAR);}
@@ -595,7 +595,7 @@ static void link_edit_name(u16 pressed,u16 repeat){
   link_name_edit=1;link_text(link_name_answer,link_name,21);
   link_name_pos=len(link_name_answer);return;
  }
- if(link_name_edit==1){if(pressed&(A|B))link_name_edit=2;return;}
+ if(link_name_edit==1||link_name_edit==3){if(pressed&(A|B))link_name_edit=2;return;}
  if(repeat&LEFT)link_name_cursor=(link_name_cursor+31)%32;
  if(repeat&RIGHT)link_name_cursor=(link_name_cursor+1)%32;
  if(repeat&UP)link_name_cursor=(link_name_cursor+24)%32;
@@ -606,7 +606,7 @@ static void link_edit_name(u16 pressed,u16 repeat){
  link_name_answer[link_name_pos]=0;
  if(pressed&START){
   char candidate[11];name_clean(candidate,link_name_answer);
-  if(!candidate[0])name_clean(candidate,default_name(mp.local));
+  if(!candidate[0]){link_name_edit=3;return;}
   link_text(link_name,candidate,11);link_name_edit=0;
  }
 }
@@ -614,7 +614,7 @@ static void link_render_name(void){
  Game saved=game;int edit=mp.edit,error=mp_name_error;
  game.mode=MP_NAME;game.cursor=link_name_cursor;game.solve_pos=link_name_pos;
  for(int i=0;i<21;i++)game.answer[i]=link_name_answer[i];
- mp.edit=mp.local;mp_name_error=link_name_edit==1;
+ mp.edit=mp.local;mp_name_error=link_name_edit==3?2:link_name_edit==1;
  render();game=saved;mp.edit=edit;mp_name_error=error;
  mute_icon();present();
 }

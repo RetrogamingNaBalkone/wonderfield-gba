@@ -28,6 +28,11 @@ def names(e):
 
 for humans in (2, 3):
     e = Emulator(); m.menu(e, humans - 1)
+    for blank in ('', ' ', '          '):
+        enter(e, blank)
+        assert e.state()[3] == 27
+        assert struct.unpack('<i', m.read(e, 'mp_name_error', 4))[0] == 2
+    e.screenshot(f'name-empty-{humans}.png')
     enter(e, '  АННА  ')
     assert e.state()[3] == 33 and names(e)[2] == 'АННА'
     m.tap(e, 8)
@@ -39,7 +44,9 @@ for humans in (2, 3):
     assert e.state()[3] == (27 if humans == 2 else 33)
     if humans == 2:
         enter(e, '   ')
-        assert names(e)[0] == '2-ой ИГРОК'
+        assert e.state()[3] == 27
+        assert struct.unpack('<i', m.read(e, 'mp_name_error', 4))[0] == 2
+        enter(e, 'БОРИС')
     m.tap(e, 8)
     if humans == 3:
         enter(e, 'АННА'); assert e.state()[3] == 27
@@ -50,4 +57,14 @@ for humans in (2, 3):
     assert struct.unpack('<3i', m.read(e, 'avatars', 12)) == (0, 0, 0)
     e.run(1400); assert e.state()[3] == 1
     e.close()
-print('PASS: name/space collisions, AI reservation, blank fallback, own-name edit, shared avatars, game start')
+print('PASS: name/space collisions, AI reservation, empty and whitespace rejection, own-name edit, shared avatars, game start')
+
+# The initial cable setup must also reject blank names before opening SIO.
+e = Emulator(); m.options(e, 2, True); m.tap(e, 8)
+for blank in ('', '          '):
+    enter(e, blank)
+    assert e.state()[3] == 27
+    assert struct.unpack('<i', m.read(e, 'mp_name_error', 4))[0] == 2
+enter(e, 'АННА'); assert e.state()[3] == 33
+e.close()
+print('PASS: cable setup rejects empty and space-only names')
