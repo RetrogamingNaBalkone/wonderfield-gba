@@ -552,7 +552,15 @@ void gba_main(void){
   if(mp.link&&link_active){
    if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
    link_submit=(keys|pressed)&~L;
-   if(!link_frame()){set_mode(MP_ERROR);link_close();}
+   if(!link_frame()){
+    link_close();
+    if(link_cancelled){
+     mp_setup();mp.choice=2;pressed=repeat=0;
+     /* The B tap may also be queued by VBlank while SIO was waiting. */
+     ime=REG16(0x04000208);REG16(0x04000208)=0;
+     capture_keys();input_read=input_write;REG16(0x04000208)=ime;
+    }else set_mode(MP_ERROR);
+   }
    if(link_active&&game.mode==TITLE){link_close();mp.link=0;mp.humans=1;dirty=1;}
    if(link_active&&mp.local!=2){dirty=1;render();mute_icon();present();continue;}
    if(link_active){keys=link_keys;pressed=keys&~link_oldkeys;repeat=pressed;

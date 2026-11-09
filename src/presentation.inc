@@ -381,8 +381,9 @@ static void render(void){
  if(game.mode==MP_LOBBY){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(16,"Мультиплеер по кабелю",0,0);
   centered(48,"Подключено игроков:",0,0);number(116,68,link_connected,0,0);
-  centered(96,link_connected==2?"Третий - компьютер":link_connected==3?"Все трое - люди":"Подключите остальные GBA",0,0);
-  centered(122,link_connected<2?"Ожидание участников...":mp.local==2?"START: Начать игру":"Ждём ведущего игрока",0,0);return;
+  centered(96,link_connected==2?"2 игрока + компьютер":link_connected==3?"3 игрока":"Подключите остальные GBA",0,0);
+  centered(122,link_connected<2?"Ожидание участников...":mp.local==2?"START: Начать игру":"Ждем ведущего игрока",0,0);
+  centered(151,"B: Отменить ожидание",1,0);return;
  }
  if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,0);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);centered(120,"B: В меню",1,0);return;}
 

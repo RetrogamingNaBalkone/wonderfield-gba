@@ -1,7 +1,7 @@
 /* GBA SIO multiplayer, 115200 baud. Host owns all rules/RNG; clients render
  * complete checked snapshots. No pointer, framebuffer, or SRAM crosses cable.
  * All participants need the same ROM (build fingerprint in the handshake). */
-static int link_active,link_connected,link_start_armed;
+static int link_active,link_connected,link_start_armed,link_cancelled;
 static u16 link_avatar;
 static u16 link_keys,link_oldkeys,link_submit;
 static u32 link_repeat_at;
@@ -25,7 +25,7 @@ static void link_irq(void){
 }
 static void link_close(void){if(link_active&&mp.local!=2){link_copy(record_names,link_saved_names,sizeof record_names);link_copy(record_scores,link_saved_scores,sizeof record_scores);}REG16(0x04000200)&=~128;REG16(0x04000128)=0;REG16(0x04000134)=0x8000;link_active=0;}
 static void link_open(void){
- link_connected=1;link_start_armed=0;
+ link_connected=1;link_start_armed=link_cancelled=0;
  link_copy(link_saved_names,record_names,sizeof record_names);link_copy(link_saved_scores,record_scores,sizeof record_scores);
  link_text(link_name,mp.names[2],11);link_avatar=avatars[2];link_oldkeys=link_submit=0;
  for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
@@ -33,16 +33,23 @@ static void link_open(void){
  REG16(0x04000134)=0;REG16(0x04000128)=0x6003;
  REG16(0x04000202)=128;REG16(0x04000200)|=128;link_active=1;
 }
+/* Poll local input inside the SIO waits too: an absent peer must not trap
+ * either console in the lobby until the cable timeout expires. */
+static int link_cancel_requested(void){
+ if(game.mode==MP_LOBBY&&((link_submit|~REG16(0x04000130))&B))link_cancelled=1;
+ return link_cancelled;
+}
 static int link_exchange(u16 value){
+ if(link_cancel_requested())return 0;
  u32 serial=link_serial,start=input_clock(),timeout=game.mode==MP_LOBBY?503316480u:33554432u;int master=!(REG16(0x04000128)&4);
  REG16(0x0400012a)=value;
  if(master){
   /* Inter-word turnaround gives slaves time to consume and prepare replies. */
   while(input_clock()-start<4096){}
-  while(!(REG16(0x04000128)&8)){if(input_clock()-start>timeout)return 0;}
+  while(!(REG16(0x04000128)&8)){if(link_cancel_requested()||input_clock()-start>timeout)return 0;}
   REG16(0x04000128)|=128;
  }
- while(link_serial==serial){if(input_clock()-start>timeout)return 0;}
+ while(link_serial==serial){if(link_cancel_requested()||input_clock()-start>timeout)return 0;}
  if(link_status&64)return 0;
  for(int i=0;i<4;i++)link_remote[i]=link_received[i];
  mp.local=((link_status>>4&3)+2)%3;
