@@ -331,20 +331,20 @@ static void setup_player_heading(void){
 static void render(void){
  if(game.mode==MP_OPTIONS){
   rect(0,0,240,160,7);border(3,3,234,148,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
-  const char*items[]={prefs.dictionary?"Словарь: 686 слов":"Словарь: 495 слов",prefs.plus?"Шкатулки: с Плюсом":"Шкатулки: без Плюса",prefs.characters?"Персонажи: v2":"Персонажи: v1"};
+  const char*items[]={prefs.dictionary?"Словарь: v2":"Словарь: v1",prefs.plus?"Две шкатулки: v2":"Две шкатулки: v1",prefs.characters?"Персонажи: v2":"Персонажи: v1"};
   for(int i=0;i<3;i++){
    int y=26+i*20,selected=prefs.choice==i;
    rect(20,y-2,200,20,selected?8:7);if(selected)border(20,y-2,200,20,0);
    centered(y,items[i],0,selected?15:0);
   }
   if(prefs.choice==0){
-   centered(88,prefs.dictionary?"Включает темы":"Словарь первой игры",0,0);
+   centered(88,prefs.dictionary?"686 слов, включая темы":"495 слов из первой игры",0,0);
    if(prefs.dictionary)centered(104,"Кулинария и Напитки",0,0);
   }else if(prefs.choice==1){
    centered(88,"За 3 верные буквы подряд",0,0);
    centered(104,prefs.plus?"Плюс идет в зачет":"Плюс не идет в зачет",0,0);
   }else if(prefs.choice==2){
-   centered(88,prefs.characters?"С Фрекен Бок и Багирой":"Без Фрекен Бок и Багиры",0,0);
+   centered(88,prefs.characters?"Добавлены Фрекен Бок и Багира":"6 персонажей",0,0);
    centered(104,prefs.characters?"Новая графика прежних героев":"Графика первой игры",0,0);
   }
   line(20,121,200,8);
