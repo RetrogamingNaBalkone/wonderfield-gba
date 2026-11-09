@@ -8,9 +8,7 @@ def redraw(e):write(e,'dirty',struct.pack('<i',1));e.run(30)
 for version in (0,1):
  e=Emulator();m['options'](e,3)
  if version==0:
-  for _ in range(3):tap(e,4)
-  tap(e,7)
-  for _ in range(3):tap(e,5)
+  m['select_option'](e,2);tap(e,7);m['select_option'](e,5)
  tap(e,8);assert e.state()[3]==27
  tap(e,8);tap(e,3);assert e.state()[3]==33
  assert selected(e)==(0,0,0)

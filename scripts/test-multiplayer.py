@@ -29,6 +29,12 @@ def options(e,humans=1,link=False):
   tap(e,8)
  assert e.state()[3]==32
 
+def select_option(e,setting):
+ for _ in range(6):
+  if struct.unpack('<4i',read(e,'prefs',16))[3]==setting:return
+  tap(e,5)
+ raise AssertionError('Setting not reachable')
+
 def menu(e,choice):
  options(e,1 if choice==0 else 2+(choice-1)%2,choice>=3)
  tap(e,8)
@@ -72,9 +78,9 @@ if __name__=='__main__':
 
 def tournament():
  e=Emulator();options(e,3)
- tap(e,4) # rounds
+ select_option(e,4) # rounds
  for _ in range(5):tap(e,7)
- tap(e,5);tap(e,8);accept_name(e);accept_name(e);accept_name(e)
+ select_option(e,5);tap(e,8);accept_name(e);accept_name(e);accept_name(e)
  records=read(e,'record_names',88)+read(e,'record_scores',32)
  picked=[]
  for stage in range(8):
@@ -124,10 +130,10 @@ def parameters(humans):
  assert e.state()[3]==32
  defaults=struct.unpack('<4i',read(e,'prefs',16));assert defaults==(int(humans>1),int(humans>1),int(humans>1),5 if humans>1 else 3)
  e.screenshot(f'parameters-{humans}-defaults.png')
- if humans>1:tap(e,4);tap(e,4)
- tap(e,4);tap(e,7);tap(e,4);tap(e,7);tap(e,4);tap(e,7)
+ for setting in range(3):
+  select_option(e,setting);tap(e,7)
  custom=struct.unpack('<4i',read(e,'prefs',16));assert custom[:3]==(int(humans==1),)*3
- for _ in range(5 if humans>1 else 3):tap(e,5)
+ select_option(e,5 if humans>1 else 3)
  tap(e,8)
  if humans>1:
   accept_name(e);accept_name(e)

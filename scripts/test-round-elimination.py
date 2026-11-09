@@ -100,9 +100,9 @@ for reasons in (('cash',) * 3, ('prize',) * 3, ('wrong',) * 3,
                 ('prize', 'wrong', 'cash')):
     e = Emulator()
     m['options'](e, 3)
-    tap(e,4)
+    m['select_option'](e,4)
     for _ in range(5):tap(e,7)
-    tap(e,5);tap(e,8)
+    m['select_option'](e,5);tap(e,8)
     for _ in range(3):
         m['accept_name'](e)
     for i, score in enumerate((100, 200, 300)):

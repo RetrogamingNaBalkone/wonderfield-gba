@@ -1,0 +1,17 @@
+{
+  "rom_sha256": "28473742f9d4a8792db5262950ada83387d8acd04f1ab42073d4a6aaa16bc579",
+  "checks": [
+    {
+      "cable": false,
+      "all_settings_browsed_without_mutation": true,
+      "reopen_on_selected_value": true,
+      "all_close_buttons": true
+    },
+    {
+      "cable": true,
+      "all_settings_browsed_without_mutation": true,
+      "reopen_on_selected_value": true,
+      "all_close_buttons": true
+    }
+  ]
+}

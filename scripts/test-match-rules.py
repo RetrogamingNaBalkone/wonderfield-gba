@@ -49,12 +49,12 @@ def sector(e,value):
 checks=[]
 e=Emulator();m['options'](e,3)
 assert ints(e,'prefs',6)[4:]==[0,3]
-tap(e,4)
+m['select_option'](e,4)
 for _ in range(2):tap(e,6)
 assert ints(e,'prefs',6)[5]==1
 tap(e,6);assert ints(e,'prefs',6)[5]==8
 tap(e,7);assert ints(e,'prefs',6)[5]==1
-tap(e,4)
+m['select_option'](e,3)
 for expected in (1,2,0):tap(e,8);assert ints(e,'prefs',6)[4]==expected
 e.close();checks.append({'menu_defaults_round_bounds_and_three_modes':True})
 

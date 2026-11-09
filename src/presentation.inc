@@ -365,17 +365,48 @@ static void render(void){
   else centered(124,match.next==1?"Далее: перестрелка":"Далее: рекламная пауза",1,0);
   centered(151,"A: Продолжить",1,0);return;
  }
- if(game.mode==MP_OPTIONS&&mp.humans>1){
-  rect(0,0,240,160,7);border(3,3,234,146,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
+ if(game.mode==MP_OPTION_HELP){
+  const char*titles[]={"СЛОВАРЬ","ДВЕ ШКАТУЛКИ","ПЕРСОНАЖИ","ПРАВИЛА","ЧИСЛО РАУНДОВ","НАЧАТЬ ИГРУ"};
   const char*rules[]={"По очкам","По очкам с риском","По победам"};
-  const char*items[]={prefs.dictionary?"Словарь: v2":"Словарь: v1",prefs.plus?"Две шкатулки: v2":"Две шкатулки: v1",prefs.characters?"Персонажи: v2":"Персонажи: v1",rules[prefs.rule],"Раундов: 3","НАЧАТЬ ИГРУ"};
+  int setting=prefs.choice,value=option_help_value,count=setting<3?2:setting==3?3:1;
+  rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,titles[setting],0,0);
+  centered(29,setting<3?(value?"Версия 2":"Версия 1"):setting==3?rules[value]:setting==4?"От 1 до 8":"Подготовка участников",0,0);
+  if(count>1){text(12,29,"<",0,0);text(220,29,">",0,0);if(value==option_value())centered(47,"Выбрано",1,0);}
+  const char*lines[5]={"","","","",""};
+  if(setting==0){
+   lines[0]=value?"686 слов из второй игры.":"495 слов из первой игры.";
+   if(value){lines[1]="Включает темы Кулинария";lines[2]="и Напитки.";}
+  }else if(setting==1){
+   lines[0]="За 3 верные буквы подряд";lines[1]="можно выбрать шкатулку.";
+   lines[2]=value?"Плюс идет в зачет серии.":"Плюс не идет в зачет серии.";
+  }else if(setting==2){
+   lines[0]=value?"8 персонажей второй игры.":"6 персонажей первой игры.";
+   lines[1]=value?"Добавлены Фрекен Бок":"Графика первой игры.";
+   if(value){lines[2]="и Багира. Новая графика";lines[3]="прежних героев.";}
+  }else if(setting==3){
+   if(value==MP_POINTS){lines[0]="Максимальный общий счет.";lines[1]="Банкрот: потеря за раунд.";lines[2]="x2/x4: очки этого раунда.";lines[3]="Ничья: перестрелка.";}
+   else if(value==MP_RISK){lines[0]="Максимальный общий счет.";lines[1]="Банкрот: весь счет в ноль.";lines[2]="x2/x4: весь общий счет.";lines[3]="Ничья: перестрелка.";}
+   else{lines[0]="Больше побед за N раундов.";lines[1]="При равенстве - общий счет.";lines[2]="Банкрот: счет 0, победы целы.";lines[3]="x2/x4: весь общий счет.";lines[4]="Полная ничья: перестрелка.";}
+  }else if(setting==4){
+   lines[0]="Перестрелки не входят.";lines[1]="По победам: досрочный финиш,";lines[2]="если лидера уже не догнать";lines[3]="даже до равенства побед.";
+  }else{lines[0]="Далее: имена и аватары.";lines[1]=mp.link?"Затем - ожидание по кабелю.":"Затем начинается партия.";}
+  for(int i=0;i<5;i++)centered(60+i*16,lines[i],0,0);
+  centered(151,count>1?"< / >: Варианты  B: Назад":"B: Назад",1,0);return;
+ }
+ if(game.mode==MP_OPTIONS&&mp.humans>1){
+  rect(0,0,240,160,7);border(3,3,234,138,0);centered(6,"ПАРАМЕТРЫ ИГРЫ",0,0);
+  const char*rules[]={"По очкам","По очкам с риском","По победам"};
+  const char*items[]={prefs.dictionary?"Словарь: v2":"Словарь: v1",prefs.plus?"Две шкатулки: v2":"Две шкатулки: v1",prefs.characters?"Персонажи: v2":"Персонажи: v1","Правила","Раундов: 3","НАЧАТЬ ИГРУ"};
+  const int rows[]={74,91,108,24,57,125};
   for(int i=0;i<6;i++){
-   int y=28+i*19,selected=prefs.choice==i;u8 color=selected?15:0;
-   if(selected){rect(12,y-2,216,18,8);border(12,y-2,216,18,0);}
+   int y=rows[i],selected=prefs.choice==i;u8 color=selected?15:0;
+   if(selected){rect(12,y-2,216,i==3?33:18,8);border(12,y-2,216,i==3?33:18,0);}
    if(i==4){text(80,y,"Раундов:",0,color);glyph(152,y,'0'+prefs.rounds,0,color);}
    else centered(y,items[i],0,color);
+   if(i==3)centered(y+15,rules[prefs.rule],0,color);
   }
-  centered(151,prefs.choice==5?"A: Играть  B: Назад":"A: Изменить  B: Назад",1,0);return;
+  centered(143,"SELECT: Описание",1,0);
+  centered(152,prefs.choice==5?"A: Играть  B: Назад":"A: Изменить  B: Назад",1,0);return;
  }
 
  if(game.mode==MP_OPTIONS){

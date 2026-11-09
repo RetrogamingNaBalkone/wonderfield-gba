@@ -17,7 +17,7 @@ typedef unsigned int u32;
 #define R 256
 #define L 512
 #define A_RELEASE 0x8000
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY,MP_OPTION_HELP};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
 /* Read-only diagnostic state is also used by the emulator integration checks. */
@@ -62,6 +62,8 @@ typedef struct {
  int previous_word;
 } Match;
 static Match match;
+static int option_help_value;
+static int option_value(void){return prefs.choice==0?prefs.dictionary:prefs.choice==1?prefs.plus:prefs.choice==2?prefs.characters:prefs.choice==3?prefs.rule:prefs.rounds;}
 static int opponent_pool[8],mp_ai_index;
 static int avatars[3];
 static int mp_name_error;
@@ -493,11 +495,21 @@ static void update(u16 pressed,u16 repeat){
   if(pressed&A){mp_defaults();options_begin();}
   return;
  }
+ if(game.mode==MP_OPTION_HELP){
+  if(pressed&(A|B|SELECT)){set_mode(MP_OPTIONS);return;}
+  int count=prefs.choice<3?2:prefs.choice==3?3:1;
+  if(count>1&&(repeat&(LEFT|RIGHT))){option_help_value=(option_help_value+count+(repeat&LEFT?-1:1))%count;dirty=1;}
+  return;
+ }
  if(game.mode==MP_OPTIONS){
+  if(mp.humans>1&&(pressed&SELECT)){option_help_value=option_value();set_mode(MP_OPTION_HELP);return;}
   if(pressed&B){set_mode(mp.humans>1&&!mp.link?MP_COUNT:MP_SETUP);return;}
   int count=mp.humans>1?6:4;
-  if(repeat&UP){prefs.choice=(prefs.choice+count-1)%count;dirty=1;}
-  if(repeat&DOWN){prefs.choice=(prefs.choice+1)%count;dirty=1;}
+  const int order[]={3,4,0,1,2,5};int position=prefs.choice;
+  if(mp.humans>1)for(int i=0;i<count;i++)if(order[i]==prefs.choice)position=i;
+  if(repeat&UP){position=(position+count-1)%count;dirty=1;}
+  if(repeat&DOWN){position=(position+1)%count;dirty=1;}
+  prefs.choice=mp.humans>1?order[position]:position;
   if((repeat&(LEFT|RIGHT))||(pressed&A)){
    int delta=repeat&LEFT?-1:1;
    if(prefs.choice==0)prefs.dictionary^=1;
