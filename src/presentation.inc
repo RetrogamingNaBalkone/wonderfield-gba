@@ -326,7 +326,7 @@ static void gift_certificate(void){
 static void render(void){
  if(game.mode==MP_OPTIONS){
   rect(0,0,240,160,7);border(3,3,234,148,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
-  const char*items[]={"Словарь","Сектор Плюс для шкатулок","Персонажи","Начать игру"};
+  const char*items[]={prefs.dictionary?"Словарь: v2":"Словарь: v1",prefs.plus?"Две шкатулки: v2":"Две шкатулки: v1",prefs.characters?"Персонажи: v2":"Персонажи: v1","Начать игру"};
   for(int i=0;i<4;i++){
    int y=26+i*22,selected=prefs.choice==i;
    rect(20,y-3,200,22,selected?8:7);if(selected)border(20,y-3,200,22,0);
@@ -338,13 +338,13 @@ static void render(void){
    centered(132,prefs.dictionary?"Добавлены темы":"Слова из первой игры.",1,0);
    if(prefs.dictionary)centered(142,"Кулинария и Напитки",1,0);
   }else if(prefs.choice==1){
-   centered(115,prefs.plus?"Да":"Нет",0,0);
-   centered(132,"3 буквы подряд - шкатулки.",1,0);
-   centered(142,"Засчитывать Сектор Плюс?",1,0);
+   centered(115,"3 верные буквы подряд",0,0);
+   centered(132,"дают выбор шкатулки.",1,0);
+   centered(142,prefs.plus?"Сектор Плюс считается.":"Сектор Плюс не считается.",1,0);
   }else if(prefs.choice==2){
-   centered(115,prefs.characters?"Версия 2":"Версия 1",0,0);
-   centered(132,prefs.characters?"8 персонажей, новые рисунки.":"6 персонажей и рисунки",1,0);
-   centered(142,prefs.characters?"Фрекен Бок и Багира.":"первой игры.",1,0);
+   centered(115,prefs.characters?"8 персонажей, графика v2":"6 персонажей, графика v1",0,0);
+   centered(132,prefs.characters?"Добавлены Фрекен Бок":"Графика первой игры.",1,0);
+   if(prefs.characters)centered(142,"и Багира.",1,0);
   }else{
    centered(115,"С выбранными параметрами",0,0);
    centered(132,mp.humans>1?"Далее - имя и аватар.":"Начать одиночную игру.",1,0);
