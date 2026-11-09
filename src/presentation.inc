@@ -376,13 +376,20 @@ static void render(void){
   centered(105,avatar?character_name(avatar-1):"Затылок",0,0);
   centered(151,"A: Готово  B: К имени",1,0);return;
  }
- if(game.mode==MP_NAME){rect(0,0,240,160,7);setup_player_heading();centered(32,"Введите имя",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: Пробел START: Готово",1,0);keyboard();centered(151,"A: Буква B: Стереть",1,0);return;}
+ if(game.mode==MP_NAME){
+  rect(0,0,240,160,7);setup_player_heading();
+  if(mp_name_error){border(8,35,224,95,0);centered(48,"Имя уже занято",0,0);centered(73,(const char*)game.answer,0,0);centered(105,"A / B: Изменить имя",1,0);return;}
+  centered(32,"Введите имя",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: Пробел START: Готово",1,0);keyboard();centered(151,"A: Буква B: Стереть",1,0);return;
+ }
  if(game.mode==MP_PASS){rect(0,0,240,160,7);border(3,3,234,143,0);centered(40,"Передайте GBA игроку",0,0);centered(70,player_name(game.player),0,0);centered(115,"A: Готов",0,0);return;}
  if(game.mode==MP_LOBBY){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(16,"Мультиплеер по кабелю",0,0);
-  centered(48,"Подключено игроков:",0,0);number(116,68,link_connected,0,0);
-  centered(96,link_connected==2?"2 игрока + компьютер":link_connected==3?"3 игрока":"Подключите остальные GBA",0,0);
-  centered(122,link_connected<2?"Ожидание участников...":mp.local==2?"START: Начать игру":"Ждем ведущего игрока",0,0);
+  centered(37,link_connected==2?"2 игрока + компьютер":link_connected==3?"3 игрока":"Подключите остальные GBA",0,0);
+  if(link_connected>=2)for(int i=0;i<link_connected;i++){
+   int p=(i+2)%3;number(36,57+i*17,i+1,0,0);text(60,57+i*17,mp.names[p],0,p==mp.local?1:0);
+  }
+  if(link_snapshot.name_conflicts||link_snapshot.name_editing)centered(108,"Ждем исправления имени",1,0);
+  centered(122,link_connected<2?"Ожидание участников...":(link_snapshot.name_conflicts||link_snapshot.name_editing)?"Имена должны различаться":mp.local==2?"START: Начать игру":"Ждем ведущего игрока",0,0);
   centered(151,"B: Отменить ожидание",1,0);return;
  }
  if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,0);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);centered(120,"B: В меню",1,0);return;}

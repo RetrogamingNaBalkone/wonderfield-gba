@@ -1,3 +1,7 @@
+# Рабочая ветка
+
+- Разработку мультиплеера вести в ветке `multiplayer`, включая отправку кода и тестовых ROM. `work` не является рабочей веткой проекта; это может быть локальное имя стартового checkout среды.
+
 # Release publishing
 
 - Upload only the standalone ROM (`.gba`) and `SHA256SUMS` as release assets.

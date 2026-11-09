@@ -48,7 +48,7 @@ static void run(unsigned frames){
  }
 }
 int main(int argc,char**argv){
- mLogSetDefaultLogger(&logger);assert(argc==7);uint32_t avatars_addr=strtoul(argv[6],0,16);uint32_t prefs_addr=strtoul(argv[5],0,16);count=atoi(argv[2]);game_addr=strtoul(argv[3],0,16);mp_addr=strtoul(argv[4],0,16);
+ mLogSetDefaultLogger(&logger);assert(argc==7||argc==12);int names_case=argc==12?atoi(argv[7]):0;uint32_t avatars_addr=strtoul(argv[6],0,16);uint32_t prefs_addr=strtoul(argv[5],0,16);count=atoi(argv[2]);game_addr=strtoul(argv[3],0,16);mp_addr=strtoul(argv[4],0,16);
  for(int i=0;i<count;i++){
   c[i]=mCoreFind(argv[1]);assert(c[i]);assert(c[i]->init(c[i]));mCoreInitConfig(c[i],NULL);
   mCoreConfigSetDefaultIntValue(&c[i]->config,"useBios",0);mCoreConfigSetDefaultIntValue(&c[i]->config,"skipBios",1);
@@ -60,15 +60,61 @@ int main(int argc,char**argv){
  run(100);
  for(int i=0;i<count;i++){
   for(int option=0;option<3;option++)wr(i,prefs_addr+option*4,i==0);
-  wr(i,avatars_addr+8,i+1);
+  wr(i,avatars_addr+8,names_case?1:i+1);
   wr(i,mp_addr,2);wr(i,mp_addr+4,1);wr(i,mp_addr+16,2);wr(i,game_addr+12,27);wr(i,game_addr+80*4,1);
   wr(i,game_addr+88*4,128+i);c[i]->setKeys(c[i],8);
+  if(names_case){
+   const char *name=names_case==1?"AAAAAAAAAA":names_case==2?"1-\xeb\xa9 \x88\x83\x90\x8e\x8a":(names_case==4||(names_case==5&&i==0))?"\x81\x80\x83\x88\x90\x80":names_case==5?(i==1?"ANNA":"BORIS"):i<2?"ANNA":"BORIS";
+   wr(i,game_addr+80*4,strlen(name));
+   for(int j=0;j<11;j++)c[i]->busWrite8(c[i],game_addr+88*4+j,j<(int)strlen(name)?name[j]:0);
+  }
  }
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
  run(20);for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==33);c[i]->setKeys(c[i],1);}
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
  run(160);
- for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==30);assert(rd(i,mp_addr)==(uint32_t)count);}
+ for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==30||(names_case&&names_case!=2&&rd(i,game_addr+12)==27));assert(rd(i,mp_addr)==(uint32_t)count);}
+ if(names_case&&names_case!=2&&(names_case!=5||count==2)){
+  uint32_t edit=strtoul(argv[8],0,16),answer=strtoul(argv[9],0,16),pos=strtoul(argv[10],0,16),cursor=strtoul(argv[11],0,16);
+  for(int i=0;i<count;i++){
+   int conflict=names_case==5?(count==2&&i==0):(names_case==4&&count==2)||i==1||(i==2&&(names_case==1||names_case==4));
+   assert(rd(i,edit)==(uint32_t)conflict);
+  }
+  c[0]->setKeys(c[0],8);run(30);c[0]->setKeys(c[0],0);run(30);
+  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==30||(rd(i,game_addr+12)==27&&rd(i,edit)));
+  for(int i=0;i<count;i++)if(rd(i,edit)){
+   unsigned length=rd(i,pos),selection=rd(i,cursor);char before[21];
+   for(int j=0;j<21;j++)before[j]=c[i]->busRead8(c[i],answer+j);
+   c[i]->setKeys(c[i],i%2?2:1);run(30);c[i]->setKeys(c[i],0);run(30);
+   assert(rd(i,edit)==2&&rd(i,pos)==length&&rd(i,cursor)==selection);
+   for(int j=0;j<21;j++)assert(c[i]->busRead8(c[i],answer+j)==(unsigned char)before[j]);
+   /* Submitting the unchanged duplicate brings the message back. */
+   c[i]->setKeys(c[i],8);run(30);c[i]->setKeys(c[i],0);run(40);assert(rd(i,edit)==1);
+   c[i]->setKeys(c[i],1);run(30);c[i]->setKeys(c[i],0);run(30);assert(rd(i,edit)==2);
+   for(unsigned j=0;j<length;j++){c[i]->setKeys(c[i],2);run(20);c[i]->setKeys(c[i],0);run(20);}
+   assert(rd(i,pos)==0);
+   for(int j=0;j<=i;j++){c[i]->setKeys(c[i],16);run(20);c[i]->setKeys(c[i],0);run(20);}
+   c[i]->setKeys(c[i],1);run(20);c[i]->setKeys(c[i],0);run(20);
+   c[i]->setKeys(c[i],8);run(30);c[i]->setKeys(c[i],0);run(60);
+   assert(rd(i,edit)==0);
+   for(int j=0;j<count;j++)assert(rd(j,game_addr+12)==30||(rd(j,game_addr+12)==27&&rd(j,edit)));
+  }
+  printf("PASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\n");
+ }
+ char roster[3][11];
+ for(int device=0;device<count;device++){
+  uint32_t address=mp_addr+28+((device+2)%3)*11;
+  for(int j=0;j<11;j++){
+   roster[device][j]=c[0]->busRead8(c[0],address+j);
+   for(int i=1;i<count;i++)assert(c[i]->busRead8(c[i],address+j)==(unsigned char)roster[device][j]);
+  }
+  assert(roster[device][0]&&roster[device][10]==0);
+  for(int j=0;j<device;j++)assert(strcmp(roster[device],roster[j]));
+ }
+ if(names_case==1)assert(!strcmp(roster[0],"AAAAAAAAAA"));
+ if(names_case==2)for(int i=0;i<count;i++)assert(roster[i][0]=='1'+i);
+ if(names_case==3){assert(!strcmp(roster[0],"ANNA"));if(count==3)assert(!strcmp(roster[2],"BORIS"));}
+ printf("PASS: unique bounded names synchronized in lobby (case %d)\n",names_case);
  c[1]->setKeys(c[1],8);run(30);c[1]->setKeys(c[1],0);run(20);
  assert(rd(0,game_addr+12)==30);
  c[0]->setKeys(c[0],8);run(30);c[0]->setKeys(c[0],0);run(120);
@@ -76,7 +122,8 @@ int main(int argc,char**argv){
  for(int i=0;i<count;i++)printf("device %d mode %u player %u local %u viewer %u word %u transfers %d\n",i,rd(i,game_addr+12),rd(i,game_addr+20),rd(i,mp_addr+12),rd(i,mp_addr+8),rd(i,game_addr+24),transfers);
  for(int i=0;i<count;i++){assert(rd(i,game_addr+12)!=31);assert(rd(i,game_addr+12)!=30);assert(rd(i,mp_addr+12)==(i+2)%3);assert(rd(i,mp_addr+8)==(i+2)%3);assert(rd(i,game_addr+24)==rd(0,game_addr+24));}
  for(int i=0;i<count;i++)for(int option=0;option<3;option++)assert(rd(i,prefs_addr+option*4)==1);
- for(int i=0;i<count;i++)for(int device=0;device<count;device++)assert(rd(i,avatars_addr+((device+2)%3)*4)==device+1);
+ for(int i=0;i<count;i++)for(int device=0;device<count;device++)assert(rd(i,avatars_addr+((device+2)%3)*4)==(uint32_t)(names_case?1:device+1));
+ for(int i=0;i<count;i++)for(int device=0;device<count;device++)for(int j=0;j<11;j++)assert(c[i]->busRead8(c[i],mp_addr+28+((device+2)%3)*11+j)==(unsigned char)roster[device][j]);
  printf("PASS: all selected avatars synchronized\n");
  printf("PASS: host dictionary, Plus and character settings synchronized\n");
  /* A spectator cannot choose for player two. The owning console can. */

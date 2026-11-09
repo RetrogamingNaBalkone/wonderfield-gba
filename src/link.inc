@@ -3,16 +3,19 @@
  * All participants need the same ROM (build fingerprint in the handshake). */
 static int link_active,link_connected,link_start_armed,link_cancelled;
 static u16 link_avatar;
+static int link_name_edit,link_name_cursor,link_name_pos;
+static char link_name_answer[21];
 static u16 link_keys,link_oldkeys,link_submit;
 static u32 link_repeat_at;
 static volatile u32 link_serial;
 static volatile u16 link_received[4],link_status;
 static u16 link_remote[4];
 static char link_name[11],link_saved_names[8][11];
+static char link_incoming_names[3][11];
 static int link_saved_scores[8];
 static struct {
  Game game;Scene scene;SoundCommand sound;Cash cash;u32 cash_seed;char names[3][11],first[96],second[96];
- u8 durations[10];int eliminated,dictionary,plus,characters,pool[8],ai_index,avatars[3],humans;char records[8][11];int scores[8];
+ u8 durations[10];int eliminated,dictionary,plus,characters,pool[8],ai_index,avatars[3],humans,name_conflicts,name_editing;char records[8][11];int scores[8];
 } link_snapshot;
 static u16 link_previous[sizeof link_snapshot/2];
 static char link_message1[96],link_message2[96];
@@ -25,7 +28,7 @@ static void link_irq(void){
 }
 static void link_close(void){if(link_active&&mp.local!=2){link_copy(record_names,link_saved_names,sizeof record_names);link_copy(record_scores,link_saved_scores,sizeof record_scores);}REG16(0x04000200)&=~128;REG16(0x04000128)=0;REG16(0x04000134)=0x8000;link_active=0;}
 static void link_open(void){
- link_connected=1;link_start_armed=link_cancelled=0;
+ link_connected=1;link_start_armed=link_cancelled=link_name_edit=0;link_name_cursor=game.cursor;
  link_copy(link_saved_names,record_names,sizeof record_names);link_copy(link_saved_scores,record_scores,sizeof record_scores);
  link_text(link_name,mp.names[2],11);link_avatar=avatars[2];link_oldkeys=link_submit=0;
  for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
@@ -36,7 +39,7 @@ static void link_open(void){
 /* Poll local input inside the SIO waits too: an absent peer must not trap
  * either console in the lobby until the cable timeout expires. */
 static int link_cancel_requested(void){
- if(game.mode==MP_LOBBY&&((link_submit|~REG16(0x04000130))&B))link_cancelled=1;
+ if(game.mode==MP_LOBBY&&!link_name_edit&&!(link_snapshot.name_conflicts&(1<<mp.local))&&((link_submit|~REG16(0x04000130))&B))link_cancelled=1;
  return link_cancelled;
 }
 static int link_exchange(u16 value){
@@ -101,14 +104,18 @@ static int link_frame(void){
  for(int j=0;j<6;j++){
   u16 pair=(u8)link_name[j*2];if(j<5)pair|=(u16)(u8)link_name[j*2+1]<<8;
   if(!link_word(pair,pair,0))return 0;
-  if(master)for(int i=0;i<mp.humans;i++){int p=(i+2)%3;mp.names[p][j*2]=link_remote[i]&255;if(j<5)mp.names[p][j*2+1]=link_remote[i]>>8;}
+  if(master)for(int i=0;i<mp.humans;i++){int p=(i+2)%3;link_incoming_names[p][j*2]=link_remote[i]&255;if(j<5)link_incoming_names[p][j*2+1]=link_remote[i]>>8;}
  }
  if(!link_word(link_avatar,link_avatar,0))return 0;
  if(master)for(int i=0;i<mp.humans;i++){
   if(link_remote[i]>(prefs.characters?8:6))return 0;
   avatars[(i+2)%3]=link_remote[i];
  }
+ if(!link_word(link_name_edit,link_name_edit,0))return 0;
  if(master){
+  link_snapshot.name_conflicts=link_name_conflicts(link_incoming_names);
+  link_snapshot.name_editing=0;
+  for(int i=0;i<mp.humans;i++)if(link_remote[i])link_snapshot.name_editing|=1<<((i+2)%3);
   link_snapshot.humans=mp.humans;
   link_copy(&link_snapshot.cash,&cash,sizeof cash);link_snapshot.cash_seed=cash_initial_seed;
   link_snapshot.sound=sound_command;link_snapshot.dictionary=prefs.dictionary;link_snapshot.plus=prefs.plus;link_snapshot.characters=prefs.characters;link_snapshot.ai_index=mp_ai_index;link_copy(link_snapshot.pool,opponent_pool,sizeof opponent_pool);

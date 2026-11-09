@@ -57,6 +57,7 @@ static struct {int humans,link,viewer,local,edit,choice,eliminated;char names[3]
 static struct {int dictionary,plus,characters,choice;} prefs;
 static int opponent_pool[8],mp_ai_index;
 static int avatars[3];
+static int mp_name_error;
 static int human(int p){return p==2||mp.humans==3||(mp.humans==2&&p==0);}
 static int player_number(int p){return (p+1)%3+1;}
 static const char*player_intro(int p){return p==2?msg_5384:p==0?msg_5391:msg_539e;}
@@ -363,7 +364,49 @@ static void menu_close(void){
 static u16 menu_button(void){return (ui.active?ui.origin:game.mode)==NAME?SELECT:START;}
 static void mp_setup(void){mp.choice=0;mp.link=0;mp.humans=1;mp.viewer=mp.local=2;ui.active=0;set_mode(MP_SETUP);}
 static void options_begin(void){prefs.dictionary=prefs.plus=prefs.characters=mp.humans>1;prefs.choice=3;set_mode(MP_OPTIONS);}
-static void mp_name_begin(void){for(int i=0;i<21;i++)game.answer[i]=0;game.cursor=game.solve_pos=0;set_mode(MP_NAME);}
+/* Names use the game's single-byte CP866 alphabet, not UTF-8. */
+static void name_clean(char out[11],const char*in){
+ int n=0,space=0;
+ for(int i=0;i<10&&in[i];i++){
+  if(in[i]==' '){space=n>0;continue;}
+  if(space&&n<10)out[n++]=' ';
+  if(n<10)out[n++]=in[i];space=0;
+ }
+ for(;n<11;n++)out[n]=0;
+}
+static int name_equal(const char*a,const char*b){
+ char x[11],y[11];name_clean(x,a);name_clean(y,b);
+ for(int i=0;i<11;i++){if(x[i]!=y[i])return 0;if(!x[i])return 1;}
+ return 1;
+}
+/* Reserve the whole AI roster: a replacement in a later round must not
+ * acquire a human's name. Three-human games have no AI. */
+static int name_reserved(const char*n){
+ if(mp.humans==3)return 0;
+ for(int i=0;i<(prefs.characters?8:6);i++)if(name_equal(n,character_name(i)))return 1;
+ return 0;
+}
+static int name_taken(const char*n,int self){
+ if(name_reserved(n))return 1;
+ for(int p=0;p<3;p++)if(p!=self&&human(p)&&name_equal(n,mp.names[p]))return 1;
+ return 0;
+}
+static const char*default_name(int p){return p==2?"1-ый ИГРОК":p==0?"2-ой ИГРОК":"3-ий ИГРОК";}
+/* Validate a complete cable roster in device order. The earlier device
+ * keeps a duplicate name; later devices edit it without leaving the lobby. */
+static int link_name_conflicts(char incoming[3][11]){
+ int conflicts=0;
+ for(int i=0;i<mp.humans;i++){
+  int p=(i+2)%3;char clean[11];name_clean(clean,incoming[p]);
+  if(!clean[0]||name_equal(clean,default_name(2)))name_clean(clean,default_name(p));
+  for(int j=0;j<11;j++)mp.names[p][j]=clean[j];
+  int clash=name_reserved(clean);
+  for(int j=0;j<i;j++)if(name_equal(clean,mp.names[(j+2)%3]))clash=1;
+  if(clash)conflicts|=1<<p;
+ }
+ return conflicts;
+}
+static void mp_name_begin(void){mp_name_error=0;for(int i=0;i<21;i++)game.answer[i]=0;game.cursor=game.solve_pos=0;set_mode(MP_NAME);}
 static void mp_defaults(void){
  for(int p=0;p<3;p++)avatars[p]=0;
  const char*n[3]={"2-ой ИГРОК","КОМПЬЮТЕР","1-ый ИГРОК"};
@@ -401,12 +444,17 @@ static void update(u16 pressed,u16 repeat){
   return;
  }
  if(game.mode==MP_NAME){
+  if(mp_name_error){if(pressed&(A|B)){mp_name_error=0;dirty=1;}return;}
   if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;
   if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;
   if((pressed&A)&&game.solve_pos<10)game.answer[game.solve_pos++]=128+game.cursor;
   if((pressed&R)&&game.solve_pos<10)game.answer[game.solve_pos++]=' ';
   if((pressed&B)&&game.solve_pos)game.answer[--game.solve_pos]=0;
-  if(pressed&START){if(game.solve_pos)for(int i=0;i<11;i++)mp.names[mp.edit][i]=game.answer[i];
+  if(pressed&START){
+   char candidate[11];name_clean(candidate,(const char*)game.answer);
+   if(!candidate[0])name_clean(candidate,mp.names[mp.edit]);
+   if(!mp.link&&name_taken(candidate,mp.edit)){mp_name_error=1;dirty=1;return;}
+   for(int i=0;i<11;i++)mp.names[mp.edit][i]=candidate[i];
    set_mode(MP_AVATAR);}
   dirty=1;return;
  }
@@ -539,6 +587,37 @@ static void update(u16 pressed,u16 repeat){
  }
  if(game.mode==GAME_OVER){if((pressed&A)||(game.deal==6&&scene.now-scene.speech_at>=180)){if(game.deal==6)gift_begin(0);else if(game.deal==5)farewell();else set_mode(TITLE);}return;}
 }
+/* Local lobby editing stays outside synchronized gameplay state. Every
+ * console continues exchanging packets while a participant corrects a name. */
+static void link_edit_name(u16 pressed,u16 repeat){
+ if(!link_name_edit){
+  if(!(link_snapshot.name_conflicts&(1<<mp.local)))return;
+  link_name_edit=1;link_text(link_name_answer,link_name,21);
+  link_name_pos=len(link_name_answer);return;
+ }
+ if(link_name_edit==1){if(pressed&(A|B))link_name_edit=2;return;}
+ if(repeat&LEFT)link_name_cursor=(link_name_cursor+31)%32;
+ if(repeat&RIGHT)link_name_cursor=(link_name_cursor+1)%32;
+ if(repeat&UP)link_name_cursor=(link_name_cursor+24)%32;
+ if(repeat&DOWN)link_name_cursor=(link_name_cursor+8)%32;
+ if((pressed&A)&&link_name_pos<10)link_name_answer[link_name_pos++]=128+link_name_cursor;
+ if((pressed&R)&&link_name_pos<10)link_name_answer[link_name_pos++]=' ';
+ if((pressed&B)&&link_name_pos)link_name_answer[--link_name_pos]=0;
+ link_name_answer[link_name_pos]=0;
+ if(pressed&START){
+  char candidate[11];name_clean(candidate,link_name_answer);
+  if(!candidate[0])name_clean(candidate,default_name(mp.local));
+  link_text(link_name,candidate,11);link_name_edit=0;
+ }
+}
+static void link_render_name(void){
+ Game saved=game;int edit=mp.edit,error=mp_name_error;
+ game.mode=MP_NAME;game.cursor=link_name_cursor;game.solve_pos=link_name_pos;
+ for(int i=0;i<21;i++)game.answer[i]=link_name_answer[i];
+ mp.edit=mp.local;mp_name_error=link_name_edit==1;
+ render();game=saved;mp.edit=edit;mp_name_error=error;
+ mute_icon();present();
+}
 void gba_main(void){
  REG16(0x0400010a)=0;REG16(0x0400010e)=0;
  REG16(0x04000108)=0;REG16(0x0400010c)=0;
@@ -557,7 +636,7 @@ void gba_main(void){
   oldkeys=keys;
   if(mp.link&&link_active){
    if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
-   link_submit=(keys|pressed)&~L;
+   link_submit=link_name_edit?0:(keys|pressed)&~L;
    if(!link_frame()){
     link_close();
     if(link_cancelled){
@@ -568,6 +647,11 @@ void gba_main(void){
     }else set_mode(MP_ERROR);
    }
    if(link_active&&game.mode==TITLE){link_close();mp.link=0;mp.humans=1;dirty=1;}
+   if(link_active&&game.mode==MP_LOBBY){
+    if(link_name_edit&&mp.local==2)link_start_armed=0;
+    link_edit_name(pressed,repeat);
+    if(link_name_edit){link_render_name();continue;}
+   }
    if(link_active&&mp.local!=2){dirty=1;render();mute_icon();present();continue;}
    if(link_active){keys=link_keys;pressed=keys&~link_oldkeys;repeat=pressed;
     if(keys!=link_oldkeys)link_repeat_at=video_ticks+18;
@@ -575,8 +659,8 @@ void gba_main(void){
     link_oldkeys=keys;
     if(game.mode==MP_LOBBY){
      dirty=1;
-     if(!(keys&START))link_start_armed=1;
-     if(link_start_armed&&(pressed&START)&&mp.humans>=2)new_game();
+     if(!(keys&START)&&!(oldkeys&START))link_start_armed=1;
+     if(link_start_armed&&(pressed&START)&&mp.humans>=2&&!link_snapshot.name_conflicts&&!link_snapshot.name_editing)new_game();
     }
    }
   }
