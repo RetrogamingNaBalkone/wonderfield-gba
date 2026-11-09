@@ -80,6 +80,10 @@ static void host_pose(int*face,int*eyes,int*eye_y){
  /* 1000:0bce: raised eyes 43, then 44; hold the speaking pose until clear. */
  *face=42;*eyes=phase==9?43:44;*eye_y=71;
 }
+static void character_portrait(int character,int x,int y){
+ if(!prefs.characters)half_image(opponent_sprites[character],x,y,2);
+ else{const u8 portraits[8]={11,12,9,7,8,10,0,1};image(&extra_sprites[portraits[character]],x,y,2);}
+}
 static void people(void){
  for(int player=0;player<2;player++){
   int who=mp.humans>1?perspective(player):player;
@@ -89,24 +93,40 @@ static void people(void){
   int character=mp.humans>1?opponent_pool[mp_ai_index]:game.opponent[game.round*2+player];
   int x=player?153:3,y=83;
   if(!(mp.humans>1&&(mp.eliminated&(1<<who)))){
-  if(mp.humans>1&&human(who)){
+  if(mp.humans>1&&human(who)&&avatars[who]){
+   character_portrait(avatars[who]-1,x,y);
+  }else if(mp.humans>1&&human(who)){
    int pose=6;if(game.player==who)pose=player?2:4;
    image(&extra_sprites[pose],x+(29-extra_sprites[pose].w)/2,y,2);
   }else if(game.mode==INTRO&&scene.phase==intro_phase&&scene.now-scene.phase_at<54){
    int phase=(scene.now-scene.phase_at)/18;
    half_image(53+phase,x,y,2);
-  }else if(!prefs.characters)half_image(opponent_sprites[character],x,y,2);else{const u8 portraits[8]={11,12,9,7,8,10,0,1};image(&extra_sprites[portraits[character]],x,y,2);}
+  }else character_portrait(character,x,y);
   }
-  score_badge(who,player?141:1,73);
-  if(mp.humans>1)text(player?132:1,64,player_name(who),1,mp.eliminated&(1<<who)?8:15);
+  if(mp.humans==1)score_badge(who,player?141:1,73);
  }
  /* Host rectangle: [185,240), separate from the widest contestant [153,182). */
  half_image(27,185,62,-1);
  int face,eyes,eye_y;host_pose(&face,&eyes,&eye_y);
  half_image(face,196,63,-1);
  if(eyes>=0)half_image(eyes,204,eye_y+6,-1);
- score_badge(mp.humans>1?mp.viewer:2,164,142);
- if(mp.humans>1)text(152,132,player_name(mp.viewer),1,mp.eliminated&(1<<mp.viewer)?8:15);
+ if(mp.humans==1)score_badge(2,164,142);
+}
+/* Fixed identities, ordered from the current viewer's perspective. Full-width
+ * 80-pixel cells fit all ten name characters without touching the studio. */
+static void multiplayer_panel(void){
+ if(mp.humans==1||(game.keyboard&&game.mode==LETTER))return;
+ for(int slot=0;slot<3;slot++){
+  int who=slot==1?mp.viewer:perspective(slot==0?0:1),x=slot*80;
+  int out=mp.eliminated&(1<<who),active=game.player==who&&!out;
+  u8 color=out?8:active?15:0;
+  rect(x,132,80,20,active?1:7);line(x,132,80,0);
+  const char*name=player_name(who);int n=len(name);if(n>10)n=10;
+  for(int i=0;i<n;i++)glyph(x+(80-n*8)/2+i*8,133,(u8)name[i],1,color);
+  int value=game.score[who],digits=value<0?1:0;unsigned v=value<0?-value:value;
+  do{digits++;v=divide(v,10);}while(v);
+  number(x+(80-digits*8)/2,143,value,1,color);
+ }
 }
 static void speech_shape(int x,int y,const int*left,const int*right,int height){
  /* Outline the final silhouette, so no black stroke is lost to resampling. */
@@ -306,19 +326,38 @@ static void gift_certificate(void){
 }
 static void render(void){
  if(game.mode==MP_OPTIONS){
-  rect(0,0,240,160,7);border(3,3,234,147,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
-  for(int i=0;i<4;i++){int y=26+i*23;if(prefs.choice==i){rect(8,y-2,224,23,8);border(8,y-2,224,23,0);}
-   u8 color=prefs.choice==i?15:0;
-   if(i==0){centered(y,"Словарь",1,color);centered(y+12,prefs.dictionary?"Поле чудес 2: 686":"Поле чудес: 495",1,color);}
-   else if(i==1){centered(y,"+ приближает шкатулки",1,color);centered(y+12,prefs.plus?"Да":"Нет",1,color);}
-   else if(i==2){centered(y,"Персонажи",1,color);centered(y+12,prefs.characters?"Версия 2":"Версия 1",1,color);}
-   else centered(y,"Начать игру",0,color);
+  rect(0,0,240,160,7);border(3,3,234,148,0);centered(7,"ПАРАМЕТРЫ ИГРЫ",0,0);
+  for(int i=0;i<4;i++){
+   int y=26+i*23,selected=prefs.choice==i;
+   if(i==3){
+    if(selected){rect(8,y-2,224,13,1);border(8,y-2,224,13,0);}
+    centered(y,"Начать игру",1,selected?15:0);
+    continue;
+   }
+   const char*label=i==0?"Словарь":i==1?"+ приближает шкатулки":"Персонажи";
+   const char*value=i==0?(prefs.dictionary?"Поле чудес 2: 686 слов":"Поле чудес: 495 слов"):i==1?(prefs.plus?"Да":"Нет"):(prefs.characters?"Версия 2":"Версия 1");
+   text(12,y,label,1,0);
+   if(selected){rect(8,y+9,224,11,1);border(8,y+9,224,11,0);text(12,y+10,"<",1,15);text(220,y+10,">",1,15);}
+   centered(y+10,value,1,selected?15:1);
   }
-  if(prefs.choice==1){
-   centered(110,"3 верные буквы подряд",1,0);
-   centered(120,"дают выбор шкатулки.",1,0);
-   centered(130,"Засчитывать букву",1,0);
-   centered(140,"с сектора +?",1,0);
+  line(8,108,224,8);
+  if(prefs.choice==0){
+   centered(112,prefs.dictionary?"Слова из Поля чудес 2.":"Слова из первой игры.",1,0);
+   centered(122,prefs.dictionary?"Добавлено 191 слово:":"Привычный словарь порта.",1,0);
+   if(prefs.dictionary)centered(132,"еда и напитки.",1,0);
+  }else if(prefs.choice==1){
+   centered(112,"3 верные буквы подряд",1,0);
+   centered(122,"дают выбор шкатулки.",1,0);
+   centered(132,"Засчитывать букву",1,0);
+   centered(142,"с сектора +?",1,0);
+  }else if(prefs.choice==2){
+   centered(112,prefs.characters?"8 персонажей и графика":"6 персонажей и графика",1,0);
+   centered(122,prefs.characters?"второй игры.":"первой игры.",1,0);
+   if(prefs.characters){centered(132,"Добавлены Фрекен Бок",1,0);centered(142,"и Багира.",1,0);}
+  }else{
+   centered(112,"Начать с выбранными",1,0);
+   centered(122,"параметрами.",1,0);
+   if(mp.humans>1)centered(132,"Далее - ввод имён.",1,0);
   }
   centered(151,"A: Выбрать  B: Назад",1,0);return;
  }
@@ -327,6 +366,17 @@ static void render(void){
   const char*options[]={"Один игрок","Вдвоём на одной GBA","Втроём на одной GBA","Кабель: два игрока","Кабель: три игрока"};
   for(int i=0;i<5;i++){if(mp.choice==i){rect(8,35+i*21,224,19,8);border(8,35+i*21,224,19,0);}centered(39+i*21,options[i],1,mp.choice==i?15:0);}
   centered(149,"A: Выбрать  B: Назад",1,0);return;
+ }
+ if(game.mode==MP_AVATAR){
+  rect(0,0,240,160,7);border(3,3,234,143,0);
+  centered(7,"АВАТАР ИГРОКА",0,0);centered(27,player_name(mp.edit),1,0);
+  int avatar=avatars[mp.edit];
+  rect(91,44,58,54,7);border(91,44,58,54,0);
+  if(avatar)character_portrait(avatar-1,105,54);else image(&extra_sprites[6],105,54,2);
+  text(64,65,"<",0,0);text(168,65,">",0,0);
+  centered(105,avatar?character_name(avatar-1):"Затылок",1,0);
+  centered(122,prefs.characters?"Персонажи: Версия 2":"Персонажи: Версия 1",1,0);
+  centered(151,"A: Готово  B: К имени",1,0);return;
  }
  if(game.mode==MP_NAME){rect(0,0,240,160,7);centered(5,mp.link?"Ваше имя":player_name(mp.edit),0,1);centered(23,"Пожалуйста,",0,0);centered(39,"представтесь!",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: Пробел START: Готово",1,0);keyboard();centered(151,"A: Буква B: Стереть",1,0);return;}
  if(game.mode==MP_PASS){rect(0,0,240,160,7);border(3,3,234,143,0);centered(40,"Передайте GBA игроку",0,1);centered(70,player_name(game.player),0,0);centered(115,"A: Готов",0,1);return;}
@@ -377,32 +427,35 @@ static void render(void){
  if(game.mode==CHEST||game.mode==AI_CHEST){
   int phase=(scene.now-scene.speech_at)/6;
   int animate=game.mode==CHEST&&scene.now-scene.speech_at<90;
-  image(&sprites[animate&&!(phase&1)?37:36],18,96,7);image(&sprites[animate&&(phase&1)?37:36],115,96,7);
-  if(human(game.player)||game.mode==AI_CHEST)border(game.choice?113:16,94,40,42,14);
+  int y=mp.humans>1?90:96;
+  image(&sprites[animate&&!(phase&1)?37:36],18,y,7);image(&sprites[animate&&(phase&1)?37:36],115,y,7);
+  if(human(game.player)||game.mode==AI_CHEST)border(game.choice?113:16,mp.humans>1?88:94,40,42,14);
  }
  if(game.mode==RESULT&&scene.now<scene.chest_until){
-  image(&sprites[scene.chest_money?38:37],game.choice?115:18,96,7);image(&sprites[36],game.choice?18:115,96,7);
+  int y=mp.humans>1?90:96;
+  image(&sprites[scene.chest_money?38:37],game.choice?115:18,y,7);image(&sprites[36],game.choice?18:115,y,7);
  }
  if(game.mode==PRIZE){
   /* Both alternatives stay visible; a shared frame makes this one switch. */
-  rect(6,122,150,25,0);
+  int y=mp.humans>1?108:122;
+  rect(6,y,150,mp.humans>1?23:25,0);
   for(int option=0;option<2;option++){
    int x=option?81:7,w=option?74:73,selected=game.choice==option;
    const char*t=option?(game.deal?"ПРИЗ":"ИГРАЕМ"):(game.deal?"ДЕНЬГИ":"ПРИЗ");
-   rect(x,123,w,23,selected?1:7);
-   label_center(x,127,w,t,0,selected?15:0);
+   rect(x,y+1,w,mp.humans>1?21:23,selected?1:7);
+   label_center(x,y+5,w,t,0,selected?15:0);
   }
  }
  if(game.mode==TURN&&human(game.player)){
-  rect(6,110,150,37,0);
+  rect(6,110,150,mp.humans>1?21:37,0);
   for(int option=0;option<2;option++){
    int x=option?81:7,w=option?74:73,selected=game.choice==option;
-   rect(x,111,w,35,selected?1:7);
-   label_center(x,112,w,option?"Кручу":"Скажу",0,selected?15:0);
-   label_center(x,129,w,option?"БАРАБАН":"СЛОВО",0,selected?15:0);
+   rect(x,111,w,mp.humans>1?19:35,selected?1:7);
+   label_center(x,112,w,option?"Кручу":"Скажу",mp.humans>1,selected?15:0);
+   label_center(x,mp.humans>1?121:129,w,option?"БАРАБАН":"СЛОВО",mp.humans>1,selected?15:0);
   }
  }
  if(game.keyboard&&game.mode==LETTER)keyboard();
  /* Speech is the final scene overlay and cannot be overwritten by the wheel. */
- speech();footer();
+ speech();multiplayer_panel();footer();
 }

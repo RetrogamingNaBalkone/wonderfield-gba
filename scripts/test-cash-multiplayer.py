@@ -10,7 +10,7 @@ for humans in (2,3):
  for actor in ((2,0) if humans==2 else (2,0,1)):
   for offer in (1,2,3,4):
    e=Emulator();m['menu'](e,humans-1)
-   for _ in range(humans):tap(e,3)
+   for _ in range(humans):m['accept_name'](e)
    e.poke(3,7);e.poke(5,actor);e.poke(81,0);e.poke(82,offer);e.poke(83,(100,1000,100000,1000000)[offer-1]);setmp(e,2,actor)
    tap(e,8);assert e.state()[3]==21,e.state()[:10]
    for _ in range(3):

@@ -48,7 +48,7 @@ static void run(unsigned frames){
  }
 }
 int main(int argc,char**argv){
- mLogSetDefaultLogger(&logger);assert(argc==6);uint32_t prefs_addr=strtoul(argv[5],0,16);count=atoi(argv[2]);game_addr=strtoul(argv[3],0,16);mp_addr=strtoul(argv[4],0,16);
+ mLogSetDefaultLogger(&logger);assert(argc==7);uint32_t avatars_addr=strtoul(argv[6],0,16);uint32_t prefs_addr=strtoul(argv[5],0,16);count=atoi(argv[2]);game_addr=strtoul(argv[3],0,16);mp_addr=strtoul(argv[4],0,16);
  for(int i=0;i<count;i++){
   c[i]=mCoreFind(argv[1]);assert(c[i]);assert(c[i]->init(c[i]));mCoreInitConfig(c[i],NULL);
   mCoreConfigSetDefaultIntValue(&c[i]->config,"useBios",0);mCoreConfigSetDefaultIntValue(&c[i]->config,"skipBios",1);
@@ -60,14 +60,19 @@ int main(int argc,char**argv){
  run(100);
  for(int i=0;i<count;i++){
   for(int option=0;option<3;option++)wr(i,prefs_addr+option*4,i==0);
+  wr(i,avatars_addr+8,i+1);
   wr(i,mp_addr,count);wr(i,mp_addr+4,1);wr(i,mp_addr+16,2);wr(i,game_addr+12,27);wr(i,game_addr+80*4,1);
   wr(i,game_addr+88*4,128+i);c[i]->setKeys(c[i],8);
  }
+ run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
+ run(20);for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==33);c[i]->setKeys(c[i],1);}
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
  run(160);
  for(int i=0;i<count;i++)printf("device %d mode %u player %u local %u viewer %u word %u transfers %d\n",i,rd(i,game_addr+12),rd(i,game_addr+20),rd(i,mp_addr+12),rd(i,mp_addr+8),rd(i,game_addr+24),transfers);
  for(int i=0;i<count;i++){assert(rd(i,game_addr+12)!=31);assert(rd(i,game_addr+12)!=30);assert(rd(i,mp_addr+12)==(i+2)%3);assert(rd(i,mp_addr+8)==(i+2)%3);assert(rd(i,game_addr+24)==rd(0,game_addr+24));}
  for(int i=0;i<count;i++)for(int option=0;option<3;option++)assert(rd(i,prefs_addr+option*4)==1);
+ for(int i=0;i<count;i++)for(int device=0;device<count;device++)assert(rd(i,avatars_addr+((device+2)%3)*4)==device+1);
+ printf("PASS: all selected avatars synchronized\n");
  printf("PASS: host dictionary, Plus and character settings synchronized\n");
  /* A spectator cannot choose for player two. The owning console can. */
  wr(0,game_addr+12,1);wr(0,game_addr+20,0);wr(0,game_addr+81*4,1);run(30);

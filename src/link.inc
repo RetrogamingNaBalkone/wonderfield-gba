@@ -2,6 +2,7 @@
  * complete checked snapshots. No pointer, framebuffer, or SRAM crosses cable.
  * All participants need the same ROM (build fingerprint in the handshake). */
 static int link_active;
+static u16 link_avatar;
 static u16 link_keys,link_oldkeys,link_submit;
 static u32 link_repeat_at;
 static volatile u32 link_serial;
@@ -11,7 +12,7 @@ static char link_name[11],link_saved_names[8][11];
 static int link_saved_scores[8];
 static struct {
  Game game;Scene scene;SoundCommand sound;Cash cash;u32 cash_seed;char names[3][11],first[96],second[96];
- u8 durations[10];int eliminated,dictionary,plus,characters,pool[8],ai_index;char records[8][11];int scores[8];
+ u8 durations[10];int eliminated,dictionary,plus,characters,pool[8],ai_index,avatars[3];char records[8][11];int scores[8];
 } link_snapshot;
 static u16 link_previous[sizeof link_snapshot/2];
 static char link_message1[96],link_message2[96];
@@ -25,7 +26,7 @@ static void link_irq(void){
 static void link_close(void){if(link_active&&mp.local!=2){link_copy(record_names,link_saved_names,sizeof record_names);link_copy(record_scores,link_saved_scores,sizeof record_scores);}REG16(0x04000200)&=~128;REG16(0x04000128)=0;REG16(0x04000134)=0x8000;link_active=0;}
 static void link_open(void){
  link_copy(link_saved_names,record_names,sizeof record_names);link_copy(link_saved_scores,record_scores,sizeof record_scores);
- link_text(link_name,mp.names[2],11);link_oldkeys=link_submit=0;
+ link_text(link_name,mp.names[2],11);link_avatar=avatars[2];link_oldkeys=link_submit=0;
  for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
  for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
  REG16(0x04000134)=0;REG16(0x04000128)=0x6003;
@@ -86,12 +87,17 @@ static int link_frame(void){
   if(!link_word(pair,pair,0))return 0;
   if(master)for(int i=0;i<mp.humans;i++){int p=(i+2)%3;mp.names[p][j*2]=link_remote[i]&255;if(j<5)mp.names[p][j*2+1]=link_remote[i]>>8;}
  }
+ if(!link_word(link_avatar,link_avatar,0))return 0;
+ if(master)for(int i=0;i<mp.humans;i++){
+  if(link_remote[i]>(prefs.characters?8:6))return 0;
+  avatars[(i+2)%3]=link_remote[i];
+ }
  if(master){
   link_copy(&link_snapshot.cash,&cash,sizeof cash);link_snapshot.cash_seed=cash_initial_seed;
   link_snapshot.sound=sound_command;link_snapshot.dictionary=prefs.dictionary;link_snapshot.plus=prefs.plus;link_snapshot.characters=prefs.characters;link_snapshot.ai_index=mp_ai_index;link_copy(link_snapshot.pool,opponent_pool,sizeof opponent_pool);
   link_copy(link_snapshot.records,record_names,sizeof record_names);link_copy(link_snapshot.scores,record_scores,sizeof record_scores);
   link_copy(&link_snapshot.game,&game,sizeof game);link_copy(&link_snapshot.scene,&scene,sizeof scene);
-  link_copy(link_snapshot.names,mp.names,sizeof mp.names);link_snapshot.eliminated=mp.eliminated;
+  link_copy(link_snapshot.avatars,avatars,sizeof avatars);link_copy(link_snapshot.names,mp.names,sizeof mp.names);link_snapshot.eliminated=mp.eliminated;
   link_copy(link_snapshot.durations,host_durations,sizeof host_durations);
   link_text(link_snapshot.first,message1,96);link_text(link_snapshot.second,message2,96);
  }
@@ -123,7 +129,7 @@ static int link_frame(void){
  if(!master){
   link_copy(record_names,link_snapshot.records,sizeof record_names);link_copy(record_scores,link_snapshot.scores,sizeof record_scores);
   link_copy(&game,&link_snapshot.game,sizeof game);link_copy(&scene,&link_snapshot.scene,sizeof scene);
-  link_copy(mp.names,link_snapshot.names,sizeof mp.names);mp.eliminated=link_snapshot.eliminated;prefs.dictionary=link_snapshot.dictionary;prefs.plus=link_snapshot.plus;prefs.characters=link_snapshot.characters;mp_ai_index=link_snapshot.ai_index;link_copy(opponent_pool,link_snapshot.pool,sizeof opponent_pool);
+  link_copy(avatars,link_snapshot.avatars,sizeof avatars);link_copy(mp.names,link_snapshot.names,sizeof mp.names);mp.eliminated=link_snapshot.eliminated;prefs.dictionary=link_snapshot.dictionary;prefs.plus=link_snapshot.plus;prefs.characters=link_snapshot.characters;mp_ai_index=link_snapshot.ai_index;link_copy(opponent_pool,link_snapshot.pool,sizeof opponent_pool);
   link_copy(host_durations,link_snapshot.durations,sizeof host_durations);
   link_text(link_message1,link_snapshot.first,96);link_text(link_message2,link_snapshot.second,96);
   message1=link_message1;message2=link_message2;mp.viewer=mp.local;

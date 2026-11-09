@@ -17,7 +17,7 @@ typedef unsigned int u32;
 #define R 256
 #define L 512
 #define A_RELEASE 0x8000
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
 /* Read-only diagnostic state is also used by the emulator integration checks. */
@@ -56,6 +56,7 @@ static Scene scene;
 static struct {int humans,link,viewer,local,edit,choice,eliminated;char names[3][11];} mp={1,0,2,2,0,0,0,{{0}}};
 static struct {int dictionary,plus,characters,choice;} prefs;
 static int opponent_pool[8],mp_ai_index;
+static int avatars[3];
 static int human(int p){return p==2||mp.humans==3||(mp.humans==2&&p==0);}
 static int player_number(int p){return (p+1)%3+1;}
 static const char*player_intro(int p){return p==2?msg_5384:p==0?msg_5391:msg_539e;}
@@ -359,6 +360,7 @@ static void mp_setup(void){mp.choice=0;mp.link=0;mp.humans=1;mp.viewer=mp.local=
 static void options_begin(void){prefs.dictionary=prefs.plus=prefs.characters=mp.humans>1;prefs.choice=3;set_mode(MP_OPTIONS);}
 static void mp_name_begin(void){for(int i=0;i<21;i++)game.answer[i]=0;game.cursor=game.solve_pos=0;set_mode(MP_NAME);}
 static void mp_defaults(void){
+ for(int p=0;p<3;p++)avatars[p]=0;
  const char*n[3]={"2-ой ИГРОК","КОМПЬЮТЕР","1-ый ИГРОК"};
  if(mp.humans==3)n[1]="3-ий ИГРОК";
  for(int p=0;p<3;p++)for(int i=0;i<11;i++)mp.names[p][i]=i<len(n[p])?n[p][i]:0;
@@ -392,11 +394,21 @@ static void update(u16 pressed,u16 repeat){
   if((pressed&R)&&game.solve_pos<10)game.answer[game.solve_pos++]=' ';
   if((pressed&B)&&game.solve_pos)game.answer[--game.solve_pos]=0;
   if(pressed&START){if(game.solve_pos)for(int i=0;i<11;i++)mp.names[mp.edit][i]=game.answer[i];
+   set_mode(MP_AVATAR);}
+  dirty=1;return;
+ }
+ if(game.mode==MP_AVATAR){
+  int count=prefs.characters?9:7;
+  if(repeat&(LEFT|UP)){avatars[mp.edit]=(avatars[mp.edit]+count-1)%count;dirty=1;}
+  if(repeat&(RIGHT|DOWN)){avatars[mp.edit]=(avatars[mp.edit]+1)%count;dirty=1;}
+  if(pressed&B){set_mode(MP_NAME);return;}
+  if(pressed&(A|START)){
    if(mp.link){link_open();set_mode(MP_LOBBY);}
    else if(mp.edit==2){mp.edit=0;mp_name_begin();}
    else if(mp.edit==0&&mp.humans==3){mp.edit=1;mp_name_begin();}
-   else new_game();}
-  dirty=1;return;
+   else new_game();
+  }
+  return;
  }
  if(game.mode==MP_LOBBY){return;}
  if(game.mode==MP_ERROR){if(pressed&B){link_close();mp.link=0;mp.humans=1;set_mode(TITLE);}return;}

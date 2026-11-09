@@ -10,6 +10,9 @@ def mp(e):return struct.unpack('<7i',read(e,'mp',28))
 def setmp(e,index,value):
  data=bytearray(read(e,'mp',64));struct.pack_into('<i',data,index*4,value);write(e,'mp',bytes(data))
 def tap(e,k):e.run(15,(k,));e.run(15)
+def accept_name(e):
+ tap(e,3);assert e.state()[3]==33
+ tap(e,8)
 def menu(e,choice):
  e.run(100);tap(e,3);tap(e,8);assert e.state()[3]==26,e.state()[:10]
  for _ in range(choice):tap(e,5)
@@ -20,10 +23,10 @@ def check(humans):
  # 10-character bound, deletion, space, and START accept.
  for _ in range(12):tap(e,8)
  assert e.state()[80]==10,e.state()[85:100] # 10-character Pascal name limit
- tap(e,0);tap(e,11);tap(e,3)
+ tap(e,0);tap(e,11);accept_name(e)
  assert mp(e)[4]==0
- tap(e,3)
- if humans==3:assert mp(e)[4]==1;tap(e,3)
+ accept_name(e)
+ if humans==3:assert mp(e)[4]==1;accept_name(e)
  assert mp(e)[0]==humans
  assert e.state()[5]==2, "Player one must start multiplayer"
  # Fixtures isolate subsequent human turns.
@@ -52,7 +55,7 @@ if __name__=='__main__':
  print(check(2));print(check(3))
 
 def tournament():
- e=Emulator();menu(e,1);tap(e,3);tap(e,3)
+ e=Emulator();menu(e,1);accept_name(e);accept_name(e)
  # Full eight-stage progression; the host's new_round selects real dictionary IDs.
  picked=[]
  for stage in range(8):
@@ -78,8 +81,8 @@ def plus_series(humans):
  if humans==1:
   e.run(100);tap(e,8);tap(e,8)
  else:
-  menu(e,humans-1);tap(e,3);tap(e,3)
-  if humans==3:tap(e,3)
+  menu(e,humans-1);accept_name(e);accept_name(e)
+  if humans==3:accept_name(e)
  # Third spin is Plus; stop_spin must count it only in multiplayer.
  e.poke(3,2);e.poke(5,2);e.poke(6,0);e.poke(72,2)
  for i in range(20):e.poke(18+i,0)
@@ -114,8 +117,8 @@ def parameters(humans):
  custom=struct.unpack('<4i',read(e,'prefs',16));assert custom[:3]==(int(humans==1),)*3
  tap(e,5);tap(e,5);tap(e,5);tap(e,8)
  if humans>1:
-  tap(e,3);tap(e,3)
-  if humans==3:tap(e,3)
+  accept_name(e);accept_name(e)
+  if humans==3:accept_name(e)
  assert e.state()[3]==15
  assert 0<=e.state()[6]<(686 if humans==1 else 495)
  e.close();return {'humans':humans,'defaults':defaults[:3],'overrides':custom[:3]}
