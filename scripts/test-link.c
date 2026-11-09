@@ -61,13 +61,18 @@ int main(int argc,char**argv){
  for(int i=0;i<count;i++){
   for(int option=0;option<3;option++)wr(i,prefs_addr+option*4,i==0);
   wr(i,avatars_addr+8,i+1);
-  wr(i,mp_addr,count);wr(i,mp_addr+4,1);wr(i,mp_addr+16,2);wr(i,game_addr+12,27);wr(i,game_addr+80*4,1);
+  wr(i,mp_addr,2);wr(i,mp_addr+4,1);wr(i,mp_addr+16,2);wr(i,game_addr+12,27);wr(i,game_addr+80*4,1);
   wr(i,game_addr+88*4,128+i);c[i]->setKeys(c[i],8);
  }
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
  run(20);for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==33);c[i]->setKeys(c[i],1);}
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
  run(160);
+ for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==30);assert(rd(i,mp_addr)==(uint32_t)count);}
+ c[1]->setKeys(c[1],8);run(30);c[1]->setKeys(c[1],0);run(20);
+ assert(rd(0,game_addr+12)==30);
+ c[0]->setKeys(c[0],8);run(30);c[0]->setKeys(c[0],0);run(120);
+ printf("PASS: automatic console count, lobby waits, host-only start\n");
  for(int i=0;i<count;i++)printf("device %d mode %u player %u local %u viewer %u word %u transfers %d\n",i,rd(i,game_addr+12),rd(i,game_addr+20),rd(i,mp_addr+12),rd(i,mp_addr+8),rd(i,game_addr+24),transfers);
  for(int i=0;i<count;i++){assert(rd(i,game_addr+12)!=31);assert(rd(i,game_addr+12)!=30);assert(rd(i,mp_addr+12)==(i+2)%3);assert(rd(i,mp_addr+8)==(i+2)%3);assert(rd(i,game_addr+24)==rd(0,game_addr+24));}
  for(int i=0;i<count;i++)for(int option=0;option<3;option++)assert(rd(i,prefs_addr+option*4)==1);

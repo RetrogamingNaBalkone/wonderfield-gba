@@ -12,6 +12,7 @@ def check(name,ok):
  checks.append(name)
 
 e=Emulator();e.run(220);e.tap(8)
+if e.state()[3]==26:e.tap(8)
 if e.state()[3]==32:e.tap(8)
 while e.state()[3]==15:e.tap(8)
 rom=(ROOT/'build/gba/pole.gba').read_bytes()

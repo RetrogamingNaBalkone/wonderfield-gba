@@ -13,10 +13,19 @@ def tap(e,k):e.run(15,(k,));e.run(15)
 def accept_name(e):
  tap(e,3);assert e.state()[3]==33
  tap(e,8)
+def options(e,humans=1,link=False):
+ e.run(100);tap(e,8);assert e.state()[3]==26
+ for _ in range(0 if humans==1 else 2 if link else 1):tap(e,5)
+ tap(e,8)
+ if humans>1 and not link:
+  assert e.state()[3]==34
+  if humans==3:tap(e,5)
+  tap(e,8)
+ assert e.state()[3]==32
+
 def menu(e,choice):
- e.run(100);tap(e,3);tap(e,8);assert e.state()[3]==26,e.state()[:10]
- for _ in range(choice):tap(e,5)
- tap(e,8);assert e.state()[3]==32;tap(e,8)
+ options(e,1 if choice==0 else 2+(choice-1)%2,choice>=3)
+ tap(e,8)
 def check(humans):
  e=Emulator();menu(e,humans-1)
  assert e.state()[3]==27
@@ -79,7 +88,7 @@ def tournament():
 def plus_series(humans):
  e=Emulator()
  if humans==1:
-  e.run(100);tap(e,8);tap(e,8)
+  options(e);tap(e,8)
  else:
   menu(e,humans-1);accept_name(e);accept_name(e)
   if humans==3:accept_name(e)
@@ -104,12 +113,7 @@ if __name__=='__main__':
  print(plus_series(1));print(plus_series(2));print(plus_series(3))
 
 def parameters(humans):
- e=Emulator();e.run(100)
- if humans==1:tap(e,8)
- else:
-  tap(e,3);tap(e,8)
-  for _ in range(humans-1):tap(e,5)
-  tap(e,8)
+ e=Emulator();options(e,humans)
  assert e.state()[3]==32
  defaults=struct.unpack('<4i',read(e,'prefs',16));assert defaults==(int(humans>1),int(humans>1),int(humans>1),3)
  e.screenshot(f'parameters-{humans}-defaults.png')

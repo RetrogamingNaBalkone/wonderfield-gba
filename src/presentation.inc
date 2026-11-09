@@ -120,12 +120,12 @@ static void multiplayer_panel(void){
   int who=slot==1?mp.viewer:perspective(slot==0?0:1),x=slot*80;
   int out=mp.eliminated&(1<<who),active=game.player==who&&!out;
   u8 color=out?8:active?15:0;
-  rect(x,132,80,20,active?1:7);line(x,132,80,0);
+  rect(x,144,80,16,active?1:7);
   const char*name=player_name(who);int n=len(name);if(n>10)n=10;
-  for(int i=0;i<n;i++)glyph(x+(80-n*8)/2+i*8,133,(u8)name[i],1,color);
+  for(int i=0;i<n;i++)glyph(x+(80-n*8)/2+i*8,144,(u8)name[i],1,color);
   int value=game.score[who],digits=value<0?1:0;unsigned v=value<0?-value:value;
   do{digits++;v=divide(v,10);}while(v);
-  number(x+(80-digits*8)/2,143,value,1,color);
+  number(x+(80-digits*8)/2,152,value,1,color);
  }
 }
 static void speech_shape(int x,int y,const int*left,const int*right,int height){
@@ -237,7 +237,6 @@ static void restart_confirm(void){
  centered(151,menu_button()==SELECT?"A: Подтвердить B/SELECT: Назад":"A: Подтвердить B/START: Назад",1,0);
 }
 static void footer(void){
- rect(0,152,240,8,7);
  const char*t=0;
  if((game.mode==ROUND_END&&!(mp.humans==1&&human(game.player)&&game.round==2))||
     (game.mode==GAME_OVER&&game.deal!=6)||
@@ -248,7 +247,7 @@ static void footer(void){
   if(game.mode==CHEST)t="A: Выбрать шкатулку";
  }
  if(game.mode==SOLVE)t=game.solve_pos==len(word())?"A: Назвать слово  B: Стереть":"A: Буква  B: Стереть";
- if(t)centered(152,t,1,0);
+ if(t||mp.humans==1){int y=152;rect(0,y,240,160-y,7);if(t)centered(y,t,1,0);}
 }
 static void mute_icon(void){
  if(sound_on)return;
@@ -363,9 +362,16 @@ static void render(void){
  }
  if(game.mode==MP_SETUP){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,"Режим игры",0,0);
-  const char*options[]={"Один игрок","Вдвоём на одной GBA","Втроём на одной GBA","Кабель: два игрока","Кабель: три игрока"};
-  for(int i=0;i<5;i++){if(mp.choice==i){rect(8,35+i*21,224,19,8);border(8,35+i*21,224,19,0);}centered(39+i*21,options[i],1,mp.choice==i?15:0);}
-  centered(149,"A: Выбрать  B: Назад",1,0);return;
+  const char*options[]={"Один игрок","Локальный мультиплеер","Мультиплеер по кабелю"};
+  for(int i=0;i<3;i++){int y=42+i*29;if(mp.choice==i){rect(8,y-4,224,23,1);border(8,y-4,224,23,0);}centered(y,options[i],1,mp.choice==i?15:0);}
+  centered(151,"A: Выбрать  B: Назад",1,0);return;
+ }
+ if(game.mode==MP_COUNT){
+  rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,"Число игроков",0,0);
+  centered(31,mp.link?"Мультиплеер по кабелю":"Локальный мультиплеер",1,0);
+  for(int i=0;i<2;i++){int y=60+i*27,selected=mp.humans==i+2;if(selected){rect(32,y-4,176,23,1);border(32,y-4,176,23,0);}centered(y,i?"3 игрока":"2 игрока",1,selected?15:0);}
+  centered(121,mp.humans==2?"Третий - компьютер":"Все трое - люди",1,0);
+  centered(151,"A: Выбрать  B: Назад",1,0);return;
  }
  if(game.mode==MP_AVATAR){
   rect(0,0,240,160,7);border(3,3,234,143,0);
@@ -380,7 +386,13 @@ static void render(void){
  }
  if(game.mode==MP_NAME){rect(0,0,240,160,7);centered(5,mp.link?"Ваше имя":player_name(mp.edit),0,1);centered(23,"Пожалуйста,",0,0);centered(39,"представтесь!",0,0);text(70,60,(const char*)game.answer,0,0);centered(75,"R: Пробел START: Готово",1,0);keyboard();centered(151,"A: Буква B: Стереть",1,0);return;}
  if(game.mode==MP_PASS){rect(0,0,240,160,7);border(3,3,234,143,0);centered(40,"Передайте GBA игроку",0,1);centered(70,player_name(game.player),0,0);centered(115,"A: Готов",0,1);return;}
- if(game.mode==MP_LOBBY||game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,game.mode==MP_ERROR?"Связь потеряна":"Подключите GBA",0,1);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);centered(120,game.mode==MP_ERROR?"B: В меню":"Ожидание участников...",1,0);return;}
+ if(game.mode==MP_LOBBY){
+  rect(0,0,240,160,7);border(3,3,234,143,0);centered(16,"Мультиплеер по кабелю",1,0);
+  centered(48,"Подключено игроков:",1,0);number(116,68,link_connected,0,0);
+  centered(96,link_connected==2?"Третий - компьютер":link_connected==3?"Все трое - люди":"Подключите остальные GBA",1,0);
+  centered(122,link_connected<2?"Ожидание участников...":mp.local==2?"START: Начать игру":"Ждём ведущего игрока",1,0);return;
+ }
+ if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,1);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);centered(120,"B: В меню",1,0);return;}
 
 
  if(game.mode==CASH){
@@ -437,7 +449,7 @@ static void render(void){
  }
  if(game.mode==PRIZE){
   /* Both alternatives stay visible; a shared frame makes this one switch. */
-  int y=mp.humans>1?108:122;
+  int y=mp.humans>1?116:122;
   rect(6,y,150,mp.humans>1?23:25,0);
   for(int option=0;option<2;option++){
    int x=option?81:7,w=option?74:73,selected=game.choice==option;
@@ -447,12 +459,12 @@ static void render(void){
   }
  }
  if(game.mode==TURN&&human(game.player)){
-  rect(6,110,150,mp.humans>1?21:37,0);
+  rect(6,110,150,mp.humans>1?32:37,0);
   for(int option=0;option<2;option++){
    int x=option?81:7,w=option?74:73,selected=game.choice==option;
-   rect(x,111,w,mp.humans>1?19:35,selected?1:7);
-   label_center(x,112,w,option?"Кручу":"Скажу",mp.humans>1,selected?15:0);
-   label_center(x,mp.humans>1?121:129,w,option?"БАРАБАН":"СЛОВО",mp.humans>1,selected?15:0);
+   rect(x,111,w,mp.humans>1?30:35,selected?1:7);
+   label_center(x,112,w,option?"Кручу":"Скажу",0,selected?15:0);
+   label_center(x,mp.humans>1?128:129,w,option?"БАРАБАН":"СЛОВО",0,selected?15:0);
   }
  }
  if(game.keyboard&&game.mode==LETTER)keyboard();

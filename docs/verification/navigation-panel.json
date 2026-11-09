@@ -1,0 +1,29 @@
+{
+  "rom_sha256": "9eba4f3423140d0922b162088c4f78388be9b404e61836074dfdb2dcc780b26c",
+  "direct_title_mode_selection": true,
+  "local_player_count": [
+    2,
+    3
+  ],
+  "cable_automatic_count": [
+    2,
+    3
+  ],
+  "cable_host_only_start": true,
+  "cable_test": "mGBA SIO model, not physical hardware",
+  "panel_bounds": [
+    0,
+    144,
+    240,
+    160
+  ],
+  "hint_overlay_bounds": [
+    0,
+    152,
+    240,
+    160
+  ],
+  "wheel_rows_132_through_143_match_ROM_pixels": true,
+  "navigation_test": "scripts/test-menu-navigation.py",
+  "multiplayer_regression": "passed"
+}

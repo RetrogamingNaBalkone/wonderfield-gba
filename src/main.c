@@ -17,7 +17,7 @@ typedef unsigned int u32;
 #define R 256
 #define L 512
 #define A_RELEASE 0x8000
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
 /* Read-only diagnostic state is also used by the emulator integration checks. */
@@ -372,14 +372,22 @@ static void update(u16 pressed,u16 repeat){
  scene.now=video_ticks;
  if(game.mode==MP_SETUP){
   if(pressed&B){set_mode(TITLE);return;}
-  if(repeat&UP){mp.choice=(mp.choice+4)%5;dirty=1;}
-  if(repeat&DOWN){mp.choice=(mp.choice+1)%5;dirty=1;}
-  if(pressed&A){mp.humans=mp.choice?2+(mp.choice-1)%2:1;mp.link=mp.choice>=3;mp_defaults();
-   options_begin();}
+  if(repeat&UP){mp.choice=(mp.choice+2)%3;dirty=1;}
+  if(repeat&DOWN){mp.choice=(mp.choice+1)%3;dirty=1;}
+  if(pressed&A){
+   mp.link=mp.choice==2;mp.humans=mp.choice?2:1;
+   if(mp.choice==1)set_mode(MP_COUNT);else{mp_defaults();options_begin();}
+  }
+  return;
+ }
+ if(game.mode==MP_COUNT){
+  if(pressed&B){set_mode(MP_SETUP);return;}
+  if(repeat&(UP|DOWN|LEFT|RIGHT)){mp.humans=5-mp.humans;dirty=1;}
+  if(pressed&A){mp_defaults();options_begin();}
   return;
  }
  if(game.mode==MP_OPTIONS){
-  if(pressed&B){mp_setup();return;}
+  if(pressed&B){set_mode(mp.humans>1&&!mp.link?MP_COUNT:MP_SETUP);return;}
   if(repeat&UP){prefs.choice=(prefs.choice+3)%4;dirty=1;}
   if(repeat&DOWN){prefs.choice=(prefs.choice+1)%4;dirty=1;}
   if(repeat&(LEFT|RIGHT)){if(prefs.choice==0)prefs.dictionary^=1;else if(prefs.choice==1)prefs.plus^=1;else if(prefs.choice==2)prefs.characters^=1;dirty=1;}
@@ -454,7 +462,7 @@ static void update(u16 pressed,u16 repeat){
   else if(pressed&A){if(!ui.author_page){ui.author_page=1;dirty=1;}else set_mode(MENU);}
   return;
  }
- if(game.mode==TITLE){if(pressed&A){fast_input=1;start_pending=1;}return;}
+ if(game.mode==TITLE){if(pressed&A){fast_input=1;start_pending=2;}return;}
  if(game.mode==RECORDS){if(pressed&(A|B))set_mode(ui.viewer?MENU:TITLE);return;}
  if(scene_tick(pressed))return;
  if(game.mode==GIFT_PAGES){
@@ -551,7 +559,11 @@ void gba_main(void){
     if(keys!=link_oldkeys)link_repeat_at=video_ticks+18;
     else if((keys&(UP|DOWN|LEFT|RIGHT))&&(int)(video_ticks-link_repeat_at)>=0){repeat|=keys&(UP|DOWN|LEFT|RIGHT);link_repeat_at=video_ticks+5;}
     link_oldkeys=keys;
-    if(game.mode==MP_LOBBY)new_game();
+    if(game.mode==MP_LOBBY){
+     dirty=1;
+     if(!(keys&START))link_start_armed=1;
+     if(link_start_armed&&(pressed&START)&&mp.humans>=2)new_game();
+    }
    }
   }
   game.frame++;update(pressed,repeat);
