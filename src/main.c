@@ -329,7 +329,10 @@ static void solve_word(void){set_mode(SOLVE);game.solve_pos=0;solve_fixed=0;int 
 static void mp_depart(int wrong){
  mp.eliminated|=1<<game.player;game.keyboard=0;game.streak=0;
  int p=nextplayer();
- if(p==game.player){farewell();return;}
+ if(p==game.player){
+  if(game.round<7){game.round++;new_round();}else farewell();
+  return;
+ }
  if(wrong){result_reason=WRONG_WORD;result(msg_f5b,msg_f6b,TURN,p);}
  else{game.player=p;begin_turn();}
 }
