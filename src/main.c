@@ -83,7 +83,7 @@ static const char*mp_stage(void){
  static char title[32];
  if(match.shootout)return "Перестрелка";
  if(prefs.rule!=MP_WINS&&game.round+1==prefs.rounds)return "Последний раунд";
- const char*prefix="Раунд ",*n=round_number();int i=0;
+ const char*prefix=prefs.rule==MP_WINS?"РАУНД ":"Раунд ",*n=round_number();int i=0;
  while(*prefix)title[i++]=*prefix++;
  while(*n)title[i++]=*n++;
  if(prefs.rule!=MP_WINS){const char*suffix=" из ";while(*suffix)title[i++]=*suffix++;title[i++]='0'+prefs.rounds;}
