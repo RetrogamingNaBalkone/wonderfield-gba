@@ -22,7 +22,7 @@ def crop(e, x, y, width, height):
                     for row in range(height))
 
 
-def frame(rule, before, after, winner=-1, shootout=False, rounds=None, humans=3):
+def frame(rule, before, after, winner=-1, shootout=False, rounds=None, humans=3, round_index=0):
     e = Emulator()
     m['options'](e, humans)
     put(e, 'prefs', 4, rule)
@@ -35,6 +35,7 @@ def frame(rule, before, after, winner=-1, shootout=False, rounds=None, humans=3)
         put(e, 'match', 6 + p, before[p] if rule == 2 else 0)
         e.poke(9 + p, after[p] if rule != 2 else (3 - p) * 10000)
     put(e, 'match', 9, int(shootout))
+    e.poke(4, round_index)
     e.poke(5, winner if winner >= 0 else 2)
     e.poke(79, int(winner >= 0))
     e.poke(3, 9)
@@ -64,14 +65,15 @@ def main():
         ('repeat-shootout', 0, [500, 100, 500], [500, 100, 500], -1, True),
         ('five-digits', 1, [10000, 20000, 30000], [99999, 20000, 30000], 0, False),
     ]
-    for name, rule, before, after, winner, shootout in cases:
-        e = frame(rule, before, after, winner, shootout)
+    for case, round_index in ((case, index) for case in cases for index in (0, 1)):
+        name, rule, before, after, winner, shootout = case
+        e = frame(rule, before, after, winner, shootout, round_index=round_index)
         old = sorted((2, 0, 1), key=lambda p: -before[p])
         order = sorted((2, 0, 1), key=lambda p: -after[p])
         for place, p in enumerate(order):
             y = 80 + place * 22
             assert crop(e, 50, y, 80, 14) == reference[p], (name, 'name order', p)
-            direction = (old.index(p) > place) - (old.index(p) < place)
+            direction = ((old.index(p) > place) - (old.index(p) < place)) if round_index or shootout else 0
             for row in range(5):
                 half = row if direction > 0 else 4 - row
                 for x in range(33, 42):
@@ -80,11 +82,11 @@ def main():
         state = read(e, 'match', 64)
         e.run(120)
         assert read(e, 'match', 64) == state, (name, 'redraw changed standings')
-        e.screenshot(f'standings-{name}.png')
+        e.screenshot(f'standings-{name}-round-{round_index+1}.png')
         tap(e, 8)
         assert e.state()[3] == (15 if shootout else 17), (name, 'continuation')
         e.close()
-        checks.append(dict(case=name, order=order, triangles=True))
+        checks.append(dict(case=name, round=round_index+1, order=order, movement_shown=bool(round_index or shootout)))
 
     report = dict(rom_sha256=hashlib.sha256((ROOT / 'build/gba/pole.gba').read_bytes()).hexdigest(), checks=checks)
     (ROOT / 'docs/verification/standings-tests.json').write_text(json.dumps(report, indent=2) + '\n')

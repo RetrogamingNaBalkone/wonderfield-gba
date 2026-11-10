@@ -33,7 +33,7 @@ for rule in range(3):
    panel=s.crop(e,0,150,240,10)
    if viewer in panels:assert panel==panels[viewer],(rule,viewer,'actor changed footer')
    panels[viewer]=panel
-   for side in range(2):check_name(side,(viewer+side+1)%3,7)
+   for side in range(2):check_name(side,(viewer+side+1)%3,15)
   e.screenshot(f'player-layout-{rule}-viewer-{viewer}.png')
  assert len(set(panels.values()))==3
  s.m['setmp'](e,2,2);redraw();badge=s.crop(e,1,63,44,10)

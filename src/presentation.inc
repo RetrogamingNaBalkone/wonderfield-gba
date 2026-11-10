@@ -149,7 +149,7 @@ static void compact_text(int x,int y,const char*s,int width,u8 color){
 static void player_name_label(int who,int side){
  const char*name=player_name(who);int n=len(name);
  int x=(side?163:23)-n*4;if(x<1)x=1;if(side&&x+n*8>185)x=185-n*8;if(side)x+=4;
- text(x,46,name,1,mp.eliminated&(1<<who)?8:7);
+ text(x,46,name,1,mp.eliminated&(1<<who)?8:15);
 }
 static void multiplayer_labels(int who,int center,int bottom){
  int y=bottom+2;if(y<112)y=112;
@@ -410,7 +410,7 @@ static void standings(int final){
   if(prefs.rule==MP_WINS)number(152,y,match.wins[who],0,0);
   number(184,y,game.score[who],0,0);
   int previous=standing_place(who,1);
-  if(!final&&previous!=place)for(int row=0;row<5;row++){
+  if(!final&&(game.round>0||match.shootout)&&previous!=place)for(int row=0;row<5;row++){
    int width=1+row*2,ty=y+3+(previous>place?row:4-row);
    rect(37-row,ty,width,1,0);
   }
