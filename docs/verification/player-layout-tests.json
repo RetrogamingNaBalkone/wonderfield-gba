@@ -1,25 +1,26 @@
 {
-  "rom_sha256": "b03a6f9e2bf33e30927a10f6f9e216eac523a425414e9fdaf7db8b9c251f40ba",
+  "rom_sha256": "bf4bbbd51355088ca200f4f4eaf12d3af291a102a7e30218317924e1dfdce060",
   "checks": [
     {
       "rule": 0,
-      "perspective_labels": true,
-      "viewer_footer": true,
+      "native_font": true,
+      "perspective_names": true,
+      "viewer_hud": true,
       "round_badge": true
     },
     {
       "rule": 1,
-      "perspective_labels": true,
-      "viewer_footer": true,
+      "native_font": true,
+      "perspective_names": true,
+      "viewer_hud": true,
       "round_badge": true
     },
     {
       "rule": 2,
-      "perspective_labels": true,
-      "viewer_footer": true,
+      "native_font": true,
+      "perspective_names": true,
+      "viewer_hud": true,
       "round_badge": true
     }
-  ],
-  "wheel_text_clearance_phases": 32,
-  "wheel_rendered_phases": 16
+  ]
 }

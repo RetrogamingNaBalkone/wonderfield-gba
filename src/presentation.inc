@@ -61,13 +61,13 @@ static void wheel(void){
  if(game.mode==SPIN)phase+=scene.spin_half;
  const u32*source=(const u32*)(wheel_bitmaps+(phase&31)*(128*112));
  for(int y=0;y<112;y++){
-  u32*d=(u32*)(framebuffer+(43+y)*240+(mp.humans>1?28:32));
+  u32*d=(u32*)(framebuffer+((mp.humans>1?44:43)+y)*240+(mp.humans>1?28:32));
   for(int x=0;x<32;x++)d[x]=source[y*32+x];
  }
  /* Wheel frames include the old wall behind transparent pixels. Preserve the
   * stationary wall when shifting the multiplayer wheel four pixels left. */
  if(mp.humans>1)for(int y=0;y<13;y++)for(int x=0;x<128;x++){
-  int old=(43+y)*240+32+x,dest=old-4;
+  int old=(43+y)*240+32+x,dest=old-4+240;
   if(((const u8*)source)[y*128+x]==stage_background[old])framebuffer[dest]=stage_background[dest];
  }
 }
@@ -99,7 +99,7 @@ static void character_portrait(int character,int x,int y){
  if(!prefs.characters)half_image(opponent_sprites[character],x,y,2);
  else{const u8 portraits[8]={11,12,9,7,8,10,0,1};image(&extra_sprites[portraits[character]],x,y,2);}
 }
-static void multiplayer_labels(int who,int side);
+static void multiplayer_labels(int who,int center,int bottom);
 static void people(void){
  for(int player=0;player<2;player++){
   int who=mp.humans>1?perspective(player):player;
@@ -108,19 +108,27 @@ static void people(void){
   if(!visible)continue;
   int character=mp.humans>1?opponent_pool[mp_ai_index]:game.opponent[game.round*2+player];
   int x=player?153:3,y=mp.humans>1?75:83;
-  if(!(mp.humans>1&&(mp.eliminated&(1<<who)))){
-  if(mp.humans>1&&human(who)&&avatars[who]){
-   character_portrait(avatars[who]-1,x,y);
-  }else if(mp.humans>1&&human(who)){
+  const Sprite*portrait;
+  if(mp.humans>1&&human(who)&&!avatars[who]){
    int pose=6;if(game.player==who)pose=player?2:4;
-   image(&extra_sprites[pose],x+(29-extra_sprites[pose].w)/2,y,2);
-  }else if(game.mode==INTRO&&scene.phase==intro_phase&&scene.now-scene.phase_at<54){
-   int phase=(scene.now-scene.phase_at)/18;
-   half_image(53+phase,x,y,2);
-  }else character_portrait(character,x,y);
+   portrait=&extra_sprites[pose];x+=(29-portrait->w)/2;
+  }else{
+   if(mp.humans>1&&human(who))character=avatars[who]-1;
+   if(!(mp.humans>1&&human(who))&&game.mode==INTRO&&scene.phase==intro_phase&&scene.now-scene.phase_at<54)
+    portrait=&sprites_half[53+(scene.now-scene.phase_at)/18];
+   else if(!prefs.characters)portrait=&sprites_half[opponent_sprites[character]];
+   else{const u8 portraits[8]={11,12,9,7,8,10,0,1};portrait=&extra_sprites[portraits[character]];}
   }
+  int height=portrait->h;
+  while(mp.humans>1&&height>0){int ink=0;for(int col=0;col<portrait->w;col++)if(portrait->data[(height-1)*portrait->w+col]!=2)ink=1;if(ink)break;height--;}
+  if(!(mp.humans>1&&(mp.eliminated&(1<<who))))image(portrait,x,y,2);
   score_badge(who,player?141:1,mp.humans>1?63:73);
-  if(mp.humans>1)multiplayer_labels(who,player);
+  if(mp.humans>1){
+   int left=portrait->w,right=0;
+   for(int row=0;row<height;row++)for(int col=0;col<portrait->w;col++)if(portrait->data[row*portrait->w+col]!=2){if(col<left)left=col;if(col>right)right=col;}
+   multiplayer_labels(who,x+(left+right+1)/2,y+height);
+  }
+
  }
  /* Host rectangle: [185,240), separate from the widest contestant [153,182). */
  half_image(27,185,62,-1);
@@ -138,75 +146,32 @@ static void compact_text(int x,int y,const char*s,int width,u8 color){
 }
 /* Labels follow the same perspective as their portrait; speech and choices
  * may cover them temporarily, just as they cover the stage. */
-/* Hand-hinted five-column Cyrillic: preserve counters and a one-pixel gap
- * in ten-character names. CP866 128..159; short I and shcha use the eighth row. */
-static const u8 name_font[32][8]={
- {14,17,17,31,17,17,17,0}, /* CP866 128 */
- {31,16,16,30,17,17,30,0}, /* CP866 129 */
- {30,17,17,30,17,17,30,0}, /* CP866 130 */
- {31,16,16,16,16,16,16,0}, /* CP866 131 */
- {6,10,10,10,10,31,17,0}, /* CP866 132 */
- {31,16,16,30,16,16,31,0}, /* CP866 133 */
- {21,21,14,4,14,21,21,0}, /* CP866 134 */
- {30,1,1,14,1,1,30,0}, /* CP866 135 */
- {17,19,21,21,25,17,17,0}, /* CP866 136 */
- {10,4,17,19,21,25,17,17}, /* CP866 137 */
- {17,18,20,24,20,18,17,0}, /* CP866 138 */
- {7,9,9,9,9,17,17,0}, /* CP866 139 */
- {17,27,21,21,17,17,17,0}, /* CP866 140 */
- {17,17,17,31,17,17,17,0}, /* CP866 141 */
- {14,17,17,17,17,17,14,0}, /* CP866 142 */
- {31,17,17,17,17,17,17,0}, /* CP866 143 */
- {30,17,17,30,16,16,16,0}, /* CP866 144 */
- {15,16,16,16,16,16,15,0}, /* CP866 145 */
- {31,4,4,4,4,4,4,0}, /* CP866 146 */
- {17,17,17,15,1,1,30,0}, /* CP866 147 */
- {4,14,21,21,14,4,4,0}, /* CP866 148 */
- {17,17,10,4,10,17,17,0}, /* CP866 149 */
- {18,18,18,18,18,31,1,0}, /* CP866 150 */
- {17,17,17,15,1,1,1,0}, /* CP866 151 */
- {21,21,21,21,21,21,31,0}, /* CP866 152 */
- {21,21,21,21,21,21,31,1}, /* CP866 153 */
- {24,8,8,14,9,9,14,0}, /* CP866 154 */
- {17,17,17,29,21,21,29,0}, /* CP866 155 */
- {16,16,16,30,17,17,30,0}, /* CP866 156 */
- {30,1,1,15,1,1,30,0}, /* CP866 157 */
- {23,21,21,29,21,21,23,0}, /* CP866 158 */
- {15,17,17,15,5,9,17,0}, /* CP866 159 */
-};
 static void player_name_label(int who,int side){
- const char*name=player_name(who);int n=len(name),step=n<=6?8:6;
- int x=(side?163:23)-n*step/2;if(x<2)x=2;if(side&&x+n*step>185)x=185-n*step;
- u8 color=mp.eliminated&(1<<who)?8:15;
- /* One-pixel outline, no background rectangle; retain all eight font rows. */
- for(int pass=0;pass<2;pass++)for(int k=0;k<n;k++)for(int row=0;row<8;row++)for(int col=0;col<8;col++){
-  unsigned ch=(u8)name[k];int condensed=step==6&&ch>=128&&ch<160;
-  if(condensed){if(col>=5||!(name_font[ch-128][row]&(16>>col)))continue;}
-  else if(!(font8[ch*8+row]&(128>>col)))continue;
-  int px=x+k*step+(condensed?col:col*step/8),py=51+row;
-  if(pass)pixel(px,py,color);
-  else{pixel(px-1,py,0);pixel(px+1,py,0);pixel(px,py-1,0);pixel(px,py+1,0);}
- }
+ const char*name=player_name(who);int n=len(name);
+ int x=(side?163:23)-n*4;if(x<1)x=1;if(side&&x+n*8>185)x=185-n*8;if(side)x+=4;
+ text(x,46,name,1,mp.eliminated&(1<<who)?8:7);
 }
-static void multiplayer_labels(int who,int side){
- player_name_label(who,side);
- int x=side?137:0;u8 color=mp.eliminated&(1<<who)?8:0;
+static void multiplayer_labels(int who,int center,int bottom){
+ int y=bottom+2;if(y<112)y=112;
+ u8 color=mp.eliminated&(1<<who)?8:0;
  if(prefs.rule==MP_POINTS){
   int value=game.score[who],digits=1;for(int v=value;v>=10;v/=10)digits++;
-  number(x+(48-digits*8)/2,124,value,1,color);
+  int x=center-digits*4;if(x<0)x=0;
+  number(x,y,value,1,color);
  }else if(prefs.rule==MP_WINS){
-  number(x+12,124,match.wins[who],1,color);text(x+20,124,"/",1,color);number(x+28,124,prefs.rounds,1,color);
+  int x=center-12;if(x<0)x=0;
+  number(x,y,match.wins[who],1,color);text(x+8,y,"/",1,color);number(x+16,y,prefs.rounds,1,color);
  }
 }
 static void multiplayer_panel(void){
  if(mp.humans==1||(game.keyboard&&game.mode==LETTER))return;
  int who=mp.viewer;u8 color=mp.eliminated&(1<<who)?8:0;
  text(4,152,player_name(who),1,color);
- if(prefs.rule==MP_POINTS)number(112,152,game.score[who],1,color);
+ if(prefs.rule==MP_POINTS)number(100,152,game.score[who],1,color);
  else if(prefs.rule==MP_WINS){
-  number(120,152,match.wins[who],1,color);text(128,152,"/",1,color);number(136,152,prefs.rounds,1,color);
+  number(108,152,match.wins[who],1,color);text(116,152,"/",1,color);number(124,152,prefs.rounds,1,color);
  }
- score_badge(who,192,150);
+ score_badge(who,prefs.rule==MP_RISK?100:148,150);
 }
 static void speech_shape(int x,int y,const int*left,const int*right,int height){
  /* Outline the final silhouette, so no black stroke is lost to resampling. */
@@ -607,6 +572,13 @@ static void render(void){
    int px=scene.actor_x+x;u8 color=s->data[y*s->w+x];
    if(px>=15&&px<225&&color!=2)pixel(px,12+y,color);
   }
+ }
+ /* Keep names during the host's introduction; hide only during the walk,
+  * including stops at letters. Plus starts walking without that delay. */
+ int walking=game.mode==REVEAL&&(game.sector_value==100||scene.now-scene.start>=MESSAGE_TICKS);
+ if(mp.humans>1&&!walking)for(int side=0;side<2;side++){
+  int who=perspective(side);
+  if(game.mode!=INTRO||scene.phase>=player_number(who))player_name_label(who,side);
  }
  if(game.mode==CHEST||game.mode==AI_CHEST){
   int phase=(scene.now-scene.speech_at)/6;
