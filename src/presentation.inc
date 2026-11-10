@@ -593,13 +593,13 @@ static void render(void){
  }
  if(game.mode==PRIZE){
   /* Both alternatives stay visible; a shared frame makes this one switch. */
-  int y=mp.humans>1?130:122;
-  rect(6,y,150,mp.humans>1?14:25,0);
+  int y=122;
+  rect(6,y,150,25,0);
   for(int option=0;option<2;option++){
    int x=option?81:7,w=option?74:73,selected=game.choice==option;
    const char*t=option?(game.deal?"ПРИЗ":"ИГРАЕМ"):(game.deal?"ДЕНЬГИ":"ПРИЗ");
-   rect(x,y+1,w,mp.humans>1?12:23,selected?1:7);
-   label_center(x,y+(mp.humans>1?3:5),w,t,mp.humans>1,selected?15:0);
+   rect(x,y+1,w,23,selected?1:7);
+   label_center(x,y+5,w,t,0,selected?15:0);
   }
  }
  if(game.mode==TURN&&human(game.player)){
