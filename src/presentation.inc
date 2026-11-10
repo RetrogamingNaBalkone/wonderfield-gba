@@ -42,10 +42,18 @@ static void board(void){
  for(int x=30;x<=210;x+=9)rect(x,2,1,33,0);
  for(int y=2;y<=34;y+=8)if(y!=18)line(30,y,181,0);
  rect(30,35,181,9,7);
- if(game.mode!=INTRO)text(30,35,words[game.word_id].topic,1,0);
  if(mp.humans>1){
-  if(game.mode!=INTRO&&prefs.rule!=MP_WINS&&!match.shootout&&len(words[game.word_id].topic)<=16){glyph(162,35,'1'+game.round,1,0);text(170,35," из ",1,0);glyph(202,35,'0'+prefs.rounds,1,0);}
- }else if(len(words[game.word_id].topic)<=18){text(194,35,"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
+  const char*n=round_number();int suffix=prefs.rule==MP_WINS?0:2;
+  int right=match.shootout?210:210-(len(n)+suffix)*8;
+  if(game.mode!=INTRO){
+   const char*topic=words[game.word_id].topic;int limit=(right-30-(match.shootout?0:8))/8;
+   for(int i=0;topic[i]&&i<limit;i++)glyph(30+i*8,35,(u8)topic[i],1,0);
+  }
+  if(!match.shootout){text(right,35,n,1,0);if(suffix){text(194,35,"/",1,0);glyph(202,35,'0'+prefs.rounds,1,0);}}
+ }else{
+  if(game.mode!=INTRO)text(30,35,words[game.word_id].topic,1,0);
+  if(len(words[game.word_id].topic)<=18){text(194,35,"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
+ }
  line(30,43,181,8);
 }
 static void wheel(void){
@@ -362,7 +370,7 @@ static void render(void){
   }
   line(12,103,216,8);
   if(match.next==2){
-   centered(108,"Победитель партии",1,0);
+   centered(108,"Победитель игры",1,0);
    centered(121,player_name(match.winner),0,0);
 
   }

@@ -74,12 +74,20 @@ static const char*player_intro(int p){return p==2?msg_5384:p==0?msg_5391:msg_539
 static int perspective(int slot){return (mp.viewer+slot+1)%3;}
 static const char* character_name(int id){return id<6?opponent_names[id]:id==6?"ФРЕКЕН БОК":"БАГИРА";}
 static const char* player_name(int p){return !human(p)?character_name(opponent_pool[mp_ai_index]):mp.names[p];}
+static const char*round_number(void){
+ static char digits[11];unsigned n=(unsigned)game.round+1;int i=10;digits[i]=0;
+ do{digits[--i]='0'+n%10;n/=10;}while(n);
+ return digits+i;
+}
 static const char*mp_stage(void){
- static char title[]="Раунд 1 из 3";
- if(prefs.rule==MP_WINS){static char goal[]="До 3 побед";goal[3]='0'+prefs.rounds;return goal;}
+ static char title[32];
  if(match.shootout)return "Перестрелка";
- if(game.round+1==prefs.rounds)return "Последний раунд";
- title[6]='1'+game.round;title[11]='0'+prefs.rounds;return title;
+ if(prefs.rule!=MP_WINS&&game.round+1==prefs.rounds)return "Последний раунд";
+ const char*prefix="Раунд ",*n=round_number();int i=0;
+ while(*prefix)title[i++]=*prefix++;
+ while(*n)title[i++]=*n++;
+ if(prefs.rule!=MP_WINS){const char*suffix=" из ";while(*suffix)title[i++]=*suffix++;title[i++]='0'+prefs.rounds;}
+ title[i]=0;return title;
 }
 static void link_irq(void);
 static void link_close(void);
