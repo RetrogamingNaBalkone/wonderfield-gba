@@ -81,12 +81,12 @@ static const char*round_number(void){
 }
 static const char*mp_stage(void){
  static char title[32];
- if(match.shootout)return "Перестрелка";
- if(prefs.rule!=MP_WINS&&game.round+1==prefs.rounds)return "Последний раунд";
- const char*prefix=prefs.rule==MP_WINS?"РАУНД ":"Раунд ",*n=round_number();int i=0;
+ if(match.shootout)return "ПЕРЕСТРЕЛКА";
+ if(prefs.rule!=MP_WINS&&game.round+1==prefs.rounds)return "ПОСЛЕДНИЙ РАУНД";
+ const char*prefix="РАУНД ",*n=round_number();int i=0;
  while(*prefix)title[i++]=*prefix++;
  while(*n)title[i++]=*n++;
- if(prefs.rule!=MP_WINS){const char*suffix=" из ";while(*suffix)title[i++]=*suffix++;title[i++]='0'+prefs.rounds;}
+ if(prefs.rule!=MP_WINS){const char*suffix=" ИЗ ";while(*suffix)title[i++]=*suffix++;title[i++]='0'+prefs.rounds;}
  title[i]=0;return title;
 }
 static void link_irq(void);
