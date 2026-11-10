@@ -1,0 +1,23 @@
+{
+  "rom_sha256": "c1b0732cf5dd4236003669243f6c8729dc5675906329393edfd0e9db98440550",
+  "checks": [
+    {
+      "rule": 0,
+      "perspective_labels": true,
+      "viewer_footer": true,
+      "round_badge": true
+    },
+    {
+      "rule": 1,
+      "perspective_labels": true,
+      "viewer_footer": true,
+      "round_badge": true
+    },
+    {
+      "rule": 2,
+      "perspective_labels": true,
+      "viewer_footer": true,
+      "round_badge": true
+    }
+  ]
+}

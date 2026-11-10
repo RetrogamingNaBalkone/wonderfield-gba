@@ -1,4 +1,4 @@
-"""Rendering regressions: stable player panel and clean name entry after restart."""
+"""Rendering regressions: perspective-owned player panel and clean name entry after restart."""
 import runpy,struct
 from emulator import Emulator,ROOT
 m=runpy.run_path(str(ROOT/'scripts/test-multiplayer.py'))
@@ -8,14 +8,17 @@ def frame(e):return read(e,'framebuffer',240*160)
 e=Emulator();m['menu'](e,2)
 for _ in range(3):m['accept_name'](e)
 e.run(1400);assert e.state()[3]==1
-for actor in (2,0,1):
- e.poke(5,actor);reference=None
- for viewer in (2,0,1):
-  setmp(e,2,viewer);redraw(e);pixels=frame(e);panel=pixels[144*240:]
-  if reference is None:reference=panel
-  else:assert reference==panel,(actor,viewer)
-  for slot in range(3):assert pixels[159*240+slot*80]==(1 if (slot+2)%3==actor else 7)
- e.screenshot(f'fixed-panel-player{(actor+1)%3+1}.png')
+references={}
+for viewer in (2,0,1):
+ setmp(e,2,viewer)
+ for actor in (2,0,1):
+  e.poke(5,actor);redraw(e);pixels=frame(e);panel=pixels[144*240:]
+  if viewer not in references:references[viewer]=panel
+  else:assert references[viewer]==panel,(actor,viewer)
+  assert pixels[159*240]==7
+ e.screenshot(f'perspective-panel-player{(viewer+1)%3+1}.png')
+assert len(set(references.values()))==3
+setmp(e,2,2);e.poke(5,2);redraw(e)
 # Carry used letters through the actual restart menu into new name entry.
 for i in range(32):e.poke(38+i,1)
 tap(e,3)
@@ -31,4 +34,4 @@ tap(e,8);assert e.state()[80]==1
 e.poke(3,3);e.poke(5,2);e.poke(71,1);redraw(e);clean=frame(e)[84*240:150*240]
 for i in range(32):e.poke(38+i,1)
 redraw(e);assert clean!=frame(e)[84*240:150*240]
-e.close();print('PASS: fixed panel for all player/viewer combinations; highlight moves; restart names ignore used letters; game keyboard retains marks')
+e.close();print('PASS: panel follows viewer and stays stable across active players; restart names ignore used letters; game keyboard retains marks')
