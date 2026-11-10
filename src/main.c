@@ -17,7 +17,7 @@ typedef unsigned int u32;
 #define R 256
 #define L 512
 #define A_RELEASE 0x8000
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,FINAL_RECORDS,CASH,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY,MP_OPTION_HELP};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,CASH=21,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY,MP_OPTION_HELP};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
 enum {TITLE_GRID_HALF=12,TITLE_LOGO_AT=24,TITLE_READY_AT=36};
@@ -161,7 +161,12 @@ static int len(const char *s){int n=0;while(s[n])n++;return n;}
 static unsigned random_n(unsigned n){game.rng=game.rng*134775813u+1;return (game.rng>>16)%n;}
 static void effect(unsigned id){u32 seed=game.rng;if(!id)for(int i=0;i<6;i++)random_n(100);game_effect(id,seed);}
 static void pixel(int x,int y,u8 c){if((unsigned)x<240 && (unsigned)y<160)framebuffer[y*240+x]=c;}
-static void rect(int x,int y,int w,int h,u8 c){for(int j=0;j<h;j++)for(int i=0;i<w;i++)pixel(x+i,y+j,c);}
+static void rect(int x,int y,int w,int h,u8 c){
+ if(x<0){w+=x;x=0;}if(y<0){h+=y;y=0;}
+ if(x>=240||y>=160||w<=0||h<=0)return;
+ if(w>240-x)w=240-x;if(h>160-y)h=160-y;
+ for(int j=0;j<h;j++){u8*row=framebuffer+(y+j)*240+x;for(int i=0;i<w;i++)row[i]=c;}
+}
 static void line(int x,int y,int w,u8 c){rect(x,y,w,1,c);}
 static void glyph(int x,int y,unsigned c,int small,u8 color){int h=small?8:14;const u8 *f=small?font8:font14;for(int j=0;j<h;j++)for(int i=0;i<8;i++)if(f[c*h+j]&(128>>i))pixel(x+i,y+j,color);}
 static void text(int x,int y,const char *s,int small,u8 c){int advance=8;for(int i=0;s[i];i++)glyph(x+i*advance,y,(u8)s[i],small,c);}
@@ -327,8 +332,8 @@ static void award_letter(int letter){
 }
 
 static void choose_letter(int letter){
- int before[20],count=0;
- for(int i=0;i<20;i++){before[i]=game.revealed[i];if(i<len(word())&&(u8)word()[i]==128+letter&&!before[i])count++;}
+ int before[20],count=0,n=len(word());
+ for(int i=0;i<20;i++){before[i]=game.revealed[i];if(i<n&&(u8)word()[i]==128+letter&&!before[i])count++;}
  scene.old_score=game.score[game.player];
  award_letter(letter);
  if(count){scene.pending_score=game.score[game.player];game.score[game.player]=scene.old_score;for(int i=0;i<20;i++){scene.reveal_target[i]=game.revealed[i];game.revealed[i]=before[i];}reveal_begin();}
@@ -381,7 +386,7 @@ static void end_result(void){
  /* Dismissing the bonus also ends its overlay, even before its timeout.
   * The expired deadline is part of Scene and travels to cable clients. */
  scene.chest_until=scene.now;
- int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(!human(game.player))game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==FINAL_RECORDS)final_records();else if(next==MP_DEPART)mp_depart_message();else set_mode(next);}
+ int next=game.next_mode;game.player=game.next_player;if(next==TURN)begin_turn();else if(next==CHEST){set_mode(CHEST);game.choice=0;say(msg_eda,msg_ee6);if(!human(game.player))game.wait=60;}else if(next==GAME_OVER)farewell();else if(next==MP_DEPART)mp_depart_message();else set_mode(next);}
 static void open_chest(void){
  int reward=random_n(2)==(unsigned)game.choice?100:0;
  score_add(game.player,reward);scene.chest_until=scene.now+180;scene.chest_money=reward!=0;
