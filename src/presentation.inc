@@ -367,21 +367,6 @@ static int standing_place(int who,int before){
  }
  return place;
 }
-static void standings(void){
- rect(0,0,240,160,7);border(3,3,234,145,0);centered(7,mp_stage(),0,0);
- text(148,30,prefs.rule==MP_WINS?"ПОБЕДЫ":"ОЧКИ",1,0);
- for(int who=0;who<3;who++){
-  int place=standing_place(who,0),y=48+place*28;
-  text(16,y,player_name(who),0,0);
-  number(148,y,standing_value(who,0),0,0);
-  int previous=standing_place(who,1);
-  if(previous!=place)for(int row=0;row<5;row++){
-   int width=1+row*2,ty=y+3+(previous>place?row:4-row);
-   rect(220-row,ty,width,1,0);
-  }
- }
- centered(151,"A: Продолжить",1,0);
-}
 static int final_place(int who){
  /* A shootout is won by solving the word, not by its accumulated points. */
  if(who==match.winner)return 0;
@@ -392,24 +377,29 @@ static int final_place(int who){
  }
  return place;
 }
-static void final_standings(void){
+static void standings(int final){
  rect(0,0,240,160,7);border(3,3,234,145,0);
- centered(12,"ПОБЕДИТЕЛЬ ИГРЫ",1,0);
- centered(30,player_name(match.winner),0,0);
+ centered(12,final?"ПОБЕДИТЕЛЬ ИГРЫ":"ПРОМЕЖУТОЧНЫЕ ИТОГИ",1,0);
+ centered(30,final?player_name(match.winner):mp_stage(),0,0);
  compact_text(12,64,"МЕСТО",30,0);text(50,64,"ИМЯ",1,0);
  if(prefs.rule==MP_WINS)compact_text(140,64,"ПОБЕД",30,0);
  text(184,64,"СЧЕТ",1,0);
  for(int who=0;who<3;who++){
-  int place=final_place(who),y=80+place*22;
+  int place=final?final_place(who):standing_place(who,0),y=80+place*22;
   number(22,y,place+1,0,0);text(50,y,player_name(who),0,0);
   if(prefs.rule==MP_WINS)number(152,y,match.wins[who],0,0);
   number(184,y,game.score[who],0,0);
+  int previous=standing_place(who,1);
+  if(!final&&previous!=place)for(int row=0;row<5;row++){
+   int width=1+row*2,ty=y+3+(previous>place?row:4-row);
+   rect(37-row,ty,width,1,0);
+  }
  }
  centered(151,"A: Продолжить",1,0);
 }
 static void render(void){
  if(game.mode==MP_SUMMARY){
-  if(match.next==2)final_standings();else standings();return;
+  standings(match.next==2);return;
  }
  if(game.mode==MP_OPTION_HELP){
   const char*titles[]={"СЛОВАРЬ","ДВЕ ШКАТУЛКИ","ПЕРСОНАЖИ","ПРАВИЛА",prefs.rule==MP_WINS?"ПОБЕД ДЛЯ ВЫИГРЫША":"ЧИСЛО РАУНДОВ","НАЧАТЬ ИГРУ"};

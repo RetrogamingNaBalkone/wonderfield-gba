@@ -12,7 +12,7 @@ spec.loader.exec_module(s)
 
 # Reference full-size names from the unchanged intermediate table.
 e = s.frame(0, [0]*3, [0]*3)
-names = {p: s.crop(e, 16, 48 + row*28, 80, 14) for row, p in enumerate((2, 0, 1))}
+names = {p: s.crop(e, 50, 80 + row*22, 80, 14) for row, p in enumerate((2, 0, 1))}
 e.close()
 checks = []
 # Expected ordering is explicit, including tie order and score-independent wins.
@@ -38,6 +38,15 @@ for name, rule, before, after, round_winner, shootout, order in cases:
     else:
         assert s.crop(e, 140, 64, 30, 8) != s.crop(e, 140, 50, 30, 8)
     e.screenshot(f'final-standings-{name}.png')
+    # Both stages must share headers, column positions and place labels.
+    headers = s.crop(e, 12, 64, 212, 8)
+    places = [s.crop(e, 22, 80 + row*22, 8, 14) for row in range(3)]
+    s.put(e, 'match', 14, 0)
+    s.write(e, 'dirty', struct.pack('<i', 1));e.run(20)
+    assert s.crop(e, 12, 64, 212, 8) == headers, (name, 'inconsistent headers')
+    assert [s.crop(e, 22, 80 + row*22, 8, 14) for row in range(3)] == places
+    s.put(e, 'match', 14, 2)
+    s.write(e, 'dirty', struct.pack('<i', 1));e.run(20)
     s.tap(e, 8)
     assert e.state()[3] == 19 and e.state()[5] == order[0], (name, 'gift recipient')
     e.close()

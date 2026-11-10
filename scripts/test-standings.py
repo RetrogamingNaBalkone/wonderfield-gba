@@ -48,7 +48,7 @@ def frame(rule, before, after, winner=-1, shootout=False, rounds=None, humans=3)
 def main():
     # Capture each player's real name at the known all-zero, player-number order.
     e = frame(0, [0, 0, 0], [0, 0, 0])
-    reference = {p: crop(e, 16, 48 + place * 28, 80, 14)
+    reference = {p: crop(e, 50, 80 + place * 22, 80, 14)
                  for place, p in enumerate((2, 0, 1))}
     background = crop(e, 210, 140, 1, 1)
     e.close()
@@ -69,13 +69,13 @@ def main():
         old = sorted((2, 0, 1), key=lambda p: -before[p])
         order = sorted((2, 0, 1), key=lambda p: -after[p])
         for place, p in enumerate(order):
-            y = 48 + place * 28
-            assert crop(e, 16, y, 80, 14) == reference[p], (name, 'name order', p)
+            y = 80 + place * 22
+            assert crop(e, 50, y, 80, 14) == reference[p], (name, 'name order', p)
             direction = (old.index(p) > place) - (old.index(p) < place)
             for row in range(5):
                 half = row if direction > 0 else 4 - row
-                for x in range(216, 225):
-                    filled = direction != 0 and abs(x - 220) <= half
+                for x in range(33, 42):
+                    filled = direction != 0 and abs(x - 37) <= half
                     assert (crop(e, x, y + 3 + row, 1, 1) != background) == filled, (name, 'triangle', p)
         state = read(e, 'match', 64)
         e.run(120)
