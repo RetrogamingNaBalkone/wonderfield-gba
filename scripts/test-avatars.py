@@ -31,7 +31,7 @@ for version in (0,1):
  setmp(e,6,4);redraw(e);e.screenshot(f'avatar-v{version+1}-eliminated.png')
  # Player one lies on the right from viewer two's perspective.
  stride=240*(4 if e.format==1 else 2);bpp=stride//240
- def portrait(frame):return b''.join(frame[y*stride+153*bpp:y*stride+183*bpp] for y in range(83,110))
+ def portrait(frame):return b''.join(frame[y*stride+153*bpp:y*stride+183*bpp] for y in range(75,121))
  assert portrait(before)!=portrait(e.raw)
  setmp(e,6,0);redraw(e);assert portrait(before)==portrait(e.raw)
  for viewer in (0,1,2):

@@ -12,7 +12,7 @@ references={}
 for viewer in (2,0,1):
  setmp(e,2,viewer)
  for actor in (2,0,1):
-  e.poke(5,actor);redraw(e);pixels=frame(e);panel=pixels[144*240:]
+  e.poke(5,actor);redraw(e);pixels=frame(e);panel=pixels[150*240:]
   if viewer not in references:references[viewer]=panel
   else:assert references[viewer]==panel,(actor,viewer)
   assert pixels[159*240]==7
