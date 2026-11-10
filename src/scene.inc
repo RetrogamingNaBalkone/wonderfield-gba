@@ -123,6 +123,8 @@ static int scene_tick(u16 pressed){
  if(game.mode==INTRO){
   if((pressed&A)||(scene.now-scene.phase_at>=MESSAGE_TICKS)){
    scene.phase++;
+   /* The multiplayer roster stays fixed across rounds and shootouts. */
+   if(mp.humans>1&&(game.round>0||match.shootout)&&scene.phase==1)scene.phase=4;
    while(mp.humans>1&&scene.phase>=1&&scene.phase<=3&&(mp.eliminated&(1<<((scene.phase+1)%3))))scene.phase++;
    if(scene.phase>=6){begin_turn();return 1;}
    scene.phase_at=scene.now;intro_phrase();

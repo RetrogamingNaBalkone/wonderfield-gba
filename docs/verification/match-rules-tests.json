@@ -1,8 +1,8 @@
 {
-  "rom_sha256": "bce33eaa422de0b71e0b4e6b23715b0c2cdc4ced19e4dbb6eae87f53be5fa418",
+  "rom_sha256": "f23c0bd12f9f3adcdaea91768839ded44efc38b0d71f663ad5c07fad6c6ea9bc",
   "checks": [
     {
-      "menu_defaults_round_bounds_and_three_modes": true
+      "menu_round_and_win_bounds_and_three_modes": true
     },
     {
       "rule": 0,
@@ -26,13 +26,16 @@
       "leader_subset_repeat_and_word_wins_shootout": true
     },
     {
-      "starting_order_strict_early_finish_fixed_ai": true
+      "starting_order_win_target_fixed_ai": true
     },
     {
       "last_letter_and_plus_win": true
     },
     {
       "all_eliminated_round": true
+    },
+    {
+      "first_to_one_and_five_long_match_no_word_repeats": true
     },
     {
       "three_way_tie_no_early_points_ai_chest_overflow_and_panels": true

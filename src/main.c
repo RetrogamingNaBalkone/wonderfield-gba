@@ -76,6 +76,7 @@ static const char* character_name(int id){return id<6?opponent_names[id]:id==6?"
 static const char* player_name(int p){return !human(p)?character_name(opponent_pool[mp_ai_index]):mp.names[p];}
 static const char*mp_stage(void){
  static char title[]="Раунд 1 из 3";
+ if(prefs.rule==MP_WINS){static char goal[]="До 3 побед";goal[3]='0'+prefs.rounds;return goal;}
  if(match.shootout)return "Перестрелка";
  if(game.round+1==prefs.rounds)return "Последний раунд";
  title[6]='1'+game.round;title[11]='0'+prefs.rounds;return title;
@@ -149,7 +150,7 @@ volatile u32 rendered_frames;
 static volatile int dirty=1;
 static int sound_on=1;
 static char record_names[8][11];
-static int record_scores[8],record_entry=-1,selected_words[8];
+static int record_scores[8],record_entry=-1,selected_words[WORD_COUNT];
 /* Keep UI state separate: diagnostic Game and scene offsets stay compatible. */
 static volatile struct {int active,origin,choice,viewer;u32 since;int wait,author_page,confirm;} ui;
 static int result_reason;
@@ -224,11 +225,12 @@ static void begin_turn(void){int pass=mp.humans>1&&!mp.link&&human(game.player)&
 static void new_round(void){
  spin_history.count=0;if(game.round||match.shootout)seed_from_input();
  int duplicate,previous=match.previous_word;
+ int word_count=prefs.dictionary?WORD_COUNT:BASE_WORD_COUNT,history=game.round%word_count;
  do{game.word_id=random_n(prefs.dictionary?WORD_COUNT:BASE_WORD_COUNT);duplicate=0;
-  for(int i=0;i<game.round+match.shootout&&i<8;i++)if(selected_words[i]==game.word_id)duplicate=1;
-  if(match.shootout&&previous==game.word_id)duplicate=1;
+  for(int i=0;i<history+match.shootout&&i<word_count;i++)if(selected_words[i]==game.word_id)duplicate=1;
+  if(previous==game.word_id)duplicate=1;
  }while(duplicate);
- if(!match.shootout)selected_words[game.round]=game.word_id;
+ if(!match.shootout)selected_words[history]=game.word_id;
  match.previous_word=game.word_id;
  for(int i=0;i<20;i++)game.revealed[i]=0;for(int i=0;i<32;i++)game.used[i]=0;
  mp.eliminated=mp.humans>1?(7^match.participants):0;
@@ -253,17 +255,15 @@ static void mp_settle(void){
   if(game.solved){match.winner=game.player;match.next=2;}else match.next=1;
  }else{
   if(game.solved)match.wins[game.player]++;
-  int remaining=prefs.rounds-game.round-1,leaders=0,best=-1;
-  for(int p=0;p<3;p++){
-   int better=best<0||(prefs.rule==MP_WINS&&match.wins[p]>match.wins[best])||
-    ((prefs.rule!=MP_WINS||match.wins[p]==match.wins[best])&&game.score[p]>game.score[best]);
-   if(better){best=p;leaders=1<<p;}
-   else if((prefs.rule!=MP_WINS||match.wins[p]==match.wins[best])&&game.score[p]==game.score[best])leaders|=1<<p;
-  }
-  int early=prefs.rule==MP_WINS;
-  for(int p=0;p<3;p++)if(p!=best&&match.wins[best]<=match.wins[p]+remaining)early=0;
   match.next=0;
-  if(remaining==0||early){
+  if(prefs.rule==MP_WINS){
+   if(game.solved&&match.wins[game.player]>=prefs.rounds){match.winner=game.player;match.next=2;}
+  }else if(game.round+1>=prefs.rounds){
+   int leaders=0,best=-1;
+   for(int p=0;p<3;p++){
+    if(best<0||game.score[p]>game.score[best]){best=p;leaders=1<<p;}
+    else if(game.score[p]==game.score[best])leaders|=1<<p;
+   }
    if(leaders==(1<<best)){match.winner=best;match.next=2;}
    else{match.participants=leaders;match.next=1;}
   }
@@ -521,8 +521,8 @@ static void update(u16 pressed,u16 repeat){
    if(prefs.choice==0)prefs.dictionary^=1;
    else if(prefs.choice==1)prefs.plus^=1;
    else if(prefs.choice==2)prefs.characters^=1;
-   else if(mp.humans>1&&prefs.choice==3)prefs.rule=(prefs.rule+3+delta)%3;
-   else if(mp.humans>1&&prefs.choice==4)prefs.rounds=(prefs.rounds+7+delta)%8+1;
+   else if(mp.humans>1&&prefs.choice==3){prefs.rule=(prefs.rule+3+delta)%3;if(prefs.rule==MP_WINS&&prefs.rounds>5)prefs.rounds=5;}
+   else if(mp.humans>1&&prefs.choice==4){int limit=prefs.rule==MP_WINS?5:8;prefs.rounds=(prefs.rounds+limit-1+delta)%limit+1;}
    else if(pressed&A){if(mp.humans==1)new_game();else{mp.edit=2;mp_name_begin();}}
    dirty=1;
   }

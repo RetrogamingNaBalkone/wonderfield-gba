@@ -44,7 +44,7 @@ static void board(void){
  rect(30,35,181,9,7);
  if(game.mode!=INTRO)text(30,35,words[game.word_id].topic,1,0);
  if(mp.humans>1){
-  if(game.mode!=INTRO&&!match.shootout&&len(words[game.word_id].topic)<=16){glyph(162,35,'1'+game.round,1,0);text(170,35," из ",1,0);glyph(202,35,'0'+prefs.rounds,1,0);}
+  if(game.mode!=INTRO&&prefs.rule!=MP_WINS&&!match.shootout&&len(words[game.word_id].topic)<=16){glyph(162,35,'1'+game.round,1,0);text(170,35," из ",1,0);glyph(202,35,'0'+prefs.rounds,1,0);}
  }else if(len(words[game.word_id].topic)<=18){text(194,35,"/3",1,0);glyph(186,35,'1'+game.round,1,0);}
  line(30,43,181,8);
 }
@@ -358,24 +358,23 @@ static void render(void){
    text(12,y,player_name(who),1,0);
    compact_number(99,y,game.score[who]-match.start[who],60,0,1);
    compact_number(163,y,game.score[who],38,0,0);
-   if(prefs.rule==MP_WINS)compact_number(211,y,match.wins[who],20,0,0);
+   if(prefs.rule==MP_WINS){compact_number(205,y,match.wins[who],8,0,0);compact_text(213,y,"/",8,0);compact_number(221,y,prefs.rounds,8,0,0);}
   }
   line(12,103,216,8);
   if(match.next==2){
-   int early=prefs.rule==MP_WINS&&!match.shootout&&game.round+1<prefs.rounds;
-   centered(108,early?"Досрочная победа":"Победитель партии",1,0);
+   centered(108,"Победитель партии",1,0);
    centered(121,player_name(match.winner),0,0);
-   if(early)centered(138,"Соперники уже не догонят",1,0);
+
   }
   else centered(124,match.next==1?"Далее: перестрелка":"Далее: рекламная пауза",1,0);
   centered(151,"A: Продолжить",1,0);return;
  }
  if(game.mode==MP_OPTION_HELP){
-  const char*titles[]={"СЛОВАРЬ","ДВЕ ШКАТУЛКИ","ПЕРСОНАЖИ","ПРАВИЛА","ЧИСЛО РАУНДОВ","НАЧАТЬ ИГРУ"};
+  const char*titles[]={"СЛОВАРЬ","ДВЕ ШКАТУЛКИ","ПЕРСОНАЖИ","ПРАВИЛА",prefs.rule==MP_WINS?"ПОБЕД ДЛЯ ВЫИГРЫША":"ЧИСЛО РАУНДОВ","НАЧАТЬ ИГРУ"};
   const char*rules[]={"По очкам","По очкам с риском","По победам"};
   int setting=prefs.choice,value=option_help_value,count=setting<3?2:setting==3?3:1;
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,titles[setting],0,0);
-  centered(29,setting<3?(value?"Версия 2":"Версия 1"):setting==3?rules[value]:setting==4?"От 1 до 8":"Подготовка участников",0,0);
+  centered(29,setting<3?(value?"Версия 2":"Версия 1"):setting==3?rules[value]:setting==4?(prefs.rule==MP_WINS?"От 1 до 5":"От 1 до 8"):"Подготовка участников",0,0);
   if(count>1){text(12,29,"<",0,0);text(220,29,">",0,0);if(value==option_value())centered(47,"Выбрано",1,0);}
   const char*lines[5]={"","","","",""};
   if(setting==0){
@@ -391,9 +390,10 @@ static void render(void){
   }else if(setting==3){
    if(value==MP_POINTS){lines[0]="Максимальный общий счет.";lines[1]="Банкрот: потеря за раунд.";lines[2]="x2/x4: очки этого раунда.";lines[3]="Ничья: перестрелка.";}
    else if(value==MP_RISK){lines[0]="Максимальный общий счет.";lines[1]="Банкрот: весь счет в ноль.";lines[2]="x2/x4: весь общий счет.";lines[3]="Ничья: перестрелка.";}
-   else{lines[0]="Больше побед за N раундов.";lines[1]="При равенстве - общий счет.";lines[2]="Банкрот: счет 0, победы целы.";lines[3]="x2/x4: весь общий счет.";lines[4]="Полная ничья: перестрелка.";}
+   else{lines[0]="Первый до N побед.";lines[1]="Очки не решают исход.";lines[2]="Банкрот: счет 0, победы целы.";lines[3]="x2/x4: весь общий счет.";lines[4]="Без перестрелки.";}
   }else if(setting==4){
-   lines[0]="Перестрелки не входят.";lines[1]="По победам: досрочный финиш,";lines[2]="если лидера уже не догнать";lines[3]="даже до равенства побед.";
+   if(prefs.rule==MP_WINS){lines[0]="Побед для выигрыша матча.";lines[1]="По умолчанию: 3 победы.";lines[2]="Все выбыли - без победы.";lines[3]="Играем до цели.";}
+   else{lines[0]="Число основных раундов.";lines[1]="Перестрелки не входят.";}
   }else{lines[0]="Далее: имена и аватары.";lines[1]=mp.link?"Затем - ожидание по кабелю.":"Затем начинается партия.";}
   for(int i=0;i<5;i++)centered(60+i*16,lines[i],0,0);
   centered(151,count>1?"< / >: Варианты  B: Назад":"B: Назад",1,0);return;
@@ -406,7 +406,7 @@ static void render(void){
   for(int i=0;i<6;i++){
    int y=rows[i],selected=prefs.choice==i;u8 color=selected?15:0;
    if(selected){rect(12,y-2,216,i==3?33:18,8);border(12,y-2,216,i==3?33:18,0);}
-   if(i==4){text(80,y,"Раундов:",0,color);glyph(152,y,'0'+prefs.rounds,0,color);}
+   if(i==4){if(prefs.rule==MP_WINS){text(32,y,"Побед для выигрыша:",0,color);glyph(192,y,'0'+prefs.rounds,0,color);}else{text(80,y,"Раундов:",0,color);glyph(152,y,'0'+prefs.rounds,0,color);}}
    else centered(y,items[i],0,color);
    if(i==3)centered(y+15,rules[prefs.rule],0,color);
   }

@@ -60,7 +60,15 @@ tap(e,6);assert ints(e,'prefs',6)[5]==8
 tap(e,7);assert ints(e,'prefs',6)[5]==1
 m['select_option'](e,3)
 for expected in (1,2,0):tap(e,8);assert ints(e,'prefs',6)[4]==expected
-e.close();checks.append({'menu_defaults_round_bounds_and_three_modes':True})
+tap(e,6);assert ints(e,'prefs',6)[4]==2
+m['select_option'](e,4)
+tap(e,6);assert ints(e,'prefs',6)[5]==5
+tap(e,7);assert ints(e,'prefs',6)[5]==1
+m['select_option'](e,3);tap(e,7)
+m['select_option'](e,4);tap(e,6);assert ints(e,'prefs',6)[5]==8
+m['select_option'](e,3);tap(e,6);assert ints(e,'prefs',6)[5]==5
+e.screenshot('options-win-target.png')
+e.close();checks.append({'menu_round_and_win_bounds_and_three_modes':True})
 
 for rule in range(3):
  e=start(rule);e.poke(5,2);e.poke(11,450);put(e,'match',2,330);put(e,'match',5,330);put(e,'match',8,2)
@@ -87,7 +95,7 @@ advance(e);assert e.state()[5]==2 and m['mp'](e)[6]==0 and e.state()[11]==450
 sector(e,-1);assert e.state()[11]==450
 e.close();checks.append({'settlement_once_and_return':True})
 # Last-round winner is not necessarily match winner; no bonus for solving.
-for rule in (0,1,2):
+for rule in (0,1):
  e=start(rule,1);e.poke(9,900);e.poke(11,120)
  if rule==2:put(e,'match',6,1)
  a=finish(e,2);assert a[13]==0 and e.state()[11]==120
@@ -101,7 +109,7 @@ for rule in (0,1,2):
  e.close()
 checks.append({'winner_by_standings_and_no_sram':True})
 # Tie only between leaders; repeat after elimination, never select by shootout points.
-for rule in (0,1,2):
+for rule in (0,1):
  e=start(rule,1);e.poke(9,500);e.poke(11,500);e.poke(10,10000 if rule==2 else 100)
  if rule==2:put(e,'match',6,1)
  a=finish(e,2);assert a[14]==1 and a[10]==5,a
@@ -116,22 +124,23 @@ checks.append({'leader_subset_repeat_and_word_wins_shootout':True})
 e=start(0,1);e.poke(9,500);e.poke(10,500);finish(e,2);advance(e)
 assert e.state()[5]==0 and m['mp'](e)[6]==4
 e.close()
-# Strict early win: a possible tie is not enough.
-for wins,early in ((1,False),(2,True)):
- e=start(2,3);e.poke(4,1);put(e,'match',8,wins-1)
- a=finish(e,2);assert (a[14]==2)==early,a
- if early:e.screenshot('match-human-early-win.png')
+# Win target: no early finish, no score tiebreak, AI follows the same target.
+for wins in (1,2,3):
+ e=start(2,3);e.poke(4,8);put(e,'match',8,wins-1);e.poke(9,1000000)
+ a=finish(e,2);assert a[14]==(2 if wins==3 else 0),a
+ assert a[13]==(2 if wins==3 else -1)
  e.close()
-# AI is stable, starts at zero, earns wins and can finish early.
-e=start(2,3,2);ai=read(e,'opponent_pool',32);assert e.state()[9:12]==(0,0,0)
-finish(e,1);advance(e);assert read(e,'opponent_pool',32)==ai and ints(e,'match',16)[7]==1 and e.state()[10]==0
-finish(e,1);assert ints(e,'match',16)[13]==1
-e.screenshot('match-ai-early-win.png');e.close()
+e=start(2,3,2);ai=read(e,'opponent_pool',32)
+for win in range(1,4):
+ a=finish(e,1);assert a[7]==win and a[14]==(2 if win==3 else 0)
+ if win<3:advance(e);assert read(e,'opponent_pool',32)==ai
+assert a[13]==1
+e.screenshot('match-ai-target-win.png');e.close()
 e=start(0,3,2);ai=read(e,'opponent_pool',32);index=read(e,'mp_ai_index',4)
 finish(e,2);advance(e)
 assert read(e,'opponent_pool',32)==ai and read(e,'mp_ai_index',4)==index and e.state()[10]==0
 e.close()
-checks.append({'starting_order_strict_early_finish_fixed_ai':True})
+checks.append({'starting_order_win_target_fixed_ai':True})
 # Last letter, including Plus, is a round win, with no solve bonus.
 for value in (100,25):
  e=start();word=WORDS[e.state()[6]]['word'].encode('cp866');letter=word[0]
@@ -157,10 +166,21 @@ e.close()
 for rule in (0,1):
  e=start(rule,8);e.poke(11,1000000);a=finish(e);assert a[14]==0
  e.close()
-# Standings ties on wins resolve by the cumulative score without a shootout.
-e=start(2,1);put(e,'match',6,1);e.poke(9,100);e.poke(11,200)
+# A one-win match ignores the opponents' score and ends on the first win.
+e=start(2,1);e.poke(9,1000000)
 a=finish(e);assert a[13]==2 and a[14]==2
 e.close()
+# More than eight rounds: long first-to-five match, empty round and no repeated words.
+e=start(2,5);seen=set()
+for round_index,winner in enumerate([2,0,1]*4+[None,2]):
+ assert e.state()[4]==round_index
+ assert e.state()[6] not in seen;seen.add(e.state()[6])
+ a=finish(e,2 if winner is None else winner,solved=winner is not None)
+ assert a[14]==(2 if round_index==13 else 0),a
+ if round_index<13:advance(e)
+assert a[13]==2 and a[6:9]==[4,4,5]
+e.screenshot('match-target-five.png');e.close()
+checks.append({'first_to_one_and_five_long_match_no_word_repeats':True})
 # AI receives the same third-letter chest opportunity; awarded points persist.
 e=start(0,3,2);e.poke(3,6);e.poke(77,1);e.poke(78,1);e.poke(72,3)
 tap(e,8);assert e.state()[3]==6 and e.state()[77]==8
