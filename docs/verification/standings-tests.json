@@ -1,0 +1,86 @@
+{
+  "rom_sha256": "40b421ee3937ec98d54ce3c0b4b2ee67b0afc4dd8075e6095e9526574dd85464",
+  "checks": [
+    {
+      "case": "points-rise",
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "triangles": true
+    },
+    {
+      "case": "risk-bankrupt",
+      "order": [
+        0,
+        1,
+        2
+      ],
+      "triangles": true
+    },
+    {
+      "case": "points-tie",
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "triangles": true
+    },
+    {
+      "case": "unchanged",
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "triangles": true
+    },
+    {
+      "case": "wins-rise",
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "triangles": true
+    },
+    {
+      "case": "wins-tie",
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "triangles": true
+    },
+    {
+      "case": "wins-no-winner",
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "triangles": true
+    },
+    {
+      "case": "repeat-shootout",
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "triangles": true
+    },
+    {
+      "case": "five-digits",
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "triangles": true
+    }
+  ]
+}

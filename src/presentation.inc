@@ -354,8 +354,37 @@ static void setup_player_heading(void){
  text(72,7,"ИГРОК",0,0);glyph(120,7,'1'+(mp.edit+1)%3,0,0);
  text(136,7,"ИЗ",0,0);glyph(160,7,'0'+mp.humans,0,0);
 }
+static int standing_value(int who,int before){
+ if(prefs.rule!=MP_WINS)return before?match.start[who]:game.score[who];
+ /* Settlement awards exactly one win in an ordinary solved round. */
+ return match.wins[who]-(before&&match.settled&&!match.shootout&&match.round_winner==who);
+}
+static int standing_place(int who,int before){
+ int place=0,value=standing_value(who,before);
+ for(int p=0;p<3;p++){
+  int other=standing_value(p,before);
+  if(other>value||(other==value&&player_number(p)<player_number(who)))place++;
+ }
+ return place;
+}
+static void standings(void){
+ rect(0,0,240,160,7);border(3,3,234,145,0);centered(7,mp_stage(),0,0);
+ text(148,30,prefs.rule==MP_WINS?"ПОБЕДЫ":"ОЧКИ",1,0);
+ for(int who=0;who<3;who++){
+  int place=standing_place(who,0),y=48+place*28;
+  text(16,y,player_name(who),0,0);
+  number(148,y,standing_value(who,0),0,0);
+  int previous=standing_place(who,1);
+  if(previous!=place)for(int row=0;row<5;row++){
+   int width=1+row*2,ty=y+3+(previous>place?row:4-row);
+   rect(220-row,ty,width,1,0);
+  }
+ }
+ centered(151,"A: Продолжить",1,0);
+}
 static void render(void){
  if(game.mode==MP_SUMMARY){
+  if(match.next!=2){standings();return;}
   rect(0,0,240,160,7);border(3,3,234,145,0);centered(7,mp_stage(),0,0);
   if(match.round_winner>=0){text(12,27,"Раунд:",1,0);text(68,27,player_name(match.round_winner),1,0);}
   else centered(27,"Раунд без победителя",1,0);
