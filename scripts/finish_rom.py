@@ -17,6 +17,6 @@ assert len(logo)==156 and b[3]==0xea
 b[4:160]=logo;b[160:192]=bytes(32);b[160:172]=b'POLE CHUDES ';b[172:176]=b'PC01';b[176:178]=b'00';b[178]=0x96;b[188]=2;b[189]=(-sum(b[160:189])-0x19)&255
 assert (sum(b[160:190])+0x19)&255==0
 b.extend(b'\xff'*((1<<(len(b)-1).bit_length())-len(b)));p.write_bytes(b)
-report=dict(version='2.0',header_revision=b[188],rom=str(p.relative_to(root)),bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),checksum=b[189])
+report=dict(version='2.0beta',header_revision=b[188],rom=str(p.relative_to(root)),bytes=len(b),sha256=hashlib.sha256(b).hexdigest(),checksum=b[189])
 (root/'build/gba/build-report.json').write_text(json.dumps(report,indent=2))
 print(json.dumps(report))

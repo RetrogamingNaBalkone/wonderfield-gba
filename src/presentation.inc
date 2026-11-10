@@ -217,10 +217,11 @@ static void title(void){
  if(age>=TITLE_READY_AT){
   text(40,124,"КАПИТАЛ-ШОУ",1,0);centered(139,"A: Играть",1,1);
   centered(151,"START: Меню",1,0);
-  /* The original compact font fits wholly inside the final grid cell. */
-  const char*version="2.0";
-  for(int i=0;i<3;i++)for(int y=0;y<6;y++)for(int x=0;x<4;x++)
-   if(font6[(u8)version[i]*6+y]&(128>>x))pixel(218+i*4+x,122+y,0);
+  /* Keep the beta label right-aligned in the title footer. */
+  const char*version="2.0beta";
+  int version_len=len(version),version_x=230-version_len*4;
+  for(int i=0;i<version_len;i++)for(int y=0;y<6;y++)for(int x=0;x<4;x++)
+   if(font6[(u8)version[i]*6+y]&(128>>x))pixel(version_x+i*4+x,122+y,0);
  }
 }
 static void menu(void){

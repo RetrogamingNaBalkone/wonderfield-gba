@@ -1,0 +1,22 @@
+{
+  "rom_sha256": "bce33eaa422de0b71e0b4e6b23715b0c2cdc4ced19e4dbb6eae87f53be5fa418",
+  "core_source": "https://buildbot.libretro.com/nightly/linux/x86_64/latest/mgba_libretro.so.zip",
+  "core_archive_sha256": "e551e406847d891a4e82defe2a3032bb573a1026bc5f31b66093267d6747bfed",
+  "core_sha256": "c840f305825d07c9bec7a6ec18841073c4b539fd234f73623474f97c507f1cdc",
+  "passed": [
+    "test-title-timing.py",
+    "test-multiplayer.py",
+    "test-match-rules.py",
+    "test-round-elimination.py",
+    "test-chest-transition.py",
+    "test-options-help.py"
+  ],
+  "legacy_test_failure": {
+    "test": "verify_controls.py",
+    "assertion": "A begins a new game from menu",
+    "reason": "1.1 test expects INTRO (15); 2.0 opens MP_SETUP (26) first"
+  },
+  "not_run": [
+    "test-link.py requires a separate libmgba build and headers"
+  ]
+}

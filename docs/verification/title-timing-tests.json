@@ -1,5 +1,5 @@
 {
-  "rom_sha256": "2aba10ecde61764b0e65d33fc75cc67d7feb04852c63573c633eab753e324955",
+  "rom_sha256": "bce33eaa422de0b71e0b4e6b23715b0c2cdc4ced19e4dbb6eae87f53be5fa418",
   "timeline": [
     {
       "stage": 6,
@@ -21,7 +21,7 @@
     },
     {
       "stage": 36,
-      "displayed_age": 42,
+      "displayed_age": 41,
       "logo": true,
       "prompt": true
     }
