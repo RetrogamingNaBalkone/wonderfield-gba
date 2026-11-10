@@ -382,29 +382,34 @@ static void standings(void){
  }
  centered(151,"A: Продолжить",1,0);
 }
+static int final_place(int who){
+ /* A shootout is won by solving the word, not by its accumulated points. */
+ if(who==match.winner)return 0;
+ int place=1,value=standing_value(who,0);
+ for(int p=0;p<3;p++)if(p!=match.winner){
+  int other=standing_value(p,0);
+  if(other>value||(other==value&&player_number(p)<player_number(who)))place++;
+ }
+ return place;
+}
+static void final_standings(void){
+ rect(0,0,240,160,7);border(3,3,234,145,0);
+ centered(12,"ПОБЕДИТЕЛЬ ИГРЫ",1,0);
+ centered(30,player_name(match.winner),0,0);
+ compact_text(12,64,"МЕСТО",30,0);text(50,64,"ИМЯ",1,0);
+ if(prefs.rule==MP_WINS)compact_text(140,64,"ПОБЕД",30,0);
+ text(184,64,"СЧЕТ",1,0);
+ for(int who=0;who<3;who++){
+  int place=final_place(who),y=80+place*22;
+  number(22,y,place+1,0,0);text(50,y,player_name(who),0,0);
+  if(prefs.rule==MP_WINS)number(152,y,match.wins[who],0,0);
+  number(184,y,game.score[who],0,0);
+ }
+ centered(151,"A: Продолжить",1,0);
+}
 static void render(void){
  if(game.mode==MP_SUMMARY){
-  if(match.next!=2){standings();return;}
-  rect(0,0,240,160,7);border(3,3,234,145,0);centered(7,mp_stage(),0,0);
-  if(match.round_winner>=0){text(12,27,"Раунд:",1,0);text(68,27,player_name(match.round_winner),1,0);}
-  else centered(27,"Раунд без победителя",1,0);
-  text(12,44,"ИГРОК",1,0);compact_text(99,44,"ЗА РАУНД",60,0);compact_text(163,44,"ВСЕГО",36,0);
-  if(prefs.rule==MP_WINS)compact_text(205,44,"ПОБЕД",30,0);
-  for(int slot=0;slot<3;slot++){
-   int who=(slot+2)%3,y=56+slot*16;
-   text(12,y,player_name(who),1,0);
-   compact_number(99,y,game.score[who]-match.start[who],60,0,1);
-   compact_number(163,y,game.score[who],38,0,0);
-   if(prefs.rule==MP_WINS){compact_number(205,y,match.wins[who],8,0,0);compact_text(213,y,"/",8,0);compact_number(221,y,prefs.rounds,8,0,0);}
-  }
-  line(12,103,216,8);
-  if(match.next==2){
-   centered(108,"Победитель игры",1,0);
-   centered(121,player_name(match.winner),0,0);
-
-  }
-  else centered(124,match.next==1?"Далее: перестрелка":"Далее: рекламная пауза",1,0);
-  centered(151,"A: Продолжить",1,0);return;
+  if(match.next==2)final_standings();else standings();return;
  }
  if(game.mode==MP_OPTION_HELP){
   const char*titles[]={"СЛОВАРЬ","ДВЕ ШКАТУЛКИ","ПЕРСОНАЖИ","ПРАВИЛА",prefs.rule==MP_WINS?"ПОБЕД ДЛЯ ВЫИГРЫША":"ЧИСЛО РАУНДОВ","НАЧАТЬ ИГРУ"};
