@@ -95,9 +95,10 @@ static void host_pose(int*face,int*eyes,int*eye_y){
  /* 1000:0bce: raised eyes 43, then 44; hold the speaking pose until clear. */
  *face=42;*eyes=phase==9?43:44;*eye_y=71;
 }
-static void character_portrait(int character,int x,int y){
- if(!prefs.characters)half_image(opponent_sprites[character],x,y,2);
- else{const u8 portraits[8]={11,12,9,7,8,10,0,1};image(&extra_sprites[portraits[character]],x,y,2);}
+static const Sprite*avatar_portrait(int avatar){
+ if(!avatar)return &extra_sprites[6];
+ if(!prefs.characters)return &sprites_half[opponent_sprites[avatar-1]];
+ const u8 portraits[8]={11,12,9,7,8,10,0,1};return &extra_sprites[portraits[avatar-1]];
 }
 static void multiplayer_labels(int who,int center,int bottom);
 static void people(void){
@@ -246,7 +247,7 @@ static void title(void){
   text(40,124,"КАПИТАЛ-ШОУ",1,0);centered(139,"A: Играть",1,1);
   centered(151,"START: Меню",1,0);
   /* Keep the beta label right-aligned in the title footer. */
-  const char*version="2.0beta1";
+  const char*version="2.0beta2";
   int version_len=len(version),version_x=230-version_len*4;
   for(int i=0;i<version_len;i++)for(int y=0;y<6;y++)for(int x=0;x<4;x++)
    if(font6[(u8)version[i]*6+y]&(128>>x))pixel(version_x+i*4+x,122+y,0);
@@ -506,11 +507,15 @@ static void render(void){
  if(game.mode==MP_AVATAR){
   rect(0,0,240,160,7);border(3,3,234,143,0);
   setup_player_heading();centered(27,player_name(mp.edit),0,0);
-  int avatar=avatars[mp.edit];
-  rect(91,44,58,54,7);border(91,44,58,54,0);
-  if(avatar)character_portrait(avatar-1,105,54);else image(&extra_sprites[6],105,54,2);
-  text(64,65,"<",0,0);text(168,65,">",0,0);
-  centered(105,avatar?character_name(avatar-1):"Затылок",0,0);
+  int count=prefs.characters?9:7,columns=(count+1)/2;
+  for(int i=0;i<count;i++){
+   int row=i/columns,length=row?count-columns:columns;
+   int x=(240-(length*44-4))/2+(i%columns)*44,y=44+row*50;
+   int selected=i==avatars[mp.edit];
+   rect(x,y,40,48,selected?8:7);border(x,y,40,48,selected?15:0);
+   const Sprite*portrait=avatar_portrait(i);
+   image(portrait,x+(40-portrait->w)/2,y+(48-portrait->h)/2,2);
+  }
   centered(151,"A: Готово  B: К имени",1,0);return;
  }
  if(game.mode==MP_NAME){

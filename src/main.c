@@ -552,9 +552,14 @@ static void update(u16 pressed,u16 repeat){
   dirty=1;return;
  }
  if(game.mode==MP_AVATAR){
-  int count=prefs.characters?9:7;
-  if(repeat&(LEFT|UP)){avatars[mp.edit]=(avatars[mp.edit]+count-1)%count;dirty=1;}
-  if(repeat&(RIGHT|DOWN)){avatars[mp.edit]=(avatars[mp.edit]+1)%count;dirty=1;}
+  int count=prefs.characters?9:7,columns=(count+1)/2;
+  if(repeat&LEFT){avatars[mp.edit]=(avatars[mp.edit]+count-1)%count;dirty=1;}
+  if(repeat&RIGHT){avatars[mp.edit]=(avatars[mp.edit]+1)%count;dirty=1;}
+  if(repeat&(UP|DOWN)){
+   int avatar=avatars[mp.edit];
+   int target=avatar>=columns?avatar-columns:avatar+columns;
+   avatars[mp.edit]=target<count?target:count-1;dirty=1;
+  }
   if(pressed&B){set_mode(MP_NAME);return;}
   if(pressed&(A|START)){
    if(mp.link){link_open();set_mode(MP_LOBBY);}

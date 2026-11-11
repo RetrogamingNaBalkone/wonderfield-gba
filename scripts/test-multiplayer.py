@@ -166,3 +166,36 @@ def cancel_cable_wait():
 
 if __name__=='__main__':
  print(cancel_cable_wait())
+
+def avatar_grid(version):
+ e=Emulator();options(e,2)
+ if version==1:
+  select_option(e,2);tap(e,7)
+ select_option(e,5);tap(e,8)
+ tap(e,8);tap(e,3);assert e.state()[3]==33
+ name=read(e,'mp',61)[50:61]
+ def selected():return struct.unpack('<3i',read(e,'avatars',12))[2]
+ count=7 if version==1 else 9;columns=(count+1)//2
+ assert selected()==0
+ e.screenshot(f'avatar-grid-v{version}.png')
+ for expected in range(1,count):
+  tap(e,7);assert selected()==expected
+ tap(e,7);assert selected()==0
+ tap(e,6);assert selected()==count-1
+ tap(e,4);assert selected()==count-1-columns
+ tap(e,5);assert selected()==count-1
+ tap(e,7);assert selected()==0
+ tap(e,5);assert selected()==columns
+ tap(e,4);assert selected()==0
+ # The unmatched top-right cell still reaches the last avatar below it.
+ for _ in range(columns-1):tap(e,7)
+ tap(e,5);assert selected()==count-1
+ tap(e,0);assert e.state()[3]==27
+ tap(e,3);assert e.state()[3]==33 and selected()==count-1
+ assert read(e,'mp',61)[50:61]==name
+ tap(e,8);assert e.state()[3]==27 and mp(e)[4]==0
+ assert selected()==count-1
+ e.close();return {'avatar_grid':version,'all_choices':count,'navigation_and_name_preserved':True}
+
+if __name__=='__main__':
+ print(avatar_grid(1));print(avatar_grid(2))

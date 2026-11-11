@@ -20,7 +20,7 @@ for name in reports:
     report = json.loads((root / 'docs/reports' / name).read_text(encoding='utf-8'))
     assert report['status'] == 'passed' and report['rom_sha256'] == digest, name
 
-rom_name = 'pole.2.0beta1.gba'
+rom_name = 'pole.2.0beta2.gba'
 (release / rom_name).write_bytes(rom)
 (release / 'SHA256SUMS').write_text(f'{digest}  {rom_name}\n', encoding='ascii')
 print(f'Release files: {rom_name}, SHA256SUMS')
