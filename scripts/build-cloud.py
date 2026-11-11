@@ -70,8 +70,8 @@ def main():
     # The original report refers to build/gba/pole.gba relative to the staging root.
     # That relative path is also the final output location.
     (ROOT / 'dist').mkdir(exist_ok=True)
-    shutil.copy2(ROOT / 'build/gba/pole.gba', ROOT / 'dist/pole 2.0beta.gba')
-    print('ROM: dist/pole 2.0beta.gba')
+    shutil.copy2(ROOT / 'build/gba/pole.gba', ROOT / 'dist/pole 2.0beta1.gba')
+    print('ROM: dist/pole 2.0beta1.gba')
 
 
 if __name__ == '__main__':

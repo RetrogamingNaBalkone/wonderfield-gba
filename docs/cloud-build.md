@@ -46,8 +46,8 @@ SHA-256 архива:
 ```bash
 cd /workspace/wonderfield-gba
 python3 scripts/build-cloud.py
-file 'dist/pole 2.0beta.gba'
-sha256sum 'dist/pole 2.0beta.gba'
+file 'dist/pole 2.0beta1.gba'
+sha256sum 'dist/pole 2.0beta1.gba'
 cat build/gba/build-report.json
 ```
 
@@ -61,7 +61,7 @@ cat build/gba/build-report.json
 
 Результаты:
 
-- `dist/pole 2.0beta.gba` — ROM для запуска;
+- `dist/pole 2.0beta1.gba` — ROM для запуска;
 - `build/gba/pole.gba` — идентичная рабочая копия;
 - `build/gba/pole.elf`, `pole.map` — символы и карта линковки;
 - `build/gba/build-report.json` — размер, SHA-256 и контрольная сумма заголовка;
@@ -121,7 +121,7 @@ Use the existing checkout /workspace/wonderfield-gba. Cloud tasks are isolated;
 do not create a Git worktree unless explicitly requested. Read AGENTS.md and
 docs/cloud-build.md. No services or devkitARM are required. Run
 bash scripts/setup-cloud.sh and python3 scripts/build-cloud.py.
-Check build/gba/build-report.json and file 'dist/pole 2.0beta.gba'.
+Check build/gba/build-report.json and file 'dist/pole 2.0beta1.gba'.
 If originals are missing, import the user-supplied archive using
 /workspace/.tools/wonderfield/bin/python scripts/import-cloud-originals.py ARCHIVE.
 Never commit originals, caches or tools. Update the test ROM in downloads as required by AGENTS.md. Claim a successful build only
