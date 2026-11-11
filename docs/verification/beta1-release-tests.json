@@ -1,0 +1,67 @@
+{
+  "version": "2.0beta1",
+  "rom_sha256": "a98e9f9f7f39cc94b2046ff53ede1b24e01e3ce4bdc38d9fe25244efbb9a8f6a",
+  "checks": [
+    {
+      "script": "test-multiplayer.py",
+      "passed": true
+    },
+    {
+      "script": "test-match-rules.py",
+      "passed": true
+    },
+    {
+      "script": "test-player-names.py",
+      "passed": true
+    },
+    {
+      "script": "test-avatars.py",
+      "passed": true
+    },
+    {
+      "script": "test-round-elimination.py",
+      "passed": true
+    },
+    {
+      "script": "test-chest-transition.py",
+      "passed": true
+    },
+    {
+      "script": "test-options-help.py",
+      "passed": true
+    },
+    {
+      "script": "test-player-layout.py",
+      "passed": true
+    },
+    {
+      "script": "test-walk-names.py",
+      "passed": true
+    },
+    {
+      "script": "test-standings.py",
+      "passed": true
+    },
+    {
+      "script": "test-final-standings.py",
+      "passed": true
+    },
+    {
+      "script": "test-round-ui.py",
+      "passed": true
+    },
+    {
+      "script": "test-intro-roster.py",
+      "passed": true
+    },
+    {
+      "script": "test-title-timing.py",
+      "passed": true
+    },
+    {
+      "script": "verify_records.py",
+      "passed": true
+    }
+  ],
+  "physical_gba_link_tested": false
+}

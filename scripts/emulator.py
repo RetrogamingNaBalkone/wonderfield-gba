@@ -2,6 +2,8 @@
 import ctypes as c,struct,zlib,binascii,os
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
+class MemoryDescriptor(c.Structure):_fields_=[('flags',c.c_uint64),('ptr',c.c_void_p),('offset',c.c_size_t),('start',c.c_size_t),('select',c.c_size_t),('disconnect',c.c_size_t),('length',c.c_size_t),('addrspace',c.c_char_p)]
+class MemoryMap(c.Structure):_fields_=[('descriptors',c.POINTER(MemoryDescriptor)),('count',c.c_uint)]
 class Info(c.Structure):_fields_=[('path',c.c_char_p),('data',c.c_void_p),('size',c.c_size_t),('meta',c.c_char_p)]
 class Variable(c.Structure):_fields_=[('key',c.c_char_p),('value',c.c_char_p)]
 class Geometry(c.Structure):_fields_=[('width',c.c_uint),('height',c.c_uint),('max_width',c.c_uint),('max_height',c.c_uint),('aspect',c.c_float)]
@@ -24,7 +26,12 @@ def symbols(path=None):
  return result
 class Emulator:
  def __init__(self,rom_path=None,elf_path=None):
-  self.core=c.CDLL(str(Path(os.environ['LOCALAPPDATA'])/'Programs/mGBA/libretro-20261024/mgba_libretro.dll'));self.keys=set();self.format=0;self.raw=b'';self.variables={};self.samples=0;self.nonzero=0;self.errors=[];self.audio=[]
+  core=os.environ.get('MGBA_LIBRETRO')
+  if not core:
+   if os.name=='nt':core=str(Path(os.environ['LOCALAPPDATA'])/'Programs/mGBA/libretro-20261024/mgba_libretro.dll')
+   else:core=str(Path(os.environ.get('WONDERFIELD_MGBA_DIR','/workspace/.tools/mgba'))/'mgba_libretro.so')
+  if not Path(core).is_file():raise RuntimeError('mGBA core not found; set MGBA_LIBRETRO to its full path')
+  self.core=c.CDLL(core);self.keys=set();self.format=0;self.raw=b'';self.variables={};self.samples=0;self.nonzero=0;self.errors=[];self.audio=[]
   self.directory=os.fsencode(str(ROOT/'build/gba'))
   self.callbacks=[ENV(self.env),VIDEO(self.video),AUDIO(lambda l,r:None),BATCH(self.batch),POLL(lambda:None),INPUT(lambda p,d,i,b:int(p==0 and d==1 and b in self.keys))]
   for name,cb in zip(('environment','video_refresh','audio_sample','audio_sample_batch','input_poll','input_state'),self.callbacks):
@@ -32,10 +39,16 @@ class Emulator:
   self.core.retro_get_memory_data.argtypes=[c.c_uint];self.core.retro_get_memory_data.restype=c.c_void_p
   self.core.retro_load_game.argtypes=[c.POINTER(Info)];self.core.retro_load_game.restype=c.c_bool
   self.core.retro_init();rom=Path(rom_path or ROOT/'build/gba/pole.gba');data=rom.read_bytes();self.buf=c.create_string_buffer(data);self.info=Info(os.fsencode(str(rom)),c.cast(self.buf,c.c_void_p),len(data),None);assert self.core.retro_load_game(c.byref(self.info))
-  self.ram=self.core.retro_get_memory_data(2);self.sym=symbols(elf_path);self.game_address=self.sym['game'];self.ramgame=self.ram+self.game_address-0x02000000
+  self.ram=self.core.retro_get_memory_data(2) or self.mapped_ram;self.sym=symbols(elf_path);self.game_address=self.sym['game'];self.ramgame=self.ram+self.game_address-0x02000000
   av=AVInfo();self.core.retro_get_system_av_info.argtypes=[c.POINTER(AVInfo)];self.core.retro_get_system_av_info(c.byref(av));self.rate=int(av.timing.rate);self.fps=av.timing.fps
  def env(self,cmd,data):
   try:
+   if cmd in (36,0x10024):
+    maps=c.cast(data,c.POINTER(MemoryMap))[0]
+    for i in range(maps.count):
+     d=maps.descriptors[i]
+     if d.start==0x02000000 and d.ptr:self.mapped_ram=d.ptr+d.offset
+    return True
    if cmd in (9,31):c.cast(data,c.POINTER(c.c_char_p))[0]=self.directory;return True
    if cmd==10:self.format=c.cast(data,c.POINTER(c.c_int))[0];return True
    if cmd==16:

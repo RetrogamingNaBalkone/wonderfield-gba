@@ -1,0 +1,185 @@
+{
+  "rom_sha256": "a98e9f9f7f39cc94b2046ff53ede1b24e01e3ce4bdc38d9fe25244efbb9a8f6a",
+  "checks": [
+    {
+      "case": "points-rise",
+      "round": 1,
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "movement_shown": false
+    },
+    {
+      "case": "points-rise",
+      "round": 2,
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "movement_shown": true
+    },
+    {
+      "case": "risk-bankrupt",
+      "round": 1,
+      "order": [
+        0,
+        1,
+        2
+      ],
+      "movement_shown": false
+    },
+    {
+      "case": "risk-bankrupt",
+      "round": 2,
+      "order": [
+        0,
+        1,
+        2
+      ],
+      "movement_shown": true
+    },
+    {
+      "case": "points-tie",
+      "round": 1,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": false
+    },
+    {
+      "case": "points-tie",
+      "round": 2,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": true
+    },
+    {
+      "case": "unchanged",
+      "round": 1,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": false
+    },
+    {
+      "case": "unchanged",
+      "round": 2,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": true
+    },
+    {
+      "case": "wins-rise",
+      "round": 1,
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "movement_shown": false
+    },
+    {
+      "case": "wins-rise",
+      "round": 2,
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "movement_shown": true
+    },
+    {
+      "case": "wins-tie",
+      "round": 1,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": false
+    },
+    {
+      "case": "wins-tie",
+      "round": 2,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": true
+    },
+    {
+      "case": "wins-no-winner",
+      "round": 1,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": false
+    },
+    {
+      "case": "wins-no-winner",
+      "round": 2,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": true
+    },
+    {
+      "case": "repeat-shootout",
+      "round": 1,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": true
+    },
+    {
+      "case": "repeat-shootout",
+      "round": 2,
+      "order": [
+        2,
+        0,
+        1
+      ],
+      "movement_shown": true
+    },
+    {
+      "case": "five-digits",
+      "round": 1,
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "movement_shown": false
+    },
+    {
+      "case": "five-digits",
+      "round": 2,
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "movement_shown": true
+    }
+  ]
+}

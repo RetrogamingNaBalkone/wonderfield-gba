@@ -1,0 +1,27 @@
+{
+  "rom_sha256": "9aaf440485aa201839499d016ab8a45b1534d7caf087b698183c5adc30a9676e",
+  "single_player_checks": 537,
+  "multiplayer_regression": "passed",
+  "avatar_versions": [
+    1,
+    2
+  ],
+  "avatar_checks": [
+    "selection and wrap",
+    "return to name",
+    "stable identity across views",
+    "hide eliminated portrait and restore"
+  ],
+  "link_model_consoles": [
+    2,
+    3
+  ],
+  "link_checks": [
+    "avatar synchronization",
+    "host settings",
+    "owner-only input",
+    "disconnect"
+  ],
+  "physical_cable_tested": false,
+  "cash_exit_scenarios": 20
+}

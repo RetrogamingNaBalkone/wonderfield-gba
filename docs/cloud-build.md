@@ -46,8 +46,8 @@ SHA-256 архива:
 ```bash
 cd /workspace/wonderfield-gba
 python3 scripts/build-cloud.py
-file 'dist/pole 1.1.gba'
-sha256sum 'dist/pole 1.1.gba'
+file 'dist/pole 2.0beta2.gba'
+sha256sum 'dist/pole 2.0beta2.gba'
 cat build/gba/build-report.json
 ```
 
@@ -61,7 +61,7 @@ cat build/gba/build-report.json
 
 Результаты:
 
-- `dist/pole 1.1.gba` — ROM для запуска;
+- `dist/pole 2.0beta2.gba` — ROM для запуска;
 - `build/gba/pole.gba` — идентичная рабочая копия;
 - `build/gba/pole.elf`, `pole.map` — символы и карта линковки;
 - `build/gba/build-report.json` — размер, SHA-256 и контрольная сумма заголовка;
@@ -76,16 +76,33 @@ SHA-256 `f4ca9f79753b73e8cdb32c5cadf0971983c980faaf2b1d81bab4117d9c64e7d4`.
 заголовка `0xD0` и совпадение рабочей и итоговой копий ROM.
 Штатный `finish_rom.py` также записал логотип GBA и проверил сумму заголовка.
 
-Эмуляторные и релизные проверки не выполнялись: существующий `emulator.py`
-загружает Windows DLL mGBA через `LOCALAPPDATA`. Для проверки игрового поведения
-на Linux потребуется отдельная адаптация пути к libretro core. Это не является
-зависимостью компиляции ROM.
+## mGBA на Linux
+
+Для headless-тестов используется Linux libretro core mGBA. Установка без root:
+
+```bash
+mkdir -p /workspace/.tools/mgba
+curl -fLsS https://buildbot.libretro.com/nightly/linux/x86_64/latest/mgba_libretro.so.zip -o /workspace/.tools/mgba/core.zip
+python3 -m zipfile -e /workspace/.tools/mgba/core.zip /workspace/.tools/mgba
+python3 scripts/test-title-timing.py
+python3 scripts/test-multiplayer.py
+python3 scripts/test-match-rules.py
+```
+
+`emulator.py` автоматически использует `/workspace/.tools/mgba/mgba_libretro.so`.
+Другой путь задаётся через `MGBA_LIBRETRO`; Windows-путь сохранён.
+Адрес загрузки содержит nightly-сборку и со временем меняется. SHA-256 архива,
+использованного для проверки 2.0beta:
+`e551e406847d891a4e82defe2a3032bb573a1026bc5f31b66093267d6747bfed`.
+Кабельный harness `test-link.py` требует отдельной сборки libmgba с заголовками;
+libretro core для него недостаточно.
 
 ## Повторное использование среды
 
 Задачи Cloud уже изолированы: используйте существующий checkout, не создавайте
 Git worktree без явного запроса пользователя. Постоянные сервисы не требуются.
-Не коммитьте ROM, оригиналы, инструменты, кэши и промежуточные результаты.
+Не коммитьте оригиналы, инструменты, кэши и промежуточные результаты.
+Тестовый ROM и его SHA-256 обновляйте в `downloads` согласно `AGENTS.md`.
 Каталоги `build`, `dist` и `originals` уже включены в `.gitignore`.
 
 Для поля **install_script** в настройках среды:
@@ -104,10 +121,10 @@ Use the existing checkout /workspace/wonderfield-gba. Cloud tasks are isolated;
 do not create a Git worktree unless explicitly requested. Read AGENTS.md and
 docs/cloud-build.md. No services or devkitARM are required. Run
 bash scripts/setup-cloud.sh and python3 scripts/build-cloud.py.
-Check build/gba/build-report.json and file 'dist/pole 1.1.gba'.
+Check build/gba/build-report.json and file 'dist/pole 2.0beta2.gba'.
 If originals are missing, import the user-supplied archive using
 /workspace/.tools/wonderfield/bin/python scripts/import-cloud-originals.py ARCHIVE.
-Never commit ROMs, originals, caches or tools. Claim a successful build only
+Never commit originals, caches or tools. Update the test ROM in downloads as required by AGENTS.md. Claim a successful build only
 after compilation, linking and finish_rom.py complete successfully.
 ```
 

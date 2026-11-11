@@ -1,0 +1,26 @@
+{
+  "rom_sha256": "a98e9f9f7f39cc94b2046ff53ede1b24e01e3ce4bdc38d9fe25244efbb9a8f6a",
+  "checks": [
+    {
+      "rule": 0,
+      "native_font": true,
+      "perspective_names": true,
+      "viewer_hud": true,
+      "round_badge": true
+    },
+    {
+      "rule": 1,
+      "native_font": true,
+      "perspective_names": true,
+      "viewer_hud": true,
+      "round_badge": true
+    },
+    {
+      "rule": 2,
+      "native_font": true,
+      "perspective_names": true,
+      "viewer_hud": true,
+      "round_badge": true
+    }
+  ]
+}

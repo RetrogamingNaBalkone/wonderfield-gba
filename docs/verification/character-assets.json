@@ -1,0 +1,109 @@
+{
+  "rom_sha256": "52521b60ff53cd834afcdac7a3af87a98ade6b2713bec1d0e0487f6c1f049dcb",
+  "checks": [
+    {
+      "dos_id": 55,
+      "width": 24,
+      "height": 34,
+      "black_pixels": 343,
+      "source_sha256": "8b8c0ca10af4652a8551603d3919234262eb07785f3024fed38a5740728481b4",
+      "rom_pixel_sha256": "1468465046277f3e77f0d8d5e8badf39e9f86362c555a86541ec0392428c43bd"
+    },
+    {
+      "dos_id": 56,
+      "width": 22,
+      "height": 32,
+      "black_pixels": 157,
+      "source_sha256": "acab1e8c0bee021c5d1f4fe5e4fccc9144c3b0457392345fcdcf703c773425cb",
+      "rom_pixel_sha256": "b9f8971bcfcaf64ae3e2b3a462cc0ba0ce16f0a3e25de82b4bee143f09e4777a"
+    },
+    {
+      "dos_id": 21,
+      "width": 29,
+      "height": 33,
+      "black_pixels": 566,
+      "source_sha256": "c5dc9e5d7bc6ea569411b505ad945e59dcdd6f6f9aa6cebbe70cb70799797cb4",
+      "rom_pixel_sha256": "79207aff720ac10ae2b07c3ea4ae0181122f5b834bafe7b2d58fb74f3e088720"
+    },
+    {
+      "dos_id": 22,
+      "width": 26,
+      "height": 33,
+      "black_pixels": 526,
+      "source_sha256": "b5bdf5f02b5075ca61efc38e0c7f99a7bc4f1bf1e37e02008e423dff8e6f9795",
+      "rom_pixel_sha256": "63f4979042fa109aaa780a132dc5a2efd60fd59d030edbbf4215dbce0d05bcf7"
+    },
+    {
+      "dos_id": 57,
+      "width": 29,
+      "height": 33,
+      "black_pixels": 561,
+      "source_sha256": "e16f53bd089d9bbc6fc65fc072229d021578f3363017cfff39d182f68eee56be",
+      "rom_pixel_sha256": "852d754b1a3eb04c17bd002d9a2238e5437dde58ab0d57cb6e9753fbd6427d37"
+    },
+    {
+      "dos_id": 58,
+      "width": 26,
+      "height": 33,
+      "black_pixels": 525,
+      "source_sha256": "52925528108ecad3ef94512496ff90cfb7b9ab97abc6be5b4378e4bd2d946afc",
+      "rom_pixel_sha256": "5ea595aac7fc88a753c48736badb5fa289e970fcf56332ce1f855baec4b523a1"
+    },
+    {
+      "dos_id": 59,
+      "width": 25,
+      "height": 33,
+      "black_pixels": 420,
+      "source_sha256": "0f21b2d19559ba15ddada9e9d7f02f24e52195db1d7cda6cfc68513f2941e397",
+      "rom_pixel_sha256": "f33388af6485d1a228e9b51c5b32de3a54691a6e75a7ba9aba4413193fb62e37"
+    },
+    {
+      "dos_id": 48,
+      "width": 27,
+      "height": 32,
+      "black_pixels": 263,
+      "source_sha256": "9f451d1b9b700b9349f72497ef5e443d872e2af689f0aba82d8c3ece4140312d",
+      "rom_pixel_sha256": "e2a6bd1f717788fd51067696800c4b9f987f9aa9c8620b897fec3b47a9cac3b1"
+    },
+    {
+      "dos_id": 49,
+      "width": 23,
+      "height": 32,
+      "black_pixels": 305,
+      "source_sha256": "4cfbcfb6dbd55daa2d0d93672792b4b49d57ecb5bb1a68d0bd7cce4cf97880c4",
+      "rom_pixel_sha256": "043cd10fa177461d81818d65f6a0d6ef9269de5c78a9f2b24efc2acdf5cab898"
+    },
+    {
+      "dos_id": 51,
+      "width": 18,
+      "height": 32,
+      "black_pixels": 194,
+      "source_sha256": "2e1307d1f9b1f050939632c041bf36c83311aeffe4146b3753d8be59f93307dc",
+      "rom_pixel_sha256": "c145e152a505f30a8b858308d0179d0a08afa864d720c13baff677027bb170a6"
+    },
+    {
+      "dos_id": 50,
+      "width": 29,
+      "height": 32,
+      "black_pixels": 207,
+      "source_sha256": "7e6ad66cf264490505631ecea6ed9f80f2c2887159fe67f79a7e650fd637c6d6",
+      "rom_pixel_sha256": "b26cb92248e8480dc856ab60a3350281bc69a0e78bb9ce23374dbee40476c432"
+    },
+    {
+      "dos_id": 53,
+      "width": 19,
+      "height": 32,
+      "black_pixels": 147,
+      "source_sha256": "164c74fe2a8cf59c04e3cbfe2e6dbe90bd2cb06b4f83fa9bb536239ba8f54ea1",
+      "rom_pixel_sha256": "6461263a44e5e1a2b3950a2441d257de77f0bf68b25b79f10937aa81f8145eec"
+    },
+    {
+      "dos_id": 54,
+      "width": 23,
+      "height": 32,
+      "black_pixels": 196,
+      "source_sha256": "977310e2fc18ebfc3cf0c448cf61bb34221ed7bb0b8c3966dd6fabf57486b706",
+      "rom_pixel_sha256": "6002232ca7524369b46b45234a6941fe8700a9c581d988ac46c664aa7b2a79ed"
+    }
+  ]
+}

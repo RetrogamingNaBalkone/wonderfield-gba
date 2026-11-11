@@ -1,0 +1,47 @@
+{
+  "rom_sha256": "6e17d2319f1fdc40644ba0a08a4ba2006a0caf3b7210cf325961f89d3027d7b7",
+  "result": "passed",
+  "local_tests": [
+    "scripts/test-player-names.py",
+    "scripts/test-multiplayer.py",
+    "scripts/test-avatars.py",
+    "scripts/test-panel-name.py"
+  ],
+  "cable": {
+    "harness": "scripts/test-link.py",
+    "mgba_version": "0.10.5",
+    "console_counts": [
+      2,
+      3
+    ],
+    "scenarios": [
+      "distinct names",
+      "identical 10-character names",
+      "default names",
+      "duplicate pair with unaffected participant",
+      "AI name shared by all",
+      "host-only AI name"
+    ],
+    "checks": [
+      "A and B preserve name and cursor",
+      "duplicate retry",
+      "editing without disconnect",
+      "start blocked until names accepted",
+      "host confirmation does not also start game",
+      "synchronized names and duplicate avatars",
+      "host-only start and turn input",
+      "disconnect reports error",
+      "empty and space-only correction rejected; A/B preserve input"
+    ]
+  },
+  "limitations": [
+    "Cable uses emulated SIO test bus, not physical GBA hardware."
+  ],
+  "empty_name_checks": [
+    "empty input",
+    "one and ten spaces",
+    "local and initial cable setup",
+    "connected cable correction",
+    "nonempty name accepted after error"
+  ]
+}

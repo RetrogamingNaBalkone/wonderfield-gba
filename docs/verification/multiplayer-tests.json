@@ -1,0 +1,41 @@
+{
+  "rom_sha256": "52521b60ff53cd834afcdac7a3af87a98ade6b2713bec1d0e0487f6c1f049dcb",
+  "mgba": "0.10.5",
+  "tests": [
+    {
+      "test": "test-multiplayer.py",
+      "exit_code": 0,
+      "tail": "{'humans': 2, 'name_limit': True, 'wrong_word_elimination': True, 'perspective': True, 'ai_third': True}\n{'humans': 3, 'name_limit': True, 'wrong_word_elimination': True, 'perspective': True, 'ai_third': False}\n{'eight_stages': True, 'unique_words': [393, 667, 153, 207, 246, 602, 62, 513], 'named_winner_record': True}\n{'humans': 1, 'plus_count_and_bonus': True}\n{'humans': 2, 'plus_count_and_bonus': True}\n{'humans': 3, 'plus_count_and_bonus': True}\n{'humans': 1, 'defaults': (0, 0, 0), 'overrides': (1, 1, 1)}\n{'humans': 2, 'defaults': (1, 1, 1), 'overrides': (0, 0, 0)}\n{'humans': 3, 'defaults': (1, 1, 1), 'overrides': (0, 0, 0)}\n"
+    },
+    {
+      "test": "verify_v11.py",
+      "exit_code": 0,
+      "tail": "{\"status\": \"passed\", \"count\": 537, \"numeral_pixels\": 19232, \"cash_timings\": [{\"banknotes\": 100, \"vblanks\": 36, \"seconds\": 0.6027374232669609}], \"cash_skip_timings\": [{\"rubles\": 100000, \"vblanks\": 6}, {\"rubles\": 1000000, \"vblanks\": 6}], \"long_cash\": false, \"rom_sha256\": \"52521b60ff53cd834afcdac7a3af87a98ade6b2713bec1d0e0487f6c1f049dcb\"}\n"
+    },
+    {
+      "test": "verify_events.py",
+      "exit_code": 0,
+      "tail": "stays beside host and exposes more of the face\", \"msg_da9: transparency below speech preserves studio\", \"msg_da9: topic is not hidden outside the balloon\", \"msg_539e: host balloon has fixed right edge and fitted width\", \"msg_539e: every original font stroke remains centered and readable\", \"msg_539e: top aligns with the bottom of the letter row\", \"msg_539e: tail outline is continuous and joins body without seam\", \"msg_539e: tail stays beside host and exposes more of the face\", \"msg_539e: transparency below speech preserves studio\", \"msg_539e: topic is not hidden outside the balloon\", \"msg_539e: short speech leaves stopped sector visible\", \"msg_dfe: host balloon has fixed right edge and fitted width\", \"msg_dfe: every original font stroke remains centered and readable\", \"msg_dfe: top aligns with the bottom of the letter row\", \"msg_dfe: tail outline is continuous and joins body without seam\", \"msg_dfe: tail stays beside host and exposes more of the face\", \"msg_dfe: transparency below speech preserves studio\", \"msg_dfe: topic is not hidden outside the balloon\", \"longest balloon remains inside screen with original glyph size\"], \"early_wheel_phases\": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26], \"ai_start_vblanks\": 180, \"prize_rubles\": [100, 1000, 100000, 1000000], \"rom_sha256\": \"52521b60ff53cd834afcdac7a3af87a98ade6b2713bec1d0e0487f6c1f049dcb\"}\n"
+    },
+    {
+      "test": "verify_ai_chests.py",
+      "exit_code": 0,
+      "tail": "{\"status\": \"passed\", \"count\": 160, \"rom_sha256\": \"52521b60ff53cd834afcdac7a3af87a98ade6b2713bec1d0e0487f6c1f049dcb\"}\n"
+    },
+    {
+      "test": "verify_records.py",
+      "exit_code": 0,
+      "tail": "{\"status\": \"passed\", \"count\": 94, \"rom_sha256\": \"52521b60ff53cd834afcdac7a3af87a98ade6b2713bec1d0e0487f6c1f049dcb\", \"initial_scores\": [8000, 7000, 6000, 5000, 4000, 3000, 2000, 1000], \"qualification\": \"strictly above eighth place; equal results do not displace it\"}\n"
+    },
+    {
+      "test": "link-2",
+      "exit_code": 0,
+      "tail": "device 0 mode 15 player 1 local 2 viewer 2 word 325 transfers 2564\ndevice 1 mode 15 player 1 local 0 viewer 0 word 325 transfers 2564\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (4455 transfers)\nPASS: disconnect reports error without continuing the game\n"
+    },
+    {
+      "test": "link-3",
+      "exit_code": 0,
+      "tail": "device 0 mode 15 player 1 local 2 viewer 2 word 111 transfers 2167\ndevice 1 mode 15 player 1 local 0 viewer 0 word 111 transfers 2167\ndevice 2 mode 15 player 1 local 1 viewer 1 word 111 transfers 2167\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (3788 transfers)\nPASS: disconnect reports error without continuing the game\n"
+    }
+  ]
+}

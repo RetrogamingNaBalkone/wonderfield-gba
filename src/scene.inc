@@ -1,10 +1,10 @@
 /* Non-blocking versions of DOS introduction, face movement and letter reveal. */
 static void intro_phrase(void){
  switch(scene.phase){
- case 0:say(msg_1011,msg_101d);break;
- case 1:say(msg_5384,opponent_names[game.opponent[game.round*2]]);break;
- case 2:say(msg_5391,opponent_names[game.opponent[game.round*2+1]]);break;
- case 3:say(msg_539e,msg_53ab);break;
+ case 0:if(mp.humans>1&&(game.round>0||match.shootout))say("Следующий","раунд");else say(msg_1011,msg_101d);break;
+ case 1:if(mp.humans>1)say(player_intro(2),player_name(2));else say(msg_5384,character_name(game.opponent[game.round*2]));break;
+ case 2:if(mp.humans>1)say(player_intro(0),player_name(0));else say(msg_5391,character_name(game.opponent[game.round*2+1]));break;
+ case 3:if(mp.humans>1)say(player_intro(1),player_name(1));else say(msg_539e,msg_53ab);break;
  case 4:say(msg_f30,msg_f20);break;
  default:say(msg_f3f,words[game.word_id].topic);break;
  }
@@ -50,7 +50,7 @@ static void cash_note(void){
   if(c!=2&&(unsigned)dx<240&&(unsigned)dy<150)cash_canvas[dy*240+dx]=c;
  }
  unsigned before=cash.drawn*5672/1000;cash.drawn++;
- speaker_queue_tone(hz,cash.drawn*5672/1000-before);
+ if(!mp.link||mp.local==2)speaker_queue_tone(hz,cash.drawn*5672/1000-before);
 }
 static void cash_skip(void){
  if(cash.total>=10000){
@@ -59,14 +59,24 @@ static void cash_skip(void){
   dma_words((u32*)cash_canvas,(const u32*)cash_finished_bitmap,9600);
   cash.drawn=cash.total;
  }else while(cash.drawn<cash.total)cash_note();
- cash.ready=1;scene.host_active=0;speaker_tone(0,1);dirty=1;
+ cash.ready=1;scene.host_active=0;game_tone(0,1);dirty=1;
 }
-static void cash_begin(void){
- game.deal=5;game.keyboard=0;set_mode(CASH);say(msg_ffa,msg_1004);
- cash.drawn=0;cash.total=game.prize/10;cash.rng=game.rng;cash.ready=0;cash.credit=0;cash.next_at=video_ticks+120;
+static void cash_background(void){
  rect(0,0,240,160,7);half_image(46,4,4,7);half_image(47,73,4,7);
  half_image(27,185,75,-1);half_image(45,196,76,-1);half_image(43,204,94,-1);
  dma_words((u32*)cash_canvas,(const u32*)framebuffer,9600);
+}
+static void cash_remote_sync(const Cash*target,u32 seed){
+ static u32 previous_seed;static int valid;
+ if(!valid||previous_seed!=seed||cash.drawn>target->drawn){cash_background();cash.drawn=0;cash.rng=seed;previous_seed=seed;valid=1;}
+ if(target->total>=10000&&target->drawn==target->total){dma_words((u32*)cash_canvas,(const u32*)cash_finished_bitmap,9600);}
+ else while(cash.drawn<target->drawn)cash_note();
+ link_copy(&cash,target,sizeof cash);
+}
+static void cash_begin(void){
+ game.deal=5;game.keyboard=0;set_mode(CASH);say(msg_ffa,msg_1004);
+ cash.drawn=0;cash.total=game.prize/10;cash.rng=cash_initial_seed=game.rng;cash.ready=0;cash.credit=0;cash.next_at=video_ticks+120;
+ cash_background();
 }
 static void visual_tick(void){
  /* One transition per displayed pose; never skip a short mouth pulse
@@ -77,11 +87,11 @@ static void visual_tick(void){
 }
 static u32 visual_key(void){
  u32 key=(u32)game.mode<<24,age;
- if(game.mode==TITLE){age=scene.now-scene.title_at;return key|(age<80?age:age<100?80:100);}
+ if(game.mode==TITLE){age=scene.now-scene.title_at;return key|(age<TITLE_LOGO_AT?age:age<TITLE_READY_AT?TITLE_LOGO_AT:TITLE_READY_AT);}
  if(game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES||game.mode==HELP||game.mode==MENU||game.mode==RECORDS||game.mode==AUTHORS||game.mode==RESTART_CONFIRM)return key;
  if(speech_visible())key|=1;
  if(host_visible())key|=(scene.host_phase+1)<<1;
- if(game.mode==INTRO&&(scene.phase==1||scene.phase==2)){
+ if(game.mode==INTRO&&(scene.phase==1||scene.phase==2||(mp.humans>1&&scene.phase==3))){
   age=scene.now-scene.phase_at;key|=(age<54?age/18:3)<<5;
  }
  if(game.mode==CHEST){age=scene.now-scene.speech_at;key|=(age<90?(age/6)&1:2)<<7;}
@@ -97,7 +107,7 @@ static int scene_tick(u16 pressed){
   if(pressed&A){
    if(cash.drawn<cash.total){
     cash_skip();
-   }else farewell();
+   }else if(mp.humans>1)mp_depart(0);else farewell();
    return 1;
   }
   if(cash.drawn<cash.total&&(int)(scene.now-cash.next_at)>=0){
@@ -112,7 +122,11 @@ static int scene_tick(u16 pressed){
  }
  if(game.mode==INTRO){
   if((pressed&A)||(scene.now-scene.phase_at>=MESSAGE_TICKS)){
-   if(++scene.phase>=6){begin_turn();return 1;}
+   scene.phase++;
+   /* The multiplayer roster stays fixed across rounds and shootouts. */
+   if(mp.humans>1&&(game.round>0||match.shootout)&&scene.phase==1)scene.phase=4;
+   while(mp.humans>1&&scene.phase>=1&&scene.phase<=3&&(mp.eliminated&(1<<((scene.phase+1)%3))))scene.phase++;
+   if(scene.phase>=6){begin_turn();return 1;}
    scene.phase_at=scene.now;intro_phrase();
   }
   return 1;

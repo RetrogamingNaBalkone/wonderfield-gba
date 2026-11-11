@@ -1,0 +1,89 @@
+{
+  "rom_sha256": "a98e9f9f7f39cc94b2046ff53ede1b24e01e3ce4bdc38d9fe25244efbb9a8f6a",
+  "checks": [
+    {
+      "humans": 1,
+      "round": 0,
+      "shootout": false,
+      "phases": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "humans": 1,
+      "round": 1,
+      "shootout": false,
+      "phases": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "humans": 2,
+      "round": 0,
+      "shootout": false,
+      "phases": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "humans": 2,
+      "round": 1,
+      "shootout": false,
+      "phases": [
+        4,
+        5
+      ]
+    },
+    {
+      "humans": 2,
+      "round": 0,
+      "shootout": true,
+      "phases": [
+        4,
+        5
+      ]
+    },
+    {
+      "humans": 3,
+      "round": 0,
+      "shootout": false,
+      "phases": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "humans": 3,
+      "round": 1,
+      "shootout": false,
+      "phases": [
+        4,
+        5
+      ]
+    },
+    {
+      "humans": 3,
+      "round": 0,
+      "shootout": true,
+      "phases": [
+        4,
+        5
+      ]
+    }
+  ]
+}

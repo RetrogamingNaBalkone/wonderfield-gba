@@ -1,0 +1,35 @@
+{
+  "rom_sha256": "a98e9f9f7f39cc94b2046ff53ede1b24e01e3ce4bdc38d9fe25244efbb9a8f6a",
+  "checks": [
+    {
+      "rule": 0,
+      "round": 1,
+      "original_intro": true
+    },
+    {
+      "rule": 0,
+      "round": 3,
+      "original_intro": false
+    },
+    {
+      "rule": 1,
+      "round": 2,
+      "original_intro": false
+    },
+    {
+      "rule": 2,
+      "round": 1,
+      "original_intro": true
+    },
+    {
+      "rule": 2,
+      "round": 10,
+      "original_intro": false
+    },
+    {
+      "rule": 2,
+      "round": 14,
+      "original_intro": false
+    }
+  ]
+}

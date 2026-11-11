@@ -1,0 +1,45 @@
+{
+  "rom_sha256": "a98e9f9f7f39cc94b2046ff53ede1b24e01e3ce4bdc38d9fe25244efbb9a8f6a",
+  "checks": [
+    {
+      "case": "points",
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "winner_and_gift": true
+    },
+    {
+      "case": "risk-tied-runners",
+      "order": [
+        1,
+        2,
+        0
+      ],
+      "winner_and_gift": true
+    },
+    {
+      "case": "wins",
+      "order": [
+        0,
+        2,
+        1
+      ],
+      "winner_and_gift": true
+    },
+    {
+      "case": "shootout-lower-score-winner",
+      "order": [
+        1,
+        0,
+        2
+      ],
+      "winner_and_gift": true
+    },
+    {
+      "case": "ai-winner-long-names",
+      "winner_and_gift": true
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "version": "2.0",
+  "header_revision": 2,
+  "rom": "build/gba/pole.gba",
+  "bytes": 1048576,
+  "sha256": "7b25904120d1d632ed9a00b48312c610d0254e8da10d1518a489a2361aa4b283",
+  "checksum": 207,
+  "title_glyph_check": "passed: actual PPU pixels match 2.0",
+  "verification": {
+    "status": "passed",
+    "count": 537,
+    "numeral_pixels": 19232,
+    "cash_timings": [
+      {
+        "banknotes": 100,
+        "vblanks": 36,
+        "seconds": 0.6027374232669609
+      }
+    ],
+    "cash_skip_timings": [
+      {
+        "rubles": 100000,
+        "vblanks": 6
+      },
+      {
+        "rubles": 1000000,
+        "vblanks": 6
+      }
+    ],
+    "long_cash": false,
+    "rom_sha256": "7b25904120d1d632ed9a00b48312c610d0254e8da10d1518a489a2361aa4b283"
+  }
+}

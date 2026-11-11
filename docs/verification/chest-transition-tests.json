@@ -1,0 +1,18 @@
+{
+  "rom_sha256": "4633ca427453c9d4724ec023327e2a42261ef446770c8b3bb686850240ddccd1",
+  "result": "passed",
+  "regression": "Quick chest-result dismissal followed by zero sector showed chests during the next result before the fix.",
+  "checks": {
+    "scripts/test-chest-transition.py": [
+      "chests visible during bonus result",
+      "no leftover chests on zero result before original timeout",
+      "correct next-player handoff",
+      "one, two and three humans"
+    ],
+    "scripts/test-multiplayer.py": "passed",
+    "scripts/test-link.py --scenario 0": "passed for two and three emulated consoles"
+  },
+  "limitations": [
+    "Cable test uses a simulated SIO bus, not physical hardware."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "rom_sha256": "165a15f75821888dccde7fde5abcd3defa628a1d5c9fb133728b383df16de509",
+  "passed": [
+    "test-match-rules.py: solved word, last letter, Plus and no-winner announcement wait for A before results",
+    "test-multiplayer.py: eight rounds and no multiplayer records",
+    "test-round-elimination.py: eight rounds with cash, prize, wrong answer and mixed departures",
+    "test-link.py --scenario 0: separate announcement/results confirmations, two and three mGBA cores"
+  ],
+  "hardware_cable_tested": false
+}
