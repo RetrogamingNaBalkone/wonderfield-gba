@@ -1,7 +1,7 @@
 /* Non-blocking versions of DOS introduction, face movement and letter reveal. */
 static void intro_phrase(void){
  switch(scene.phase){
- case 0:if(mp.humans>1&&(game.round>0||match.shootout))say("НАЧИНАЕМ","РАУНД!");else say(msg_1011,msg_101d);break;
+ case 0:if(mp.humans>1&&(game.round>0||match.shootout))say("Следующий","раунд");else say(msg_1011,msg_101d);break;
  case 1:if(mp.humans>1)say(player_intro(2),player_name(2));else say(msg_5384,character_name(game.opponent[game.round*2]));break;
  case 2:if(mp.humans>1)say(player_intro(0),player_name(0));else say(msg_5391,character_name(game.opponent[game.round*2+1]));break;
  case 3:if(mp.humans>1)say(player_intro(1),player_name(1));else say(msg_539e,msg_53ab);break;

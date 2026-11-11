@@ -22,8 +22,8 @@ for rule,round_no in ((0,1),(0,3),(1,2),(2,1),(2,10),(2,14)):
   assert integer(e,'message1')==e.sym['msg_1011']
   assert integer(e,'message2')==e.sym['msg_101d']
  else:
-  assert message(e,'message1')=='НАЧИНАЕМ'
-  assert message(e,'message2')=='РАУНД!'
+  assert message(e,'message1')=='Следующий'
+  assert message(e,'message2')=='раунд'
  e.screenshot(f'round-ui-{rule}-{round_no}-intro.png')
  e.poke(3,1);write(e,'message1',struct.pack('<I',0));put(e,'scene',168,0)
  write(e,'dirty',struct.pack('<I',1));e.run(10)
