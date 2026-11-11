@@ -1,5 +1,5 @@
 {
-  "rom_sha256": "6563c85d68e56f21ac1e9dff56887f2684957f8e2e9fe33784c6bec6e5d3e16d",
+  "rom_sha256": "54a966dd45ab9f0d215e44e149f95fe6af0cbcc9a2bd00dff7c1dad3f17cd1a9",
   "checks": [
     {
       "rule": 0,
@@ -9,12 +9,12 @@
     {
       "rule": 0,
       "round": 3,
-      "original_intro": true
+      "original_intro": false
     },
     {
       "rule": 1,
       "round": 2,
-      "original_intro": true
+      "original_intro": false
     },
     {
       "rule": 2,
@@ -24,12 +24,12 @@
     {
       "rule": 2,
       "round": 10,
-      "original_intro": true
+      "original_intro": false
     },
     {
       "rule": 2,
       "round": 14,
-      "original_intro": true
+      "original_intro": false
     }
   ]
 }
