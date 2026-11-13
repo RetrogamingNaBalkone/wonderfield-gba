@@ -497,6 +497,14 @@ static void render(void){
   for(int i=0;i<4;i++){int y=34+i*26;if(mp.choice==i){rect(20,y-3,200,22,8);border(20,y-3,200,22,0);}centered(y,options[i],0,mp.choice==i?15:0);}
   centered(151,"A: Выбрать  B: Назад",1,0);return;
  }
+ if(game.mode==MP_CONNECT){
+  rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,"Игра по кабелю",0,0);
+  const char*options[]={"Создать игру","Подключиться"};
+  for(int i=0;i<2;i++){int y=40+i*28;if(game.choice==i){rect(20,y-3,200,22,8);border(20,y-3,200,22,0);}centered(y,options[i],0,game.choice==i?15:0);}
+  centered(101,game.choice?"Правила и графику задает":"Создатель выбирает правила",1,0);
+  centered(114,game.choice?"создатель игры":"и использует главный разъем",1,0);
+  centered(151,"A: Выбрать  B: Назад",1,0);return;
+ }
  if(game.mode==LINK_TEST){
   /* Freeze one completed-transfer snapshot; drawing must not mix words
    * from different IRQs or compare a new TX against an older RX. */
@@ -571,7 +579,7 @@ static void render(void){
    const Sprite*portrait=avatar_portrait(i);
    image(portrait,x+(40-portrait->w)/2,y+(48-portrait->h)/2,2);
   }
-  centered(151,"A: Готово  B: К имени",1,0);return;
+  centered(151,link_active&&!link_create?"A: Готово  B: Отмена":"A: Готово  B: К имени",1,0);return;
  }
  if(game.mode==MP_NAME){
   rect(0,0,240,160,7);setup_player_heading();
@@ -586,8 +594,16 @@ static void render(void){
    int p=(i+2)%3;number(36,57+i*17,i+1,0,0);text(60,57+i*17,mp.names[p],0,p==mp.local?1:0);
   }
   if(link_snapshot.name_conflicts||link_snapshot.name_editing)centered(108,"Ждем исправления имени",1,0);
-  centered(122,link_connected<2?"Ожидание участников...":(link_snapshot.name_conflicts||link_snapshot.name_editing)?"Имена должны различаться":mp.local==2?"START: Начать игру":"Ждем ведущего игрока",0,0);
+  else if(link_snapshot.avatar_editing)centered(108,"Ждем выбора аватаров",1,0);
+  centered(122,link_connected<2?"Ожидание участников...":(link_snapshot.name_conflicts||link_snapshot.name_editing)?"Имена должны различаться":link_snapshot.avatar_editing?"Участники готовятся":mp.local==2?"START: Начать игру":"Ждем ведущего игрока",0,0);
   centered(151,"B: Отменить ожидание",1,0);return;
+ }
+ if(game.mode==MP_ERROR&&link_role_error){
+  rect(0,0,240,160,7);border(3,3,234,143,0);centered(19,"Проверьте роли игроков",0,0);
+  centered(48,link_role_error==1?"Нет создателя игры":link_role_error==2?"Создатель должен быть один":"Создатель на другом разъеме",1,0);
+  centered(73,"Главный разъем: Создать игру",1,0);
+  centered(90,"Остальные: Подключиться",1,0);
+  centered(121,"B: Выбрать роль заново",1,0);return;
  }
  if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,0);centered(59,"Одинаковая ROM и режим",1,0);centered(76,"Кабель GBA на 2/3 игроков",1,0);text(24,90,"Код:",1,0);number(64,90,link_error_stage,1,0);text(88,90,"SIO:",1,0);number(128,90,link_error_status,1,0);text(24,104,"RX:",1,0);number(56,104,link_error_received,1,0);text(112,104,"OK:",1,0);number(144,104,link_error_expected,1,0);text(24,118,"CRC:",1,0);number(64,118,link_retries,1,0);text(112,118,"W:",1,0);number(144,118,link_wire_word,1,0);centered(137,"B: В меню",1,0);return;}
 

@@ -8,14 +8,16 @@ for choice in range(3):
   e.screenshot('mode-menu-direct.png')
   for _ in range(choice):tap(e,5)
   tap(e,8)
+  if choice==2:
+   assert e.state()[3]==39;tap(e,8)
   if choice==1:
    assert e.state()[3]==34
    if humans==3:tap(e,5)
    e.screenshot(f'player-count-{choice}-{humans}.png');tap(e,8)
   assert e.state()[3]==32
   assert m['mp'](e)[0]==(2 if choice==2 else humans) and m['mp'](e)[1]==(choice==2)
-  tap(e,0);assert e.state()[3]==(34 if choice==1 else 26)
-  if choice==1:
+  tap(e,0);assert e.state()[3]==(34 if choice==1 else 39 if choice==2 else 26)
+  if choice in (1,2):
    tap(e,0);assert e.state()[3]==26
   tap(e,0);assert e.state()[3]==0
   e.close()

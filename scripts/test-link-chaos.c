@@ -18,6 +18,7 @@ static void no_errors(void){for(int i=0;i<count;i++)assert(rd(i,game_addr+12)!=3
 static void avatars(void){
  for(int i=0;i<count;i++){
   assert(!rd(i,active_addr));
+  if(getenv("LINK_CREATE_ADDR"))wr(i,strtoul(getenv("LINK_CREATE_ADDR"),0,16),1);
   for(int option=0;option<3;option++)wr(i,prefs_addr+option*4,1);
   wr(i,prefs_addr+16,0);wr(i,prefs_addr+20,3);wr(i,avatars_addr+8,i);
   wr(i,mp_addr,2);wr(i,mp_addr+4,1);wr(i,mp_addr+16,2);
@@ -25,11 +26,12 @@ static void avatars(void){
   c[i]->setKeys(c[i],8);
  }
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);run(20);
- for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==33);
+ for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==33);if(getenv("LINK_CREATE_ADDR"))wr(i,strtoul(getenv("LINK_CREATE_ADDR"),0,16),i==0);}
 }
 static int synced(int n){
  for(int i=0;i<n;i++){
-  if(rd(i,game_addr+12)!=30||rd(i,mp_addr)!=(unsigned)n)return 0;
+  unsigned mode=rd(i,game_addr+12);
+  if((mode!=30&&!avatar_screen(i))||rd(i,mp_addr)!=(unsigned)n)return 0;
   for(int j=0;j<n;j++)if(c[i]->busRead8(c[i],mp_addr+28+((j+2)%3)*11)!='A'+j)return 0;
  }
  return 1;
@@ -37,6 +39,7 @@ static int synced(int n){
 static void lobby(int n){for(int t=0;t<400&&!synced(n);t++)run(1);assert(synced(n));run(12);no_errors();records();}
 static void join_all(void){for(int i=0;i<count;i++)c[i]->setKeys(c[i],1);run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);lobby(count);}
 static void start(void){
+ finish_avatars();
  keys(0,8,20);run(160);
  for(int i=0;i<count;i++){assert(rd(i,active_addr));assert(rd(i,game_addr+12)!=30);assert(rd(i,game_addr+12)!=31);assert(rd(i,game_addr+24)==rd(0,game_addr+24));}
 }
@@ -140,8 +143,9 @@ int main(int argc,char**argv){
    keys(target,1,12);run(amount);assert(rd(target,game_addr+12)==30);
    keys(target,2,12);assert(rd(target,game_addr+12)==26);assert(!rd(target,active_addr));
    /* Re-enter through the existing name/avatar handlers. */
+   if(getenv("LINK_CREATE_ADDR"))wr(target,strtoul(getenv("LINK_CREATE_ADDR"),0,16),1);
    wr(target,mp_addr,2);wr(target,mp_addr+4,1);wr(target,mp_addr+16,2);wr(target,game_addr+12,27);wr(target,game_addr+80*4,1);wr(target,game_addr+88*4,'A'+target);
-   keys(target,8,20);assert(rd(target,game_addr+12)==33);
+   keys(target,8,20);assert(rd(target,game_addr+12)==33);if(getenv("LINK_CREATE_ADDR"))wr(target,strtoul(getenv("LINK_CREATE_ADDR"),0,16),target==0);
   }
   join_all();start();
  }else if(kind==11){

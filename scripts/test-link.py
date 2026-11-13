@@ -42,6 +42,9 @@ subprocess.run(['cc', *flags, str(ROOT / 'scripts/test-link.c'), '-L' + str(buil
                 '-Wl,-rpath,' + str(build), '-lmgba', '-o', str(executable)], check=True)
 s = symbols(args.elf)
 s['prefs'] = s.get('prefs', s.get('prefs.0'))
+for key in ('link_create','link_avatar_edit','link_name_edit'):
+ if key in s:os.environ[key.upper()+'_ADDR']=hex(s[key])
+ else:os.environ.pop(key.upper()+'_ADDR',None)
 for count in ([args.consoles] if args.consoles else (2, 3)):
     for scenario in ([args.scenario] if args.scenario is not None else range(6)):
         print(f'RUN: {count} consoles, name scenario {scenario}', flush=True)

@@ -17,7 +17,7 @@ typedef unsigned int u32;
 #define R 256
 #define L 512
 #define A_RELEASE 0x8000
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,CASH=21,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY,MP_OPTION_HELP,LINK_TEST};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,CASH=21,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY,MP_OPTION_HELP,LINK_TEST,MP_CONNECT};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
 enum {TITLE_GRID_HALF=12,TITLE_LOGO_AT=24,TITLE_READY_AT=36};
@@ -502,7 +502,17 @@ static void update(u16 pressed,u16 repeat){
   if(pressed&A){
    if(mp.choice==3){link_test_enter();return;}
    mp.link=mp.choice==2;mp.humans=mp.choice?2:1;
-   if(mp.choice==1)set_mode(MP_COUNT);else{mp_defaults();options_begin();}
+   if(mp.choice==2){game.choice=0;set_mode(MP_CONNECT);}
+   else if(mp.choice==1)set_mode(MP_COUNT);else{mp_defaults();options_begin();}
+  }
+  return;
+ }
+ if(game.mode==MP_CONNECT){
+  if(pressed&B){set_mode(MP_SETUP);return;}
+  if(repeat&(UP|DOWN)){game.choice^=1;dirty=1;}
+  if(pressed&A){
+   link_create=game.choice==0;mp.link=1;mp.humans=2;mp.local=mp.viewer=mp.edit=2;
+   mp_defaults();if(link_create)options_begin();else mp_name_begin();
   }
   return;
  }
@@ -520,7 +530,7 @@ static void update(u16 pressed,u16 repeat){
  }
  if(game.mode==MP_OPTIONS){
   if(mp.humans>1&&(pressed&SELECT)){option_help_value=option_value();set_mode(MP_OPTION_HELP);return;}
-  if(pressed&B){set_mode(mp.humans>1&&!mp.link?MP_COUNT:MP_SETUP);return;}
+  if(pressed&B){set_mode(mp.link?MP_CONNECT:mp.humans>1?MP_COUNT:MP_SETUP);return;}
   int count=mp.humans>1?6:4;
   const int order[]={3,4,0,1,2,5};int position=prefs.choice;
   if(mp.humans>1)for(int i=0;i<count;i++)if(order[i]==prefs.choice)position=i;
@@ -545,13 +555,16 @@ static void update(u16 pressed,u16 repeat){
   if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;
   if((pressed&A)&&game.solve_pos<10)game.answer[game.solve_pos++]=128+game.cursor;
   if((pressed&R)&&game.solve_pos<10)game.answer[game.solve_pos++]=' ';
+  if((pressed&B)&&!game.solve_pos&&mp.link){set_mode(link_create?MP_OPTIONS:MP_CONNECT);return;}
   if((pressed&B)&&game.solve_pos)game.answer[--game.solve_pos]=0;
   if(pressed&START){
    char candidate[11];name_clean(candidate,(const char*)game.answer);
    if(!candidate[0]){mp_name_error=2;dirty=1;return;}
    if(!mp.link&&name_taken(candidate,mp.edit)){mp_name_error=1;dirty=1;return;}
    for(int i=0;i<11;i++)mp.names[mp.edit][i]=candidate[i];
-   set_mode(MP_AVATAR);}
+   if(mp.link&&!link_create){link_open();set_mode(MP_LOBBY);}
+   else{if(avatars[mp.edit]>=(prefs.characters?9:7))avatars[mp.edit]=0;set_mode(MP_AVATAR);}
+  }
   dirty=1;return;
  }
  if(game.mode==MP_AVATAR){
@@ -573,7 +586,7 @@ static void update(u16 pressed,u16 repeat){
   return;
  }
  if(game.mode==MP_LOBBY){return;}
- if(game.mode==MP_ERROR){if(pressed&B){link_close();mp.link=0;mp.humans=1;set_mode(TITLE);}return;}
+ if(game.mode==MP_ERROR){if(pressed&B){link_close();if(link_role_error){game.choice=link_create?0:1;set_mode(MP_CONNECT);}else{mp.link=0;mp.humans=1;set_mode(TITLE);}}return;}
  if(game.mode==MP_PASS){if(pressed&A)set_mode(TURN);return;}
 
  if(mp.humans>1&&game.mode==ROUND_END){if(pressed&A){mp_settle();set_mode(MP_SUMMARY);}return;}
@@ -727,6 +740,20 @@ static void link_render_name(void){
  render();game=saved;mp.edit=edit;mp_name_error=error;
  mute_icon();present();
 }
+static void link_edit_avatar(u16 pressed,u16 repeat){
+ if(!link_avatar_armed){if((REG16(0x04000130)&(A|START))==(A|START))link_avatar_armed=1;return;}
+ int count=prefs.characters?9:7,columns=(count+1)/2;
+ if(repeat&LEFT)link_avatar=(link_avatar+count-1)%count;
+ if(repeat&RIGHT)link_avatar=(link_avatar+1)%count;
+ if(repeat&(UP|DOWN)){int next=link_avatar>=columns?link_avatar-columns:link_avatar+columns;link_avatar=next<count?next:count-1;}
+ if(pressed&(A|START))link_avatar_edit=0;
+}
+static void link_render_avatar(void){
+ Game saved=game;int edit=mp.edit,avatar=avatars[mp.local];
+ game.mode=MP_AVATAR;mp.edit=mp.local;avatars[mp.local]=link_avatar;
+ render();game=saved;mp.edit=edit;avatars[mp.local]=avatar;
+ mute_icon();present();
+}
 void gba_main(void){
  REG16(0x0400010a)=0;REG16(0x0400010e)=0;
  REG16(0x04000108)=0;REG16(0x0400010c)=0;
@@ -754,22 +781,27 @@ void gba_main(void){
   }
   if(mp.link&&link_active){
    if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
-   link_submit=link_name_edit?0:(keys|pressed)&~L;
+   link_submit=(link_name_edit||link_avatar_edit)?0:(keys|pressed)&~L;
    if(!link_frame()){
     link_error_stage=link_stage;link_error_status=link_status;
     link_close();
     if(link_cancelled){
-     mp_setup();mp.choice=2;pressed=repeat=0;
+     if(link_role_error){game.choice=link_create?0:1;set_mode(MP_CONNECT);}
+     else{mp_setup();mp.choice=2;}pressed=repeat=0;
      /* The B tap may also be queued by VBlank while SIO was waiting. */
      ime=REG16(0x04000208);REG16(0x04000208)=0;
      capture_keys();input_read=input_write;REG16(0x04000208)=ime;
     }else set_mode(MP_ERROR);
+   }
+   if(link_active&&link_role_error){
+    Game saved=game;game.mode=MP_ERROR;render();game=saved;mute_icon();present();continue;
    }
    if(link_active&&game.mode==TITLE){link_close();mp.link=0;mp.humans=1;dirty=1;}
    if(link_active&&game.mode==MP_LOBBY){
     if(link_name_edit&&mp.local==2)link_start_armed=0;
     link_edit_name(pressed,repeat);
     if(link_name_edit){link_render_name();continue;}
+    if(link_avatar_edit){link_edit_avatar(pressed,repeat);if(link_avatar_edit){link_render_avatar();continue;}}
    }
    if(link_active&&mp.local!=2){dirty=1;render();mute_icon();present();continue;}
    if(link_active){keys=link_keys;pressed=keys&~link_oldkeys;repeat=pressed;
@@ -779,7 +811,7 @@ void gba_main(void){
     if(game.mode==MP_LOBBY){
      dirty=1;
      if(!(keys&START)&&!(oldkeys&START))link_start_armed=1;
-     if(link_start_armed&&(pressed&START)&&mp.humans>=2&&!link_snapshot.name_conflicts&&!link_snapshot.name_editing)new_game();
+     if(link_start_armed&&(pressed&START)&&mp.humans>=2&&!link_snapshot.name_conflicts&&!link_snapshot.name_editing&&!link_snapshot.avatar_editing)new_game();
     }
    }
   }

@@ -108,6 +108,16 @@ static void run(unsigned frames){
   cable_pins();
  }
 }
+static int avatar_screen(int i){return getenv("LINK_AVATAR_EDIT_ADDR")&&rd(i,game_addr+12)==33&&rd(i,strtoul(getenv("LINK_AVATAR_EDIT_ADDR"),0,16));}
+static void finish_avatars(void){
+ if(!getenv("LINK_AVATAR_EDIT_ADDR"))return;
+ uint32_t editing=strtoul(getenv("LINK_AVATAR_EDIT_ADDR"),0,16),names=strtoul(getenv("LINK_NAME_EDIT_ADDR"),0,16);
+ for(int attempt=0;attempt<2;attempt++){
+  run(20);
+  for(int i=1;i<count;i++)if(rd(i,editing)&&!rd(i,names))c[i]->setKeys(c[i],1);
+  run(20);for(int i=1;i<count;i++)c[i]->setKeys(c[i],0);run(40);
+ }
+}
 int main(int argc,char**argv){
  if(getenv("LINK_IRQ_DELAY"))irq_delay=strtoul(getenv("LINK_IRQ_DELAY"),0,0);
  if(getenv("LINK_TIME_SCALE"))time_scale=strtoul(getenv("LINK_TIME_SCALE"),0,0);
@@ -128,6 +138,7 @@ int main(int argc,char**argv){
 #endif
  }
  run(100);
+ if(getenv("LINK_CREATE_ADDR"))for(int i=0;i<count;i++)wr(i,strtoul(getenv("LINK_CREATE_ADDR"),0,16),1);
  if(argc==15)for(int i=0;i<count;i++){wr(i,strtoul(argv[13],0,16),i?0:2);wr(i,strtoul(argv[14],0,16),i?1:8);}
  for(int i=0;i<count;i++){
   for(int option=0;option<3;option++)wr(i,prefs_addr+option*4,i==0);
@@ -142,6 +153,8 @@ int main(int argc,char**argv){
  }
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
  run(20);for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==33);
+ /* Legacy packet fixtures preselect avatars; real join UI has separate tests. */
+ if(getenv("LINK_CREATE_ADDR"))for(int i=0;i<count;i++)wr(i,strtoul(getenv("LINK_CREATE_ADDR"),0,16),i==0);
  if(join_order){
   int first=join_order==1?0:count-1;
   c[first]->setKeys(c[first],1);run(20);c[first]->setKeys(c[first],0);
@@ -152,10 +165,10 @@ int main(int argc,char**argv){
   for(int i=0;i<count;i++)if(i!=first)c[i]->setKeys(c[i],1);
  }else for(int i=0;i<count;i++)c[i]->setKeys(c[i],1);
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
- run(160);
+ run(160);finish_avatars();
  for(int i=0;i<count;i++)printf("lobby device %d: mode %u, consoles %u\n",i,rd(i,game_addr+12),rd(i,mp_addr));
  fflush(stdout);
- for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==30||(names_case&&names_case!=2&&rd(i,game_addr+12)==27));assert(rd(i,mp_addr)==(uint32_t)count);}
+ for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==30||avatar_screen(i)||(names_case&&names_case!=2&&rd(i,game_addr+12)==27));assert(rd(i,mp_addr)==(uint32_t)count);}
  if(names_case&&names_case!=2&&(names_case!=5||count==2)){
   uint32_t edit=strtoul(argv[8],0,16),answer=strtoul(argv[9],0,16),pos=strtoul(argv[10],0,16),cursor=strtoul(argv[11],0,16);
   for(int i=0;i<count;i++){
@@ -163,7 +176,7 @@ int main(int argc,char**argv){
    assert(rd(i,edit)==(uint32_t)conflict);
   }
   c[0]->setKeys(c[0],8);run(30);c[0]->setKeys(c[0],0);run(30);
-  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==30||(rd(i,game_addr+12)==27&&rd(i,edit)));
+  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==30||avatar_screen(i)||(rd(i,game_addr+12)==27&&rd(i,edit)));
   for(int i=0;i<count;i++)if(rd(i,edit)){
    unsigned length=rd(i,pos),selection=rd(i,cursor);char before[21];
    for(int j=0;j<21;j++)before[j]=c[i]->busRead8(c[i],answer+j);
@@ -190,7 +203,7 @@ int main(int argc,char**argv){
    c[i]->setKeys(c[i],1);run(20);c[i]->setKeys(c[i],0);run(20);
    c[i]->setKeys(c[i],8);run(30);c[i]->setKeys(c[i],0);run(60);
    assert(rd(i,edit)==0);
-   for(int j=0;j<count;j++)assert(rd(j,game_addr+12)==30||(rd(j,game_addr+12)==27&&rd(j,edit)));
+   for(int j=0;j<count;j++)assert(rd(j,game_addr+12)==30||avatar_screen(j)||(rd(j,game_addr+12)==27&&rd(j,edit)));
   }
   printf("PASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\n");
  }
@@ -207,6 +220,7 @@ int main(int argc,char**argv){
  if(names_case==1)assert(!strcmp(roster[0],"AAAAAAAAAA"));
  if(names_case==2)for(int i=0;i<count;i++)assert(roster[i][0]=='1'+i);
  if(names_case==3){assert(!strcmp(roster[0],"ANNA"));if(count==3)assert(!strcmp(roster[2],"BORIS"));}
+ finish_avatars();
  printf("PASS: unique bounded names synchronized in lobby (case %d)\n",names_case);
  c[1]->setKeys(c[1],8);run(30);c[1]->setKeys(c[1],0);run(20);
  assert(rd(0,game_addr+12)==30);

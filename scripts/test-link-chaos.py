@@ -23,6 +23,9 @@ for line in (build/'CMakeFiles/mgba.dir/flags.make').read_text().splitlines():
 exe=ROOT/'build/qa'/('test-link-chaos-'+a.report.stem);exe.parent.mkdir(parents=True,exist_ok=True)
 subprocess.run(['cc',*flags,str(ROOT/'scripts/test-link-chaos.c'),'-L'+str(build),'-Wl,-rpath,'+str(build),'-lmgba','-o',str(exe)],check=True)
 s=symbols(a.elf);s['prefs']=s.get('prefs',s.get('prefs.0'))
+for key in ('link_create','link_avatar_edit','link_name_edit'):
+ if key in s:os.environ[key.upper()+'_ADDR']=hex(s[key])
+ else:os.environ.pop(key.upper()+'_ADDR',None)
 rom_bytes=a.rom.read_bytes();rom_hash=hashlib.sha256(rom_bytes).hexdigest()
 frozen_rom=ROOT/'build/qa/link-chaos-roms'/f'{rom_hash}.gba'
 frozen_rom.parent.mkdir(parents=True,exist_ok=True)

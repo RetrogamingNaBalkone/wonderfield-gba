@@ -23,6 +23,8 @@ def options(e,humans=1,link=False):
  e.run(100);tap(e,8);assert e.state()[3]==26
  for _ in range(0 if humans==1 else 2 if link else 1):tap(e,5)
  tap(e,8)
+ if link:
+  assert e.state()[3]==39;tap(e,8)
  if humans>1 and not link:
   assert e.state()[3]==34
   if humans==3:tap(e,5)

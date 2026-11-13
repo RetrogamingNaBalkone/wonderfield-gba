@@ -1,0 +1,505 @@
+{
+  "rom_sha256": "e74a074252b3a360495191ed3f358570ca1ef1433e8193b7d9c8bd032829e90f",
+  "physical_hardware_verified": false,
+  "tests": {
+    "roles_model": {
+      "rom_sha256": "e74a074252b3a360495191ed3f358570ca1ef1433e8193b7d9c8bd032829e90f",
+      "native": false,
+      "tests": [
+        {
+          "count": 2,
+          "scenario": 0,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=0 graphics=0: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=0 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=1 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 2,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=2 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 3,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=3 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 4,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=4 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 0,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=0 graphics=0: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=0 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=1 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 2,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=2 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 3,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=3 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 4,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=4 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        }
+      ]
+    },
+    "roles_native": {
+      "rom_sha256": "e74a074252b3a360495191ed3f358570ca1ef1433e8193b7d9c8bd032829e90f",
+      "native": true,
+      "tests": [
+        {
+          "count": 2,
+          "scenario": 0,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=0 graphics=0: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=0 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=1 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 2,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=2 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 3,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=3 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 2,
+          "scenario": 4,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=2 scenario=4 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 0,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=0 graphics=0: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=0 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=1 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 2,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=2 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 3,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=3 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        },
+        {
+          "count": 3,
+          "scenario": 4,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 scenario=4 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+        }
+      ]
+    },
+    "transport_faults": {
+      "rom_sha256": "e74a074252b3a360495191ed3f358570ca1ef1433e8193b7d9c8bd032829e90f",
+      "tests": [
+        {
+          "count": 2,
+          "kind": 7,
+          "seed": 1,
+          "target": 1,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt snapshot",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 7.7,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/000.log",
+          "output": "PASS chaos kind=7 count=2 transfers=10154 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 14,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt build fingerprint",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 5.89,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/001.log",
+          "output": "PASS chaos kind=14 count=2 transfers=7113 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 20,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "persistent payload corruption",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 23.62,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/002.log",
+          "output": "PASS chaos kind=20 count=2 transfers=49330 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 18,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 1,
+          "name": "replay HEADER payload over START",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 4.34,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/003.log",
+          "output": "PASS chaos kind=18 count=2 transfers=7078 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 7.35,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/004.log",
+          "output": "PASS chaos kind=19 count=2 transfers=10330 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 7.05,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/005.log",
+          "output": "PASS chaos kind=19 count=2 transfers=10330 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 6.65,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/006.log",
+          "output": "PASS chaos kind=19 count=2 transfers=10178 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 7,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 6.61,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/007.log",
+          "output": "PASS chaos kind=19 count=2 transfers=10198 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 7,
+          "seed": 1,
+          "target": 1,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt snapshot",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 11.2,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/008.log",
+          "output": "PASS chaos kind=7 count=3 transfers=8876 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 14,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt build fingerprint",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 8.64,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/009.log",
+          "output": "PASS chaos kind=14 count=3 transfers=6233 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 20,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "persistent payload corruption",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 26.29,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/010.log",
+          "output": "PASS chaos kind=20 count=3 transfers=40186 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 18,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 1,
+          "name": "replay HEADER payload over START",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 9.85,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/011.log",
+          "output": "PASS chaos kind=18 count=3 transfers=6232 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 12.01,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/012.log",
+          "output": "PASS chaos kind=19 count=3 transfers=8943 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 8.17,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/013.log",
+          "output": "PASS chaos kind=19 count=3 transfers=8783 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 4.8,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/014.log",
+          "output": "PASS chaos kind=19 count=3 transfers=8870 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 7,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 3.86,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/015.log",
+          "output": "PASS chaos kind=19 count=3 transfers=8927 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 18,
+          "seed": 1,
+          "target": 2,
+          "phase": 2,
+          "amount": 1,
+          "name": "replay HEADER payload over START",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 3.1,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/016.log",
+          "output": "PASS chaos kind=18 count=3 transfers=6233 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 2,
+          "phase": 2,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 4.05,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/017.log",
+          "output": "PASS chaos kind=19 count=3 transfers=8943 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 2,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 4.16,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/018.log",
+          "output": "PASS chaos kind=19 count=3 transfers=8783 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 2,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 4.06,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/019.log",
+          "output": "PASS chaos kind=19 count=3 transfers=8870 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 2,
+          "phase": 7,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 3.93,
+          "log": "build/qa/link-chaos-logs/roles-final-crc/020.log",
+          "output": "PASS chaos kind=19 count=3 transfers=8927 delayed=0 busy=0\n"
+        }
+      ]
+    },
+    "native_game": {
+      "passed": true,
+      "cases": 12,
+      "output": "RUN: 2 consoles, name scenario 0\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: unique bounded names synchronized in lobby (case 0)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 312 transfers 11948\ndevice 1 mode 15 player 2 local 0 viewer 0 word 312 transfers 11948\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (15379 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 1\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 27, consoles 2\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 1)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 464 transfers 29823\ndevice 1 mode 15 player 2 local 0 viewer 0 word 464 transfers 29823\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (33232 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 2\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: unique bounded names synchronized in lobby (case 2)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 339 transfers 12014\ndevice 1 mode 15 player 2 local 0 viewer 0 word 339 transfers 12014\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (15381 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 3\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 3)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 432 transfers 27229\ndevice 1 mode 15 player 2 local 0 viewer 0 word 432 transfers 27229\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (30672 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 4\nlobby device 0: mode 27, consoles 2\nlobby device 1: mode 27, consoles 2\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 4)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 75 transfers 40716\ndevice 1 mode 15 player 2 local 0 viewer 0 word 75 transfers 40716\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (44156 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 5\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 5)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 354 transfers 24970\ndevice 1 mode 15 player 2 local 0 viewer 0 word 354 transfers 24970\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (28374 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 0\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: unique bounded names synchronized in lobby (case 0)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 225 transfers 10114\ndevice 1 mode 15 player 2 local 0 viewer 0 word 225 transfers 10114\ndevice 2 mode 15 player 2 local 1 viewer 1 word 225 transfers 10114\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (12945 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 1\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 1)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 147 transfers 41827\ndevice 1 mode 15 player 2 local 0 viewer 0 word 147 transfers 41827\ndevice 2 mode 15 player 2 local 1 viewer 1 word 147 transfers 41827\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (44677 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 2\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: unique bounded names synchronized in lobby (case 2)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 57 transfers 10088\ndevice 1 mode 15 player 2 local 0 viewer 0 word 57 transfers 10088\ndevice 2 mode 15 player 2 local 1 viewer 1 word 57 transfers 10088\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (12883 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 3\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 3)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 221 transfers 23254\ndevice 1 mode 15 player 2 local 0 viewer 0 word 221 transfers 23254\ndevice 2 mode 15 player 2 local 1 viewer 1 word 221 transfers 23254\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (26107 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 4\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 4)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 588 transfers 38743\ndevice 1 mode 15 player 2 local 0 viewer 0 word 588 transfers 38743\ndevice 2 mode 15 player 2 local 1 viewer 1 word 588 transfers 38743\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (41599 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 5\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: unique bounded names synchronized in lobby (case 5)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 578 transfers 10094\ndevice 1 mode 15 player 2 local 0 viewer 0 word 578 transfers 10094\ndevice 2 mode 15 player 2 local 1 viewer 1 word 578 transfers 10094\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (12945 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\n"
+    },
+    "menu": {
+      "passed": true,
+      "output": "PASS: direct mode menu, all five routes, back navigation, wheel clearance, bottom hint overlay\n"
+    },
+    "ui": {
+      "passed": true,
+      "checks": [
+        "join goes directly to name without changing prefs",
+        "only create opens game settings",
+        "empty name back-navigation",
+        "old avatar 8 reset to 0 after changing graphics to version 1",
+        "diagnostic remains the fourth mode-menu item",
+        "role labels fit the screen"
+      ]
+    }
+  }
+}
