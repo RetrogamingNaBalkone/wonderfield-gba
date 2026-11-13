@@ -534,7 +534,7 @@ static void render(void){
   centered(122,link_connected<2?"Ожидание участников...":(link_snapshot.name_conflicts||link_snapshot.name_editing)?"Имена должны различаться":mp.local==2?"START: Начать игру":"Ждем ведущего игрока",0,0);
   centered(151,"B: Отменить ожидание",1,0);return;
  }
- if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,0);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);text(24,105,"Код:",1,0);number(64,105,link_error_stage,1,0);text(88,105,"SIO:",1,0);number(128,105,link_error_status,1,0);centered(130,"B: В меню",1,0);return;}
+ if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,0);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);text(24,99,"Код:",1,0);number(64,99,link_error_stage,1,0);text(88,99,"SIO:",1,0);number(128,99,link_error_status,1,0);text(24,113,"RX:",1,0);number(56,113,link_error_received,1,0);text(112,113,"OK:",1,0);number(144,113,link_error_expected,1,0);centered(130,"B: В меню",1,0);return;}
 
 
  if(game.mode==CASH){

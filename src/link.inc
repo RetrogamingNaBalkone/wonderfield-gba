@@ -8,6 +8,7 @@ static char link_name_answer[21];
 static u16 link_keys,link_oldkeys,link_submit;
 static u32 link_repeat_at;
 static volatile u32 link_serial;
+static u32 link_boot_serial;
 static volatile u16 link_received[4],link_status;
 /* Stop-and-wait byte phases. SD-ready describes the electrical mode, not
  * whether the remote CPU has consumed a word. Replies are published by IRQ
@@ -18,6 +19,8 @@ static unsigned link_sequence;
 static int link_stage,link_error_stage;
 static volatile int link_master,link_started;
 static u16 link_error_status;
+static u16 link_error_received,link_error_expected;
+static int link_mismatch(u16 received,u16 expected){link_error_received=received;link_error_expected=expected;return 0;}
 static u16 link_remote[4];
 static char link_name[11],link_saved_names[8][11];
 static char link_incoming_names[3][11];
@@ -68,6 +71,8 @@ static void link_open(void){
  for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
  link_pending=link_phase=link_done=link_fault=link_sequence=0;
  link_master=-1;link_started=link_stage=link_error_stage=0;link_status=link_error_status=0;
+ link_error_received=link_error_expected=0;
+ link_boot_serial=link_serial;
  REG16(0x0400012a)=0;
  REG16(0x04000134)=0;REG16(0x04000128)=0x6003;
  REG16(0x04000202)=128;REG16(0x04000200)|=128;link_active=1;
@@ -84,17 +89,20 @@ static int link_timed_out(u32 start){
  if(game.mode==MP_LOBBY&&!link_started)return 0;
  return input_clock()-start>(game.mode==MP_LOBBY?503316480u:33554432u);
 }
-static int link_wire_exchange(u16 value){
+static int link_wire_exchange(u16 value,u32 exchange_start){
  if(link_cancel_requested())return 0;
  u32 serial=link_serial,start=input_clock();int master=link_master;
  REG16(0x0400012a)=value;
  if(master){
   /* Inter-word turnaround gives slaves time to consume and prepare replies. */
   while(input_clock()-start<4096){}
-  while(!(REG16(0x04000128)&8)){if(link_cancel_requested()||link_timed_out(start))return 0;}
+  while(!(REG16(0x04000128)&8)){if(link_cancel_requested()||link_timed_out(exchange_start))return 0;}
   REG16(0x04000128)|=128;
  }
- while(link_serial==serial){if(link_cancel_requested()||link_timed_out(start))return 0;}
+ /* Once START was issued, an IRQ must arrive even before the first peer
+  * word. Initial lobby waiting must not disable this hardware deadline. */
+ u32 wire_start=input_clock();
+ while(link_serial==serial){if(link_cancel_requested()||link_timed_out(exchange_start)||input_clock()-wire_start>(game.mode==MP_LOBBY?503316480u:33554432u))return 0;}
  if(link_status&64)return 0;
  for(int i=0;i<4;i++)link_remote[i]=link_received[i];
  mp.local=((link_status>>4&3)+2)%3;
@@ -116,7 +124,9 @@ static int link_exchange(u16 value){
  for(unsigned phase=0;phase<2;phase++){
   u16 tag=0xa000|link_sequence|(phase<<8);
   for(;;){
-   if(!link_wire_exchange(tag|((value>>(phase*8))&255)))return 0;
+   int started=link_started;
+   if(!link_wire_exchange(tag|((value>>(phase*8))&255),start))return 0;
+   if(!started)start=input_clock();
    int ready=1;unsigned present=0;
    for(int i=1;i<4;i++)if(link_remote[i]!=0xffff){
     present|=1u<<i;
@@ -149,11 +159,21 @@ static int link_word(u16 host,u16 reply,u16*out){
 static int link_frame(void){
  if(link_master<0){
   link_stage=1;
-  /* GBATEK initialization order: wait for SD-ready BEFORE reading SI.
-   * SI is not a reliable role indication while another GBA is booting. */
-  u16 status;
-  while(((status=REG16(0x04000128))&0x88)!=8)if(link_cancel_requested())return 0;
-  link_master=!(status&4);
+  /* Bootstrap with one hardware transfer, then use the assigned ID, not
+   * a cached SI pin level. START is read-only on children, so requesting
+   * it on every console starts exactly one transfer, on the parent. A
+   * late main loop may already have received it in IRQ while rendering. */
+  while(link_serial==link_boot_serial){
+   if(link_cancel_requested())return 0;
+   if((REG16(0x04000128)&0x88)==8){REG16(0x0400012a)=0xc091;REG16(0x04000128)|=128;break;}
+  }
+  u32 boot_start=input_clock();
+  while(link_serial==link_boot_serial)if(link_cancel_requested()||input_clock()-boot_start>503316480u)return 0;
+  if(link_status&64)return 0;
+  unsigned id=(link_status>>4)&3;if(id>=3)return 0;
+  link_master=id==0;mp.local=(id+2)%3;
+  link_started=id!=0;
+  if(!id)for(int i=1;i<4;i++)if(link_received[i]!=0xffff)link_started=1;
  }
  int master=link_master;u16 header=0xa710;
  u32 start=input_clock();link_stage=2;
@@ -161,7 +181,9 @@ static int link_frame(void){
   * Repeated headers are harmless; the separate START word begins the packet. */
  if(master){
   for(;;){
+   int started=link_started;
    if(!link_exchange(header))return 0;
+   if(!started)start=input_clock();
    int ready=1,connected=1;
    for(int i=1;i<4;i++)if(link_remote[i]!=0xffff){
     if(i!=connected||i==3)return 0;
@@ -179,17 +201,18 @@ static int link_frame(void){
   for(;;){
    if(!link_exchange(header))return 0;
    if(link_remote[0]==0xb17e)break;
-   if(link_remote[0]!=header||link_timed_out(start))return 0;
+   if(link_remote[0]!=header)return link_mismatch(link_remote[0],header);
+   if(link_timed_out(start))return 0;
   }
  }
  u16 value;
  link_stage=3;
  if(!link_word(MULTIPLAYER_BUILD&65535,MULTIPLAYER_BUILD&65535,&value))return 0;
- if(value!=(MULTIPLAYER_BUILD&65535))return 0;
- if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;
+ if(value!=(MULTIPLAYER_BUILD&65535))return link_mismatch(value,MULTIPLAYER_BUILD&65535);
+ if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return link_mismatch(link_remote[i],value);
  if(!link_word(MULTIPLAYER_BUILD>>16,MULTIPLAYER_BUILD>>16,&value))return 0;
- if(value!=(MULTIPLAYER_BUILD>>16))return 0;
- if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;
+ if(value!=(MULTIPLAYER_BUILD>>16))return link_mismatch(value,MULTIPLAYER_BUILD>>16);
+ if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return link_mismatch(link_remote[i],value);
  link_stage=4;
  if(!link_word(link_submit,link_submit,0))return 0;
  if(master){int device=(game.player+1)%3;link_keys=human(game.player)?link_remote[device]:link_remote[0];if(game.mode==MP_LOBBY)link_keys=link_remote[0];}

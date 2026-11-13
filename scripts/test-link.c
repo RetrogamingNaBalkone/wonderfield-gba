@@ -17,30 +17,48 @@ static struct Node{struct GBASIODriver d;int id;}nodes[3];
 static uint16_t sent[4];static uint64_t deadline;static int pending,transfers;
 static unsigned irq_delay,time_scale=1,delayed_irqs,busy_irqs;
 static uint64_t irq_due[3];
+static uint64_t clock_offset[3];
+static uint64_t cable_clock(int i){return clock_offset[i]+mTimingGlobalTime(&g[i]->timing);}
+/* Optional fault controls used by test-link-chaos.c. */
+static unsigned irq_block_mask,ready_block,initial_role_mask;
+static void (*transfer_hook)(void);
+static void (*receive_hook)(int);
+static int cable_online(int i){return disconnected<0||i<disconnected;}
+static int cable_ready(void){
+ if(ready_block||!cable_online(0))return 0;
+ for(int i=0;i<count;i++)if(cable_online(i)&&g[i]->sio.mode!=SIO_MULTI)return 0;
+ return 1;
+}
 static int join_order;
 static unsigned join_delay=2400;
 static void cable_pins(void){
- int ready=1;
- for(int i=0;i<count;i++)if(g[i]->sio.mode!=SIO_MULTI)ready=0;
+ int ready=cable_ready();
  for(int i=0;i<count;i++)if(g[i]->sio.mode==SIO_MULTI){
   /* Before all physical peers select multiplayer, SI is not a valid role
    * indication. Exercise the allowed high level on the parent as well. */
   /* During transmission a child's SI is pulled low by the preceding GBA.
    * Role detection must sample an idle, ready bus, not a data phase. */
-  int slave=!ready||(i&&!(g[i]->sio.siocnt&128));
-  g[i]->sio.siocnt=(g[i]->sio.siocnt&~12)|(ready?8:0)|(slave?4:0);
+  int local_ready=ready&&cable_online(i);
+  int slave=!local_ready||(i&&!(g[i]->sio.siocnt&128));
+  if(!transfers&&local_ready&&(initial_role_mask&(1u<<i)))slave=!slave;
+  g[i]->sio.siocnt=(g[i]->sio.siocnt&~12)|(local_ready?8:0)|(slave?4:0);
  }
 }
 static uint32_t game_addr,mp_addr;
 static bool yes(struct GBASIODriver*d){(void)d;return true;}
 static void nothing(struct GBASIODriver*d){(void)d;}
+#ifdef LINK_NATIVE
+#include "test-link-native.inc"
+#endif
 static uint16_t cable_write(struct GBASIODriver*d,uint32_t address,uint16_t value){
  struct Node*n=(struct Node*)d;
  if(address==REG_SIOCNT){
   if(!n->id&&(value&128)&&!pending){
-   for(int i=0;i<4;i++)sent[i]=i<count&&i!=disconnected?g[i]->memory.io[REG_SIOMLT_SEND/2]:0xffff;
-   deadline=mTimingGlobalTime(&g[0]->timing)+GBASIOCyclesPerTransfer[value&3][count-1];pending=1;
+   if(transfer_hook)transfer_hook();
+   for(int i=0;i<4;i++)sent[i]=i<count&&cable_online(i)&&g[i]->sio.mode==SIO_MULTI?g[i]->memory.io[REG_SIOMLT_SEND/2]:0xffff;
+   deadline=cable_clock(0)+GBASIOCyclesPerTransfer[value&3][count-1];pending=1;
    for(int i=0;i<count;i++){
+    if(!cable_online(i)||g[i]->sio.mode!=SIO_MULTI)continue;
     /* ERROR is undefined while BUSY; choose the high value to ensure that
      * a delayed IRQ cannot treat an in-flight transfer as a cable failure. */
     g[i]->sio.siocnt|=128|64;
@@ -48,23 +66,31 @@ static uint16_t cable_write(struct GBASIODriver*d,uint32_t address,uint16_t valu
     for(int j=0;j<4;j++)g[i]->memory.io[REG_SIOMULTI0/2+j]=0xffff;
    }
   }
-  int ready=1;for(int i=0;i<count;i++)if(g[i]->sio.mode!=SIO_MULTI)ready=0;
-  return (value&0xff83)|(ready?8:0)|((n->id||!ready)?4:0)|(n->id<<4);
+  int ready=cable_ready();
+  if(n->id)value=(value&~128)|(g[n->id]->sio.siocnt&128);
+  int slave=n->id||!ready;
+  if(!transfers&&ready&&(initial_role_mask&(1u<<n->id)))slave=!slave;
+  return (value&0xff83)|(ready?8:0)|(slave?4:0)|(n->id<<4);
  }
  return value;
 }
 static uint32_t rd(int i,uint32_t a){return c[i]->busRead32(c[i],a);}
 static void wr(int i,uint32_t a,uint32_t v){c[i]->busWrite32(c[i],a,v);}
 static void run(unsigned frames){
- uint64_t end=mTimingGlobalTime(&g[0]->timing)+(uint64_t)frames*time_scale*280896;
- while(mTimingGlobalTime(&g[0]->timing)<end){
+#ifdef LINK_NATIVE
+ native_run(frames);return;
+#endif
+ uint64_t end=cable_clock(0)+(uint64_t)frames*time_scale*280896;
+ while(cable_clock(0)<end){
   uint64_t min=UINT64_MAX;int who=0;
-  for(int i=0;i<count;i++){uint64_t t=mTimingGlobalTime(&g[i]->timing);if(t<min){min=t;who=i;}}
+  for(int i=0;i<count;i++){uint64_t t=cable_clock(i);if(t<min){min=t;who=i;}}
   if(pending&&min>=deadline){
    for(int i=0;i<count;i++){
+    if(!cable_online(i)||g[i]->sio.mode!=SIO_MULTI)continue;
     for(int j=0;j<4;j++)g[i]->memory.io[(REG_SIOMULTI0/2)+j]=sent[j];
     g[i]->sio.siocnt=(g[i]->sio.siocnt&~0xf4)|(i<<4)|(i?4:0);g[i]->sio.rcnt|=1;
-    if(i!=disconnected&&(g[i]->sio.siocnt&0x4000)){
+    if(receive_hook)receive_hook(i);
+    if(!(irq_block_mask&(1u<<i))&&(g[i]->sio.siocnt&0x4000)){
      /* Model a slave whose CPU cannot service SIO promptly (e.g. audio IRQ).
       * Timers and serial hardware continue; pending IRQs coalesce. */
      if(i&&irq_delay&&transfers%37==0&&!irq_due[i]){
@@ -75,7 +101,7 @@ static void run(unsigned frames){
   }
   for(int i=1;i<count;i++)if(irq_due[i]&&min>=irq_due[i]){
    if(g[i]->sio.siocnt&128)busy_irqs++;
-   if(i!=disconnected)GBARaiseIRQ(g[i],GBA_IRQ_SIO,0);
+   if(cable_online(i)&&!(irq_block_mask&(1u<<i)))GBARaiseIRQ(g[i],GBA_IRQ_SIO,0);
    irq_due[i]=0;
   }
   c[who]->runLoop(c[who]);
@@ -94,8 +120,12 @@ int main(int argc,char**argv){
   mCoreConfigSetDefaultIntValue(&c[i]->config,"useBios",0);mCoreConfigSetDefaultIntValue(&c[i]->config,"skipBios",1);
   mCoreConfigSetDefaultValue(&c[i]->config,"idleOptimization","ignore");mCoreLoadConfig(c[i]);
   c[i]->setVideoBuffer(c[i],calloc(240*160,sizeof(color_t)),240);assert(mCoreLoadFile(c[i],argv[1]));c[i]->reset(c[i]);g[i]=c[i]->board;
+#ifdef LINK_NATIVE
+  install_driver(i);
+#else
   nodes[i].id=i;nodes[i].d.init=yes;nodes[i].d.deinit=nothing;nodes[i].d.load=yes;nodes[i].d.unload=yes;nodes[i].d.writeRegister=cable_write;
   GBASIOSetDriver(&g[i]->sio,&nodes[i].d,SIO_MULTI);
+#endif
  }
  run(100);
  if(argc==15)for(int i=0;i<count;i++){wr(i,strtoul(argv[13],0,16),i?0:2);wr(i,strtoul(argv[14],0,16),i?1:8);}
