@@ -15,6 +15,8 @@ static struct mLogger logger={quiet,0};
 static struct mCore*c[3];static struct GBA*g[3];static int count,disconnected=-1;
 static struct Node{struct GBASIODriver d;int id;}nodes[3];
 static uint16_t sent[4];static uint64_t deadline;static int pending,transfers;
+static unsigned irq_delay,time_scale=1,delayed_irqs;
+static uint64_t irq_due[3];
 static uint32_t game_addr,mp_addr;
 static bool yes(struct GBASIODriver*d){(void)d;return true;}
 static void nothing(struct GBASIODriver*d){(void)d;}
@@ -24,7 +26,11 @@ static uint16_t cable_write(struct GBASIODriver*d,uint32_t address,uint16_t valu
   if(!n->id&&(value&128)&&!pending){
    for(int i=0;i<4;i++)sent[i]=i<count&&i!=disconnected?g[i]->memory.io[REG_SIOMLT_SEND/2]:0xffff;
    deadline=mTimingGlobalTime(&g[0]->timing)+GBASIOCyclesPerTransfer[value&3][count-1];pending=1;
-   for(int i=0;i<count;i++)g[i]->sio.siocnt|=128;
+   for(int i=0;i<count;i++){
+    g[i]->sio.siocnt|=128;
+    /* Real hardware and mGBA lockstep clear receive registers at START. */
+    for(int j=0;j<4;j++)g[i]->memory.io[REG_SIOMULTI0/2+j]=0xffff;
+   }
   }
   return (value&0xff83)|8|(n->id?4:0)|(n->id<<4);
  }
@@ -33,7 +39,7 @@ static uint16_t cable_write(struct GBASIODriver*d,uint32_t address,uint16_t valu
 static uint32_t rd(int i,uint32_t a){return c[i]->busRead32(c[i],a);}
 static void wr(int i,uint32_t a,uint32_t v){c[i]->busWrite32(c[i],a,v);}
 static void run(unsigned frames){
- uint64_t end=mTimingGlobalTime(&g[0]->timing)+(uint64_t)frames*280896;
+ uint64_t end=mTimingGlobalTime(&g[0]->timing)+(uint64_t)frames*time_scale*280896;
  while(mTimingGlobalTime(&g[0]->timing)<end){
   uint64_t min=UINT64_MAX;int who=0;
   for(int i=0;i<count;i++){uint64_t t=mTimingGlobalTime(&g[i]->timing);if(t<min){min=t;who=i;}}
@@ -41,13 +47,26 @@ static void run(unsigned frames){
    for(int i=0;i<count;i++){
     for(int j=0;j<4;j++)g[i]->memory.io[(REG_SIOMULTI0/2)+j]=sent[j];
     g[i]->sio.siocnt=(g[i]->sio.siocnt&~0xb0)|(i<<4);g[i]->sio.rcnt|=1;
-    if(i!=disconnected&&(g[i]->sio.siocnt&0x4000))GBARaiseIRQ(g[i],GBA_IRQ_SIO,0);
+    if(i!=disconnected&&(g[i]->sio.siocnt&0x4000)){
+     /* Model a slave whose CPU cannot service SIO promptly (e.g. audio IRQ).
+      * Timers and serial hardware continue; pending IRQs coalesce. */
+     if(i&&irq_delay&&transfers%37==0&&!irq_due[i]){
+      irq_due[i]=min+irq_delay;delayed_irqs++;
+     }else if(!irq_due[i])GBARaiseIRQ(g[i],GBA_IRQ_SIO,0);
+    }
    }pending=0;transfers++;
+  }
+  for(int i=1;i<count;i++)if(irq_due[i]&&min>=irq_due[i]){
+   if(i!=disconnected)GBARaiseIRQ(g[i],GBA_IRQ_SIO,0);
+   irq_due[i]=0;
   }
   c[who]->runLoop(c[who]);
  }
 }
 int main(int argc,char**argv){
+ if(getenv("LINK_IRQ_DELAY"))irq_delay=strtoul(getenv("LINK_IRQ_DELAY"),0,0);
+ if(getenv("LINK_TIME_SCALE"))time_scale=strtoul(getenv("LINK_TIME_SCALE"),0,0);
+ assert(time_scale>=1&&time_scale<=10);
  mLogSetDefaultLogger(&logger);assert(argc==7||argc==12||argc==15);int names_case=argc>=12?atoi(argv[7]):0;uint32_t avatars_addr=strtoul(argv[6],0,16);uint32_t prefs_addr=strtoul(argv[5],0,16);count=atoi(argv[2]);game_addr=strtoul(argv[3],0,16);mp_addr=strtoul(argv[4],0,16);
  for(int i=0;i<count;i++){
   c[i]=mCoreFind(argv[1]);assert(c[i]);assert(c[i]->init(c[i]));mCoreInitConfig(c[i],NULL);
@@ -74,6 +93,8 @@ int main(int argc,char**argv){
  run(20);for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==33);c[i]->setKeys(c[i],1);}
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
  run(160);
+ for(int i=0;i<count;i++)printf("lobby device %d: mode %u, consoles %u\n",i,rd(i,game_addr+12),rd(i,mp_addr));
+ fflush(stdout);
  for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==30||(names_case&&names_case!=2&&rd(i,game_addr+12)==27));assert(rd(i,mp_addr)==(uint32_t)count);}
  if(names_case&&names_case!=2&&(names_case!=5||count==2)){
   uint32_t edit=strtoul(argv[8],0,16),answer=strtoul(argv[9],0,16),pos=strtoul(argv[10],0,16),cursor=strtoul(argv[11],0,16);
@@ -147,7 +168,11 @@ int main(int argc,char**argv){
  if(argc==15){
   uint32_t match=strtoul(argv[12],0,16),rule=strtoul(argv[13],0,16),rounds=strtoul(argv[14],0,16);
   for(int i=0;i<count;i++){assert(rd(i,rule)==2);assert(rd(i,rounds)==8);}
-  /* Final main round: two leaders tie on wins and points. Third sits out. */
+  /* A wins match ends at the target, not at a fixed round count. Switch
+   * the fixture to points-with-risk for the fixed-round tied-score test. */
+  wr(0,rule,1);run(30);
+  for(int i=0;i<count;i++)assert(rd(i,rule)==1);
+  /* Final main round: two leaders tie on points. Third sits out. */
   wr(0,game_addr+16,7);wr(0,game_addr+20,2);wr(0,game_addr+79*4,1);
   wr(0,game_addr+9*4,500);wr(0,game_addr+10*4,100);wr(0,game_addr+11*4,500);
   wr(0,match+6*4,1);wr(0,match+7*4,0);wr(0,match+8*4,0);
@@ -175,5 +200,6 @@ int main(int argc,char**argv){
  disconnected=count-1;run(300);
  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==31);
  printf("PASS: disconnect reports error without continuing the game\n");
+ if(irq_delay){assert(delayed_irqs);printf("PASS: %u delayed slave IRQs (%u cycles each)\n",delayed_irqs,irq_delay);}
  return 0;
 }

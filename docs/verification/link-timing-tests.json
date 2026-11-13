@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-13",
+  "base_commit": "7b6aec107add2931c32cb0bd0d44a2f5f81b8ba6",
+  "rom_sha256": "cadc53274ff9c40abfae1142c1b95705b5822d26ceecceab3f8c5439076e0239",
+  "mgba": {
+    "version": "0.10.5",
+    "commit": "26b7884bc25a5933960f3cdcd98bac1ae14d42e2",
+    "transport": "custom SIO bus over mGBA cores; not GUI lockstep"
+  },
+  "baseline": {
+    "rom_sha256": "7dcc191efc4d464a4e8b8a907db7050faff02c4c8601f1ba03b513b6ae337033",
+    "no_delay": "PASS: two consoles, scenario 0, including disconnect",
+    "delay_20000_cycles": "FAIL: both consoles enter mode 31 (MP_ERROR) before lobby checks",
+    "test_fixture_correction": "Use points-with-risk for fixed-round shootout after verifying wins settings"
+  },
+  "additional_checks": [
+    "PASS: three consoles, scenario 0, no injected delay, time-scale 1",
+    "PASS: two consoles, scenario 0, IRQ delay 20000, time-scale 1; 552 delayed IRQs",
+    "PASS: scripts/test-multiplayer.py",
+    "PASS: scripts/test-match-rules.py",
+    "PASS: build-cloud.py with -Wall -Wextra -Werror"
+  ],
+  "limitations": [
+    "Physical GBA and cable not available; hardware validation still required.",
+    "Acknowledgements increase transfer count and update latency."
+  ],
+  "stress_suites": [
+    {
+      "consoles": 2,
+      "irq_delay_cycles": 20000,
+      "time_scale": 4,
+      "completed_scenarios": 6,
+      "delayed_irq_counts": [
+        2365,
+        3914,
+        2373,
+        3627,
+        4599,
+        3390
+      ],
+      "result": "PASS"
+    },
+    {
+      "consoles": 3,
+      "irq_delay_cycles": 20000,
+      "time_scale": 4,
+      "completed_scenarios": 6,
+      "delayed_irq_counts": [
+        3831,
+        9281,
+        3790,
+        5954,
+        8487,
+        3794
+      ],
+      "result": "PASS"
+    }
+  ]
+}

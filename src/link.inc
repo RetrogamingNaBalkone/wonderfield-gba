@@ -9,6 +9,12 @@ static u16 link_keys,link_oldkeys,link_submit;
 static u32 link_repeat_at;
 static volatile u32 link_serial;
 static volatile u16 link_received[4],link_status;
+/* Stop-and-wait byte phases. SD-ready describes the electrical mode, not
+ * whether the remote CPU has consumed a word. Replies are published by IRQ
+ * only after link_exchange has supplied the next application word. */
+static volatile u16 link_reply,link_decoded,link_low;
+static volatile unsigned link_pending,link_phase,link_done,link_fault;
+static unsigned link_sequence;
 static u16 link_remote[4];
 static char link_name[11],link_saved_names[8][11];
 static char link_incoming_names[3][11];
@@ -24,6 +30,23 @@ static void link_text(char*d,const char*s,unsigned cap){unsigned i=0;while(s&&s[
 static void link_irq(void){
  link_status=REG16(0x04000128);
  for(int i=0;i<4;i++)link_received[i]=REG16(0x04000120+i*2);
+ if(link_status&64)link_fault=1;
+ if((link_status&4)&&!link_fault){
+  u16 word=link_received[0],tag=word&0xff00;
+  if(!link_done&&!(link_phase&1)&&(tag==0xa000||tag==0xa200))link_phase=tag&0x200;
+  unsigned low=0xa000|(link_phase&0x200);
+  if(link_pending&&tag==low){
+   link_low=word&255;
+   REG16(0x0400012a)=low|(link_reply&255);
+   link_phase|=1;
+  }else if(link_pending&&(link_phase&1)&&tag==(low|0x100)){
+   link_decoded=link_low|((word&255)<<8);
+   REG16(0x0400012a)=tag|(link_reply>>8);
+   link_pending=0;link_phase=(link_phase^0x200)&0x200;link_done++;
+  }
+  /* Duplicate phases keep the last acknowledgement, including while the
+   * main loop is drawing, hashing, or preparing the following word. */
+ }
  link_serial++;
 }
 static void link_close(void){if(link_active&&mp.local!=2){link_copy(record_names,link_saved_names,sizeof record_names);link_copy(record_scores,link_saved_scores,sizeof record_scores);}REG16(0x04000200)&=~128;REG16(0x04000128)=0;REG16(0x04000134)=0x8000;link_active=0;}
@@ -33,6 +56,8 @@ static void link_open(void){
  link_text(link_name,mp.names[2],11);link_avatar=avatars[2];link_oldkeys=link_submit=0;
  for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
  for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
+ link_pending=link_phase=link_done=link_fault=link_sequence=0;
+ REG16(0x0400012a)=0;
  REG16(0x04000134)=0;REG16(0x04000128)=0x6003;
  REG16(0x04000202)=128;REG16(0x04000200)|=128;link_active=1;
 }
@@ -42,7 +67,7 @@ static int link_cancel_requested(void){
  if(game.mode==MP_LOBBY&&!link_name_edit&&!(link_snapshot.name_conflicts&(1<<mp.local))&&((link_submit|~REG16(0x04000130))&B))link_cancelled=1;
  return link_cancelled;
 }
-static int link_exchange(u16 value){
+static int link_wire_exchange(u16 value){
  if(link_cancel_requested())return 0;
  u32 serial=link_serial,start=input_clock(),timeout=game.mode==MP_LOBBY?503316480u:33554432u;int master=!(REG16(0x04000128)&4);
  REG16(0x0400012a)=value;
@@ -56,6 +81,46 @@ static int link_exchange(u16 value){
  if(link_status&64)return 0;
  for(int i=0;i<4;i++)link_remote[i]=link_received[i];
  mp.local=((link_status>>4&3)+2)%3;
+ return 1;
+}
+static int link_exchange(u16 value){
+ u32 start=input_clock(),timeout=game.mode==MP_LOBBY?503316480u:33554432u;
+ if(REG16(0x04000128)&4){
+  unsigned done=link_done;
+  link_reply=value;link_pending=1;
+  while(link_done==done){
+   if(link_fault||link_cancel_requested()||input_clock()-start>timeout)return 0;
+  }
+  link_remote[0]=link_decoded;
+  mp.local=((link_status>>4&3)+2)%3;
+  return 1;
+ }
+ u16 result[4]={value,0xffff,0xffff,0xffff};unsigned members=0;
+ for(unsigned phase=0;phase<2;phase++){
+  u16 tag=0xa000|link_sequence|(phase<<8);
+  for(;;){
+   if(!link_wire_exchange(tag|((value>>(phase*8))&255)))return 0;
+   int ready=1;unsigned present=0;
+   for(int i=1;i<4;i++)if(link_remote[i]!=0xffff){
+    present|=1u<<i;
+    if((link_remote[i]&0xff00)!=tag)ready=0;
+   }
+   if(phase&&present!=members)return 0;
+   if(ready){
+    if(!phase)members=present;
+    for(int i=1;i<4;i++)if(present&(1u<<i)){
+     if(!phase)result[i]=link_remote[i]&255;
+     else result[i]|=(link_remote[i]&255)<<8;
+    }
+    break;
+   }
+   if(link_cancel_requested()||input_clock()-start>timeout)return 0;
+  }
+  if(!members)break;
+ }
+ /* With no peers, keep the first sequence for a console joining the lobby. */
+ if(members)link_sequence^=0x200;
+ for(int i=0;i<4;i++)link_remote[i]=result[i];
  return 1;
 }
 static u32 link_hash(const void*data,unsigned n){const u8*p=data;u32 h=2166136261u;while(n--)h=(h^*p++)*16777619u;return h;}
@@ -142,7 +207,6 @@ static int link_frame(void){
    if(!link_word(0,0,&value))return 0;words[index]=value;
   }
  }
- if(master){u32 guard=input_clock();while(input_clock()-guard<65536){}}
  u32 hash=link_hash(&link_snapshot,sizeof link_snapshot),remote_hash;
  if(!link_word(hash&65535,hash&65535,&value))return 0;remote_hash=value;
  if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;
@@ -150,7 +214,6 @@ static int link_frame(void){
  if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;
  if(hash!=remote_hash)return 0;
  if(master)for(unsigned i=0;i<sizeof link_snapshot/2;i++)link_previous[i]=words[i];
- REG16(0x0400012a)=0;
  if(!master){
   if(link_snapshot.humans<2||link_snapshot.humans>3)return 0;
   match=link_snapshot.match;prefs.rule=link_snapshot.rule;prefs.rounds=link_snapshot.rounds;

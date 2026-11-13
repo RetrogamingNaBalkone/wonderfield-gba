@@ -1,5 +1,5 @@
 {
-  "rom_sha256": "a98e9f9f7f39cc94b2046ff53ede1b24e01e3ce4bdc38d9fe25244efbb9a8f6a",
+  "rom_sha256": "cadc53274ff9c40abfae1142c1b95705b5822d26ceecceab3f8c5439076e0239",
   "checks": [
     {
       "menu_round_and_win_bounds_and_three_modes": true
