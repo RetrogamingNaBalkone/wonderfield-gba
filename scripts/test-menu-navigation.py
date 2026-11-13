@@ -10,6 +10,11 @@ for choice in range(3):
   tap(e,8)
   if choice==2:
    assert e.state()[3]==39;tap(e,8)
+   assert e.state()[3]==30 and not struct.unpack('<i',read(e,'link_name_edit',4))[0]
+   tap(e,0);assert e.state()[3]==39
+   tap(e,0);assert e.state()[3]==26
+   tap(e,0);assert e.state()[3]==0
+   e.close();continue
   if choice==1:
    assert e.state()[3]==34
    if humans==3:tap(e,5)

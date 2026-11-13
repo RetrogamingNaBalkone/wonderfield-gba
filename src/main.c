@@ -96,6 +96,7 @@ static void link_irq(void);
 static void link_test_irq(void);
 static void link_close(void);
 static int link_frame(void);
+static int link_is_host(void);
 static void mp_setup(void);
 static void mp_depart(int wrong);
 static void intro_begin(void);
@@ -559,7 +560,7 @@ static void update(u16 pressed,u16 repeat){
   if(repeat&(UP|DOWN)){game.choice^=1;dirty=1;}
   if(pressed&A){
    link_create=game.choice==0;mp.link=1;mp.humans=2;mp.local=mp.viewer=mp.edit=2;
-   mp_defaults();if(link_create)options_begin();else mp_name_begin();
+   mp_defaults();link_open();link_setup_ready=0;link_profile_pending=1;link_avatar_edit=1;set_mode(MP_LOBBY);
   }
   return;
  }
@@ -633,7 +634,7 @@ static void update(u16 pressed,u16 repeat){
   return;
  }
  if(game.mode==MP_LOBBY){return;}
- if(game.mode==MP_ERROR){if(pressed&B){link_close();if(link_role_error){game.choice=link_create?0:1;set_mode(MP_CONNECT);}else{mp.link=0;mp.humans=1;set_mode(TITLE);}}return;}
+ if(game.mode==MP_ERROR){if(pressed&B){link_close();mp.link=0;mp.humans=1;set_mode(TITLE);}return;}
  if(game.mode==MP_PASS){if(pressed&A)set_mode(TURN);return;}
 
  if(mp.humans>1&&game.mode==ROUND_END){if(pressed&A){mp_settle();set_mode(MP_SUMMARY);}return;}
@@ -750,6 +751,15 @@ static void update(u16 pressed,u16 repeat){
 }
 /* Local lobby editing stays outside synchronized gameplay state. Every
  * console continues exchanging packets while a participant corrects a name. */
+static void link_edit_options(u16 pressed,u16 repeat){
+ Game saved=game;int edit=mp.edit;
+ if(!link_config_mode){options_begin();link_config_mode=MP_OPTIONS;pressed=repeat=0;}
+ game.mode=link_config_mode;update(pressed,repeat);
+ if(game.mode==MP_NAME){link_setup_ready=1;link_config_mode=0;}
+ else if(game.mode==MP_CONNECT){link_cancelled=1;link_config_mode=0;}
+ else{link_config_mode=game.mode;render();mute_icon();present();}
+ game=saved;mp.edit=edit;
+}
 static void link_edit_name(u16 pressed,u16 repeat){
  if(!link_name_edit){
   if(!(link_snapshot.name_conflicts&(1<<mp.local)))return;
@@ -780,7 +790,12 @@ static void link_render_name(void){
  mute_icon();present();
 }
 static void link_edit_avatar(u16 pressed,u16 repeat){
- if(!link_avatar_armed){if((REG16(0x04000130)&(A|START))==(A|START))link_avatar_armed=1;return;}
+ /* A queued edge remains a new press even when its preceding release fell
+  * between packet polls. The name-confirm action is consumed by the caller. */
+ if(!link_avatar_armed){
+  if(!(pressed&(A|START))&&(REG16(0x04000130)&(A|START))!=(A|START))return;
+  link_avatar_armed=1;
+ }
  int count=prefs.characters?9:7,columns=(count+1)/2;
  if(repeat&LEFT)link_avatar=(link_avatar+count-1)%count;
  if(repeat&RIGHT)link_avatar=(link_avatar+1)%count;
@@ -829,38 +844,48 @@ void gba_main(void){
     link_error_stage=link_stage;link_error_status=link_status;
     link_close();
     if(link_cancelled){
-     if(link_role_error){game.choice=link_create?0:1;set_mode(MP_CONNECT);}
+     if(link_back_mode==MP_CONNECT){game.choice=link_create?0:1;set_mode(MP_CONNECT);}
      else{mp_setup();mp.choice=2;}pressed=repeat=0;
      /* The B tap may also be queued by VBlank while SIO was waiting. */
      ime=REG16(0x04000208);REG16(0x04000208)=0;
      capture_keys();input_read=input_write;REG16(0x04000208)=ime;
     }else set_mode(MP_ERROR);
    }
-   if(link_active&&link_role_error){
-    Game saved=game;game.mode=MP_ERROR;render();game=saved;mute_icon();present();continue;
-   }
    if(link_active&&game.mode==TITLE){link_close();mp.link=0;mp.humans=1;dirty=1;}
    if(link_active&&game.mode==MP_LOBBY){
-    if(link_name_edit&&mp.local==2)link_start_armed=0;
-    link_edit_name(pressed,repeat);
+    if(!link_host_ready){
+     if(REG16(0x04000130)&A)link_choose_armed=1;
+     if(link_host_device<0&&link_choose_armed&&(pressed&A))link_create=1;
+     if(link_is_host()&&!link_setup_ready)link_edit_options(pressed,repeat);
+     else{render();mute_icon();present();}
+     continue;
+    }
+    if(link_profile_pending){
+     link_profile_pending=0;link_name_edit=2;link_name_cursor=link_name_pos=0;
+     for(int i=0;i<21;i++)link_name_answer[i]=0;
+     link_avatar_edit=1;link_avatar_armed=0;pressed=repeat=0;
+    }
+    if(link_name_edit&&link_is_host())link_start_armed=0;
+    int was_editing=link_name_edit;link_edit_name(pressed,repeat);
+    if(was_editing&&!link_name_edit)pressed=repeat=0;
     if(link_name_edit){link_render_name();continue;}
     if(link_avatar_edit){link_edit_avatar(pressed,repeat);if(link_avatar_edit){link_render_avatar();continue;}}
    }
-   if(link_active&&mp.local!=2){
+   if(link_active&&!link_is_host()){
     scene.now=video_ticks;
     if(game.mode==SPIN)spin_tick(0,0);else scene_tick(0);
     visual_tick();u32 key=visual_key();if(key!=rendered_key)dirty=1;
     if(dirty){render();mute_icon();present();rendered_key=key;rendered_frames++;dirty=0;}else vblank();
     continue;
    }
-   if(link_active){keys=link_keys&1023;pressed=(keys&~link_oldkeys)|(exchanged?((link_keys>>10)&15):0);repeat=pressed;
+   if(link_active){mp.viewer=mp.local;keys=link_keys&1023;pressed=(keys&~link_oldkeys)|(exchanged?((link_keys>>10)&15):0);repeat=pressed;
     if(keys!=link_oldkeys)link_repeat_at=video_ticks+18;
     else if((keys&(UP|DOWN|LEFT|RIGHT))&&(int)(video_ticks-link_repeat_at)>=0){repeat|=keys&(UP|DOWN|LEFT|RIGHT);link_repeat_at=video_ticks+5;}
     link_oldkeys=keys;
     if(game.mode==MP_LOBBY){
      dirty=1;
      if(!(keys&START)&&!(oldkeys&START))link_start_armed=1;
-     if(link_start_armed&&(pressed&START)&&mp.humans>=2&&!link_snapshot.name_conflicts&&!link_snapshot.name_editing&&!link_snapshot.avatar_editing)new_game();
+     if(link_host_ready&&link_start_armed&&(pressed&START)&&mp.humans>=2&&!link_snapshot.name_conflicts&&!link_snapshot.name_editing&&!link_snapshot.avatar_editing)new_game();
     }
    }
   }

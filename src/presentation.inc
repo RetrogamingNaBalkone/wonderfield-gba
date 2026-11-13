@@ -454,7 +454,7 @@ static void render(void){
  if(game.mode==MP_OPTIONS&&mp.humans>1){
   rect(0,0,240,160,7);border(3,3,234,138,0);centered(6,"ПАРАМЕТРЫ ИГРЫ",0,0);
   const char*rules[]={"По очкам","По очкам с риском","По победам"};
-  const char*items[]={prefs.dictionary?"Словарь: v2":"Словарь: v1",prefs.plus?"Две шкатулки: v2":"Две шкатулки: v1",prefs.characters?"Персонажи: v2":"Персонажи: v1","Правила","Раундов: 3","НАЧАТЬ ИГРУ"};
+  const char*items[]={prefs.dictionary?"Словарь: v2":"Словарь: v1",prefs.plus?"Две шкатулки: v2":"Две шкатулки: v1",prefs.characters?"Персонажи: v2":"Персонажи: v1","Правила","Раундов: 3",mp.link?"ОТКРЫТЬ ЛОББИ":"НАЧАТЬ ИГРУ"};
   const int rows[]={74,91,108,24,57,125};
   for(int i=0;i<6;i++){
    int y=rows[i],selected=prefs.choice==i;u8 color=selected?15:0;
@@ -464,7 +464,7 @@ static void render(void){
    if(i==3)centered(y+15,rules[prefs.rule],0,color);
   }
   centered(143,"SELECT: Описание",1,0);
-  centered(152,prefs.choice==5?"A: Играть  B: Назад":"A: Изменить  B: Назад",1,0);return;
+  centered(152,prefs.choice==5?(mp.link?"A: Открыть  B: Назад":"A: Играть  B: Назад"):"A: Изменить  B: Назад",1,0);return;
  }
 
  if(game.mode==MP_OPTIONS){
@@ -502,7 +502,7 @@ static void render(void){
   const char*options[]={"Создать игру","Подключиться"};
   for(int i=0;i<2;i++){int y=40+i*28;if(game.choice==i){rect(20,y-3,200,22,8);border(20,y-3,200,22,0);}centered(y,options[i],0,game.choice==i?15:0);}
   centered(101,game.choice?"Правила и графику задает":"Создатель выбирает правила",1,0);
-  centered(114,game.choice?"создатель игры":"и использует главный разъем",1,0);
+  centered(114,game.choice?"создатель игры":"на любом разъеме кабеля",1,0);
   centered(151,"A: Выбрать  B: Назад",1,0);return;
  }
  if(game.mode==LINK_TEST){
@@ -589,21 +589,21 @@ static void render(void){
  if(game.mode==MP_PASS){rect(0,0,240,160,7);border(3,3,234,143,0);centered(40,"Передайте GBA игроку",0,0);centered(70,player_name(game.player),0,0);centered(115,"A: Готов",0,0);return;}
  if(game.mode==MP_LOBBY){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(16,"Мультиплеер по кабелю",0,0);
+  if(!link_host_ready){
+   centered(57,link_host_device<0?(link_create?"Ожидаем участников":"Ожидаем создания игры"):"Хост выбирает правила",0,0);
+   centered(82,link_connected<2?"Подключите остальные GBA":"Имя и аватар - после",1,0);
+   if(link_connected>=2)centered(95,"открытия лобби",1,0);
+   centered(151,link_host_device<0&&!link_create?"A: Создать  B: Назад":"B: Отменить ожидание",1,0);return;
+  }
   centered(37,link_connected==2?"2 игрока + компьютер":link_connected==3?"3 игрока":"Подключите остальные GBA",0,0);
   if(link_connected>=2)for(int i=0;i<link_connected;i++){
-   int p=(i+2)%3;number(36,57+i*17,i+1,0,0);text(60,57+i*17,mp.names[p],0,p==mp.local?1:0);
+   int p=(i+2)%3;if(i==link_host_device)text(20,60+i*17,"Х",1,0);number(36,57+i*17,i+1,0,0);text(60,57+i*17,mp.names[p],0,p==mp.local?1:0);
   }
   if(link_snapshot.name_conflicts||link_snapshot.name_editing)centered(108,"Ждем исправления имени",1,0);
   else if(link_snapshot.avatar_editing)centered(108,"Ждем выбора аватаров",1,0);
-  centered(122,link_connected<2?"Ожидание участников...":(link_snapshot.name_conflicts||link_snapshot.name_editing)?"Имена должны различаться":link_snapshot.avatar_editing?"Участники готовятся":mp.local==2?"START: Начать игру":"Ждем ведущего игрока",0,0);
+  else centered(108,"Х - создатель игры",1,0);
+  centered(122,link_connected<2?"Ожидание участников...":(link_snapshot.name_conflicts||link_snapshot.name_editing)?"Имена должны различаться":link_snapshot.avatar_editing?"Участники готовятся":link_is_host()?"START: Начать игру":"Ждем старта игры",0,0);
   centered(151,"B: Отменить ожидание",1,0);return;
- }
- if(game.mode==MP_ERROR&&link_role_error){
-  rect(0,0,240,160,7);border(3,3,234,143,0);centered(19,"Проверьте роли игроков",0,0);
-  centered(48,link_role_error==1?"Нет создателя игры":link_role_error==2?"Создатель должен быть один":"Создатель на другом разъеме",1,0);
-  centered(73,"Главный разъем: Создать игру",1,0);
-  centered(90,"Остальные: Подключиться",1,0);
-  centered(121,"B: Выбрать роль заново",1,0);return;
  }
  if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,0);centered(59,"Одинаковая ROM и режим",1,0);centered(76,"Кабель GBA на 2/3 игроков",1,0);text(24,90,"Код:",1,0);number(64,90,link_error_stage,1,0);text(88,90,"SIO:",1,0);number(128,90,link_error_status,1,0);text(24,104,"RX:",1,0);number(56,104,link_error_received,1,0);text(112,104,"OK:",1,0);number(144,104,link_error_expected,1,0);text(24,118,"CRC:",1,0);number(64,118,link_retries,1,0);text(112,118,"W:",1,0);number(144,118,link_wire_word,1,0);centered(137,"B: В меню",1,0);return;}
 

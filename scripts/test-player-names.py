@@ -59,12 +59,12 @@ for humans in (2, 3):
     e.close()
 print('PASS: name/space collisions, AI reservation, empty and whitespace rejection, own-name edit, shared avatars, game start')
 
-# The initial cable setup must also reject blank names before opening SIO.
-e = Emulator(); m.options(e, 2, True); m.tap(e, 8)
-for blank in ('', '          '):
-    enter(e, blank)
-    assert e.state()[3] == 27
-    assert struct.unpack('<i', m.read(e, 'mp_name_error', 4))[0] == 2
-enter(e, 'АННА'); assert e.state()[3] == 33
+# Cable profile entry is gated on an elected host opening the lobby. Connected
+# blank-name handling is exercised by test-link-roles.py with actual SIO peers.
+e = Emulator(); m.options(e, 2, True)
+assert e.state()[3] == 30
+assert struct.unpack('<i', m.read(e, 'link_name_edit', 4))[0] == 0
+e.run(120);assert e.state()[3] == 30
+m.tap(e, 0);assert e.state()[3] == 39
 e.close()
-print('PASS: cable setup rejects empty and space-only names')
+print('PASS: cable profile entry waits for an opened lobby')

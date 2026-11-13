@@ -4,6 +4,7 @@ from pathlib import Path
 from emulator import ROOT, symbols
 CASE_NAMES={0:'startup order',1:'cancel waiting and retry',2:'cancel lobby and retry',3:'break cable chain',4:'pause SD-ready',5:'pause serial IRQ',6:'completed-transfer hardware error',7:'corrupt snapshot',8:'suppress first IRQ',9:'unplug/replug',10:'reset console',11:'hot-add third console',12:'random buttons and IRQ jitter',13:'timer wrap',14:'corrupt build fingerprint',15:'cancel initial packet',16:'ambiguous initial SI',17:'repeated mixed failures',18:'replay HEADER payload over START',19:'corrupt child reply',20:'persistent payload corruption'}
 p=argparse.ArgumentParser(description=__doc__,epilog='Cases: '+', '.join(f'{k}={v}' for k,v in CASE_NAMES.items()))
+p.add_argument('--host',type=int,choices=(0,1,2),default=0)
 p.add_argument('--jobs',type=int,default=3)
 p.add_argument('--case',type=int,choices=CASE_NAMES)
 p.add_argument('--count',type=int,choices=(2,3),default=2)
@@ -16,6 +17,8 @@ p.add_argument('--elf',type=Path,default=ROOT/'build/gba/pole.elf')
 p.add_argument('--report',type=Path,default=ROOT/'build/qa/link-chaos.json')
 p.add_argument('--matrix', choices=('full','startup','wrap','stateful','bootstrap','crc'), default='full')
 a=p.parse_args()
+os.environ['LINK_AUTHORITY']=str(a.host)
+if a.case is not None and a.host>=a.count:p.error('host port must exist in the requested console count')
 build=Path(os.environ['MGBA_BUILD']).resolve();flags=[]
 for line in (build/'CMakeFiles/mgba.dir/flags.make').read_text().splitlines():
  if line.startswith(('C_DEFINES =','C_INCLUDES =')): flags+=shlex.split(line.split('=',1)[1])
@@ -63,6 +66,7 @@ else:
  if a.matrix=='stateful':cases=[c for c in cases if c['kind']==17]
  if a.matrix=='crc':cases=[c for c in cases if c['kind'] in (7,14,18,19,20)]
  if a.matrix=='bootstrap':cases=[c for c in cases if c['kind']==8 and c['phase']==1]
+cases=[c for c in cases if c['count']>a.host and not (c['kind']==11 and a.host==2)]
 logs=ROOT/'build/qa/link-chaos-logs'/a.report.stem;logs.mkdir(parents=True,exist_ok=True)
 def run(item):
  idx,case=item;cmd=[str(exe),str(frozen_rom),*[str(case[k]) for k in ('count','kind','seed','target','phase','amount')],*addresses]
@@ -81,7 +85,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=a.jobs) as pool:
  for idx,result in pool.map(run,enumerate(cases)):
   results[idx]=result
   a.report.parent.mkdir(parents=True,exist_ok=True)
-  a.report.write_text(json.dumps({'rom_sha256':rom_hash,'tests':[x for x in results if x is not None]},indent=2)+'\n')
+  a.report.write_text(json.dumps({'rom_sha256':rom_hash,'host_device':a.host,'tests':[x for x in results if x is not None]},indent=2)+'\n')
 failed=[r for r in results if not r['passed']]
 print(f'{len(results)-len(failed)}/{len(results)} passed; report: {a.report}')
 raise SystemExit(bool(failed))

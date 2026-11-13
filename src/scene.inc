@@ -104,7 +104,7 @@ static u32 visual_key(void){
  return key;
 }
 static int scene_tick(u16 pressed){
- int authoritative=!mp.link||mp.local==2;
+ int authoritative=!mp.link||link_is_host();
  if(game.mode==CASH){
   if(authoritative&&(pressed&A)){
    if(cash.drawn<cash.total){

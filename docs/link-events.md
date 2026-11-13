@@ -39,9 +39,12 @@ per-frame formatted text is sent.
 
 ## Steady traffic and input
 
-Between events the host exchanges a compact input/keepalive packet roughly once
+Between events the SIO parent exchanges a compact input/keepalive packet roughly once
 per six VBlanks. It contains HEADER, START flags and input: three logical words,
 normally 24 hardware transfers under the existing acknowledged CRC transport.
+When a child hosts, one additional word relays the selected player's input.
+The host announces the input owner in its request, so the cable parent never
+selects input using an older copy of the turn state.
 The client notices the next low-byte request in the serial IRQ state and otherwise
 continues its local presentation. The snapshot and its hash are omitted from a
 keepalive. Clients redraw only for local visual changes or a received event.
@@ -51,7 +54,13 @@ when release happened between polls. The host still accepts gameplay input only
 from the current player's console. Repeated phases back off while a peer is
 rendering; the minimum 4096-cycle turnaround remains in place.
 
-Build fingerprint and creator/join roles are session checks. Lobby names are sent
+The build fingerprint is checked when establishing a session. The first accepted
+creation request elects the application host independently of the cable parent;
+simultaneous requests tie by port and later requests cannot replace that host.
+With a child hosting, each published event word is first collected by the parent
+and then relayed to all peers. Both legs retain CRC/commit checks. Lobby metadata
+is likewise collected and delivered to the elected authority. No per-pose events
+are added by relaying. Lobby names are sent
 on change; avatar/edit flags share one word. An admitted late lobby participant
 resets the snapshot baseline on all peers. A reset/join during a running match is
 rejected. Leaving/reopening the connection resets all session/event caches.
@@ -78,3 +87,10 @@ The animation test observes independent ROM instances: zero new presentation
 events while wheel/helper/cash poses advance, matching targets/letters/scores,
 owner-only skips, local message text matching host text, local credits/mouth
 progress and disconnect detection. It does not implement the animations itself.
+
+The any-port host build's results, ROM SHA-256, native gameplay/menu logs,
+animation assertions, benchmark baseline and test limitations are recorded in
+[`verification/link-any-host-tests.json`](verification/link-any-host-tests.json).
+The referenced fault reports keep every injected scenario and its output.
+Benchmark `updates` counts authority main-loop iterations, not rendered FPS;
+compare `transfers` over the fixed 600-VBlank interval for wire traffic.

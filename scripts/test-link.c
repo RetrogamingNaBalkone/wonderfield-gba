@@ -111,9 +111,10 @@ static void run(unsigned frames){
  }
 }
 static void benchmark(const char*label){
- run(60);unsigned before=rd(0,game_addr+4),sent_before=transfers,stages[16];
+ int authority=getenv("LINK_AUTHORITY")?atoi(getenv("LINK_AUTHORITY")):0;
+ run(60);unsigned before=rd(authority,game_addr+4),sent_before=transfers,stages[16];
  memcpy(stages,stage_transfers,sizeof stages);uint64_t ticks=cable_clock(0);
- run(600);ticks=cable_clock(0)-ticks;unsigned updates=rd(0,game_addr+4)-before;
+ run(600);ticks=cable_clock(0)-ticks;unsigned updates=rd(authority,game_addr+4)-before;
  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)!=31);
  printf("BENCH {\"profile\":\"%s\",\"consoles\":%d,\"updates\":%u,\"transfers\":%u,\"cycles\":%llu,\"by_stage\":[",label,count,updates,(unsigned)transfers-sent_before,(unsigned long long)ticks);
  for(int i=0;i<16;i++)printf("%s%u",i?",":"",stage_transfers[i]-stages[i]);puts("]}");fflush(stdout);
@@ -125,8 +126,8 @@ static void finish_avatars(void){
  uint32_t editing=strtoul(getenv("LINK_AVATAR_EDIT_ADDR"),0,16),names=strtoul(getenv("LINK_NAME_EDIT_ADDR"),0,16);
  for(int attempt=0;attempt<2;attempt++){
   run(20);
-  for(int i=1;i<count;i++)if(rd(i,editing)&&!rd(i,names))c[i]->setKeys(c[i],1);
-  run(20);for(int i=1;i<count;i++)c[i]->setKeys(c[i],0);run(40);
+  for(int i=0;i<count;i++)if(rd(i,editing)&&!rd(i,names))c[i]->setKeys(c[i],1);
+  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);run(40);
  }
 }
 int main(int argc,char**argv){

@@ -5,7 +5,7 @@
 static uint32_t prefs_addr,avatars_addr,stage_addr,error_addr,active_addr,match_addr,received_addr,expected_addr;
 static unsigned seed,target,phase,amount,fired,kind,selected_word;
 static uint8_t sram_before[3][128];
-static int success;
+static int success,authority;
 static unsigned random32(void){seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return seed;}
 static void diagnostic(void){
  if(success)return;
@@ -26,7 +26,7 @@ static void avatars(void){
   c[i]->setKeys(c[i],8);
  }
  run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);run(20);
- for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==33);if(getenv("LINK_CREATE_ADDR"))wr(i,strtoul(getenv("LINK_CREATE_ADDR"),0,16),i==0);}
+ for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==33);if(getenv("LINK_CREATE_ADDR"))wr(i,strtoul(getenv("LINK_CREATE_ADDR"),0,16),i==authority);}
 }
 static int synced(int n){
  for(int i=0;i<n;i++){
@@ -40,7 +40,7 @@ static void lobby(int n){for(int t=0;t<400&&!synced(n);t++)run(1);assert(synced(
 static void join_all(void){for(int i=0;i<count;i++)c[i]->setKeys(c[i],1);run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);lobby(count);}
 static void start(void){
  finish_avatars();
- keys(0,8,20);run(160);
+ keys(authority,8,20);run(200);
  for(int i=0;i<count;i++){assert(rd(i,active_addr));assert(rd(i,game_addr+12)!=30);assert(rd(i,game_addr+12)!=31);assert(rd(i,game_addr+24)==rd(0,game_addr+24));}
 }
 static void errors(int except,unsigned frames){
@@ -80,7 +80,7 @@ static void corrupt(int i){
 static void replay_start(int i){
  if((unsigned)i!=target||fired==3)return;
  unsigned word=g[i]->memory.io[REG_SIOMULTI0/2],tag=word&0xff00;
- if(!fired&&rd(0,stage_addr)==2&&(word&0xfdff)==0xa07e){selected_word=tag;fired=1;}
+ if(!fired&&rd(0,stage_addr)==2&&(word&0xfd7f)==0xa07e){selected_word=tag;fired=1;}
  if(fired==1&&tag==selected_word)g[i]->memory.io[REG_SIOMULTI0/2]=tag|0x10;
  else if(fired&&tag==(selected_word|0x100)){fired=2;g[i]->memory.io[REG_SIOMULTI0/2]=tag|0xa7;}
  else if(fired==2)fired=3;
@@ -109,7 +109,8 @@ int main(int argc,char**argv){
  count=atoi(argv[2]);kind=atoi(argv[3]);seed=strtoul(argv[4],0,0);target=atoi(argv[5]);phase=atoi(argv[6]);amount=atoi(argv[7]);
  game_addr=strtoul(argv[8],0,16);mp_addr=strtoul(argv[9],0,16);prefs_addr=strtoul(argv[10],0,16);avatars_addr=strtoul(argv[11],0,16);stage_addr=strtoul(argv[12],0,16);error_addr=strtoul(argv[13],0,16);active_addr=strtoul(argv[14],0,16);match_addr=strtoul(argv[15],0,16);
  received_addr=strtoul(argv[16],0,16);expected_addr=strtoul(argv[17],0,16);
- assert(count>=2&&count<=3&&target<(unsigned)count&&seed);
+ authority=getenv("LINK_AUTHORITY")?atoi(getenv("LINK_AUTHORITY")):0;
+ assert(count>=2&&count<=3&&target<(unsigned)count&&seed&&authority<count);
  for(int i=0;i<count;i++){
   c[i]=mCoreFind(argv[1]);assert(c[i]&&c[i]->init(c[i]));mCoreInitConfig(c[i],NULL);
   mCoreConfigSetDefaultIntValue(&c[i]->config,"useBios",0);mCoreConfigSetDefaultIntValue(&c[i]->config,"skipBios",1);mCoreConfigSetDefaultValue(&c[i]->config,"idleOptimization","ignore");mCoreLoadConfig(c[i]);
@@ -145,7 +146,7 @@ int main(int argc,char**argv){
    /* Re-enter through the existing name/avatar handlers. */
    if(getenv("LINK_CREATE_ADDR"))wr(target,strtoul(getenv("LINK_CREATE_ADDR"),0,16),1);
    wr(target,mp_addr,2);wr(target,mp_addr+4,1);wr(target,mp_addr+16,2);wr(target,game_addr+12,27);wr(target,game_addr+80*4,1);wr(target,game_addr+88*4,'A'+target);
-   keys(target,8,20);assert(rd(target,game_addr+12)==33);if(getenv("LINK_CREATE_ADDR"))wr(target,strtoul(getenv("LINK_CREATE_ADDR"),0,16),target==0);
+   keys(target,8,20);assert(rd(target,game_addr+12)==33);if(getenv("LINK_CREATE_ADDR"))wr(target,strtoul(getenv("LINK_CREATE_ADDR"),0,16),target==(unsigned)authority);
   }
   join_all();start();
  }else if(kind==11){

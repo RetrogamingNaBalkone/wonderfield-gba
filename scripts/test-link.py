@@ -46,7 +46,7 @@ s = symbols(args.elf)
 s['prefs'] = s.get('prefs', s.get('prefs.0'))
 if args.animations:
     os.environ['LINK_ANIMATIONS']='1'
-    for key in ('scene','cash','link_events','video_ticks','message1','message2'):os.environ['LINK_'+key.removeprefix('link_').upper()+'_ADDR']=hex(s[key])
+    for key in ('scene','cash','link_events','video_ticks','message1','message2','message_tokens'):os.environ['LINK_'+key.removeprefix('link_').upper()+'_ADDR']=hex(s[key])
 if args.benchmark:
     os.environ['LINK_BENCHMARK']='1';os.environ['LINK_STAGE_ADDR']=hex(s['link_stage'])
 for key in ('link_create','link_avatar_edit','link_name_edit'):
