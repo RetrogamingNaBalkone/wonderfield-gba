@@ -174,7 +174,7 @@ def main():
   if 0<n<=120 and all(x>=32 for x in b):literals.append((off,b))
  for off,b in literals:code.append(f'const char msg_{off:x}[]={cstr(b)};\n')
  (GEN/'assets.c').write_text(''.join(code),encoding='ascii')
- fingerprint=int.from_bytes(__import__('hashlib').sha256(b''.join((ROOT/'src'/n).read_bytes() for n in ('main.c','presentation.inc','scene.inc','link.inc'))+''.join(code).encode('ascii')).digest()[:4],'little')
+ fingerprint=int.from_bytes(__import__('hashlib').sha256(b''.join((ROOT/'src'/n).read_bytes() for n in ('main.c','presentation.inc','scene.inc','link.inc','link-test.inc'))+''.join(code).encode('ascii')).digest()[:4],'little')
  hdr=f'#define BASE_WORD_COUNT 495\n#define WORD_COUNT {len(words)}\n#define MULTIPLAYER_BUILD 0x{fingerprint:08x}u\n'
  hdr+='#pragma once\ntypedef struct {int w,h;const unsigned char *data;} Sprite;\ntypedef struct {const char *word,*topic;} Word;\nextern const Sprite sprites[57];\nextern const Word words[WORD_COUNT];\nextern const unsigned char font6[],font8[],font14[],opponent_sprites[6];\nextern const char *const opponent_names[6];\nextern const short wheel_sectors[16],sector_values[12];\nextern const unsigned short palette[16];\n'
  hdr+='extern const Sprite extra_sprites[13];\nextern const Sprite sprites_half[57];\nextern const unsigned char wheel_bitmaps[],stage_background[];\nextern const char *const gift_names[10];\nextern const char *const initial_names[8];\nextern const unsigned short initial_scores[8];\n'
@@ -184,7 +184,7 @@ def main():
  hdr+='extern const unsigned char channel_qr[106];\n'
  hdr+=''.join(f'extern const char msg_{off:x}[];\n' for off,b in literals)
  (GEN/'assets.h').write_text(hdr)
- for name in ('main.c','presentation.inc','scene.inc','link.inc'):
+ for name in ('main.c','presentation.inc','scene.inc','link.inc','link-test.inc'):
   source=(ROOT/'src'/name).read_text(encoding='utf-8')
   source=re.sub(r'"(?:[^"\\]|\\.)*"',lambda m:cstr(m.group()[1:-1].encode('cp866')) if any(ord(c)>127 for c in m.group()) else m.group(),source)
   (GEN/name).write_text(source,encoding='ascii')

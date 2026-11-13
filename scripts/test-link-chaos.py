@@ -2,7 +2,7 @@
 import argparse, concurrent.futures, hashlib, json, os, shlex, subprocess, time
 from pathlib import Path
 from emulator import ROOT, symbols
-CASE_NAMES={0:'startup order',1:'cancel waiting and retry',2:'cancel lobby and retry',3:'break cable chain',4:'pause SD-ready',5:'pause serial IRQ',6:'completed-transfer hardware error',7:'corrupt snapshot',8:'suppress first IRQ',9:'unplug/replug',10:'reset console',11:'hot-add third console',12:'random buttons and IRQ jitter',13:'timer wrap',14:'corrupt build fingerprint',15:'cancel initial packet',16:'ambiguous initial SI',17:'repeated mixed failures'}
+CASE_NAMES={0:'startup order',1:'cancel waiting and retry',2:'cancel lobby and retry',3:'break cable chain',4:'pause SD-ready',5:'pause serial IRQ',6:'completed-transfer hardware error',7:'corrupt snapshot',8:'suppress first IRQ',9:'unplug/replug',10:'reset console',11:'hot-add third console',12:'random buttons and IRQ jitter',13:'timer wrap',14:'corrupt build fingerprint',15:'cancel initial packet',16:'ambiguous initial SI',17:'repeated mixed failures',18:'replay HEADER payload over START',19:'corrupt child reply',20:'persistent payload corruption'}
 p=argparse.ArgumentParser(description=__doc__,epilog='Cases: '+', '.join(f'{k}={v}' for k,v in CASE_NAMES.items()))
 p.add_argument('--jobs',type=int,default=3)
 p.add_argument('--case',type=int,choices=CASE_NAMES)
@@ -14,7 +14,7 @@ p.add_argument('--amount',type=int,default=60)
 p.add_argument('--rom',type=Path,default=ROOT/'build/gba/pole.gba')
 p.add_argument('--elf',type=Path,default=ROOT/'build/gba/pole.elf')
 p.add_argument('--report',type=Path,default=ROOT/'build/qa/link-chaos.json')
-p.add_argument('--matrix', choices=('full','startup','wrap','stateful','bootstrap'), default='full')
+p.add_argument('--matrix', choices=('full','startup','wrap','stateful','bootstrap','crc'), default='full')
 a=p.parse_args()
 build=Path(os.environ['MGBA_BUILD']).resolve();flags=[]
 for line in (build/'CMakeFiles/mgba.dir/flags.make').read_text().splitlines():
@@ -27,7 +27,7 @@ rom_bytes=a.rom.read_bytes();rom_hash=hashlib.sha256(rom_bytes).hexdigest()
 frozen_rom=ROOT/'build/qa/link-chaos-roms'/f'{rom_hash}.gba'
 frozen_rom.parent.mkdir(parents=True,exist_ok=True)
 if not frozen_rom.exists():frozen_rom.write_bytes(rom_bytes)
-addresses=[hex(s[k]) for k in ('game','mp','prefs','avatars','link_stage','link_error_stage','link_active','match')]
+addresses=[hex(s[k]) for k in ('game','mp','prefs','avatars','link_stage','link_error_stage','link_active','match','link_error_received','link_error_expected')]
 cases=[]
 def add(n,k,seed=1,target=1,phase=2,amount=60):cases.append(dict(count=n,kind=k,seed=seed,target=target,phase=phase,amount=amount))
 if a.case is not None:add(a.count,a.case,a.seed,a.target,a.phase,a.amount)
@@ -47,7 +47,10 @@ else:
   for phase in (2,4,6,7):
    for duration in (1,60,119,120,121,180):add(n,4,phase=phase,amount=duration)
    add(n,6,phase=phase)
-  add(n,7,phase=6);add(n,14,phase=3)
+  add(n,7,phase=6);add(n,14,phase=3);add(n,20,phase=3)
+  for node in range(1,n):
+   add(n,18,target=node,amount=1)
+   for stage in (2,3,6,7):add(n,19,target=node,phase=stage)
   for duration in (60,180):add(n,13,amount=duration)
   for seed in range(1,9):add(n,12,seed=seed,amount=150)
   for seed in (1,17,123,0xC0FFEE):add(n,17,seed=seed,amount=6)
@@ -55,6 +58,7 @@ else:
  if a.matrix=='startup':cases=[c for c in cases if c['kind']==0]
  if a.matrix=='wrap':cases=[c for c in cases if c['kind']==13]
  if a.matrix=='stateful':cases=[c for c in cases if c['kind']==17]
+ if a.matrix=='crc':cases=[c for c in cases if c['kind'] in (7,14,18,19,20)]
  if a.matrix=='bootstrap':cases=[c for c in cases if c['kind']==8 and c['phase']==1]
 logs=ROOT/'build/qa/link-chaos-logs'/a.report.stem;logs.mkdir(parents=True,exist_ok=True)
 def run(item):

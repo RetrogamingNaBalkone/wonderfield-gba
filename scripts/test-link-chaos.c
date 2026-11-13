@@ -2,7 +2,7 @@
 #define main link_regression_main
 #include "test-link.c"
 #undef main
-static uint32_t prefs_addr,avatars_addr,stage_addr,error_addr,active_addr,match_addr;
+static uint32_t prefs_addr,avatars_addr,stage_addr,error_addr,active_addr,match_addr,received_addr,expected_addr;
 static unsigned seed,target,phase,amount,fired,kind,selected_word;
 static uint8_t sram_before[3][128];
 static int success;
@@ -66,13 +66,34 @@ static void corrupt(int i){
  if((unsigned)i!=target||rd(0,stage_addr)!=phase)return;
  if(kind==6){if(!fired){g[i]->sio.siocnt|=64;fired=1;}return;}
  unsigned word=g[i]->memory.io[REG_SIOMULTI0/2];
+ if(kind==20){if((word&0xfd00)==0xa000){g[i]->memory.io[REG_SIOMULTI0/2]^=1;fired++;}return;}
  if(!fired&&(word&0xfd00)==0xa000){selected_word=word;fired=1;}
  if(fired==1&&word==selected_word)g[i]->memory.io[REG_SIOMULTI0/2]^=1;
  if(fired==1&&(word&0xff00)==((selected_word&0xff00)|0x100))fired=2;
 }
+/* Replay the preceding HEADER payload in START's byte phases, preserving
+ * tags and a clear hardware error bit. This is a fault model, not a claim
+ * that this is the physical source of the reported hardware failure. */
+static void replay_start(int i){
+ if((unsigned)i!=target||fired==3)return;
+ unsigned word=g[i]->memory.io[REG_SIOMULTI0/2],tag=word&0xff00;
+ if(!fired&&rd(0,stage_addr)==2&&(word&0xfdff)==0xa07e){selected_word=tag;fired=1;}
+ if(fired==1&&tag==selected_word)g[i]->memory.io[REG_SIOMULTI0/2]=tag|0x10;
+ else if(fired&&tag==(selected_word|0x100)){fired=2;g[i]->memory.io[REG_SIOMULTI0/2]=tag|0xa7;}
+ else if(fired==2)fired=3;
+}
+/* Corrupt a child's payload as observed by the host, retaining its tag.
+ * CRC validation must catch the opposite direction too. */
+static void corrupt_reply(int i){
+ if(i||rd(0,stage_addr)!=phase||fired==2)return;
+ unsigned index=REG_SIOMULTI0/2+target,word=g[0]->memory.io[index];
+ if(!fired&&(word&0xfd00)==0xa000){selected_word=word;fired=1;}
+ if(fired==1&&word==selected_word)g[0]->memory.io[index]^=1;
+ if(fired==1&&(word&0xff00)==((selected_word&0xff00)|0x100))fired=2;
+}
 static void arm(void){
  fired=0;
- if(kind==6||kind==7||kind==14)receive_hook=corrupt;else transfer_hook=trigger;
+ if(kind==19)receive_hook=corrupt_reply;else if(kind==6||kind==7||kind==14)receive_hook=corrupt;else transfer_hook=trigger;
  for(int t=0;t<600&&!fired;t++)run(1);
  assert(fired);
 }
@@ -81,9 +102,10 @@ static void release_irq(void){
  if(g[target]->sio.mode==SIO_MULTI&&!(g[target]->sio.siocnt&128))GBARaiseIRQ(g[target],GBA_IRQ_SIO,0);
 }
 int main(int argc,char**argv){
- assert(argc==16);atexit(diagnostic);mLogSetDefaultLogger(&logger);
+ assert(argc==18);atexit(diagnostic);mLogSetDefaultLogger(&logger);
  count=atoi(argv[2]);kind=atoi(argv[3]);seed=strtoul(argv[4],0,0);target=atoi(argv[5]);phase=atoi(argv[6]);amount=atoi(argv[7]);
  game_addr=strtoul(argv[8],0,16);mp_addr=strtoul(argv[9],0,16);prefs_addr=strtoul(argv[10],0,16);avatars_addr=strtoul(argv[11],0,16);stage_addr=strtoul(argv[12],0,16);error_addr=strtoul(argv[13],0,16);active_addr=strtoul(argv[14],0,16);match_addr=strtoul(argv[15],0,16);
+ received_addr=strtoul(argv[16],0,16);expected_addr=strtoul(argv[17],0,16);
  assert(count>=2&&count<=3&&target<(unsigned)count&&seed);
  for(int i=0;i<count;i++){
   c[i]=mCoreFind(argv[1]);assert(c[i]&&c[i]->init(c[i]));mCoreInitConfig(c[i],NULL);
@@ -94,7 +116,16 @@ int main(int argc,char**argv){
  run(100);for(int i=0;i<count;i++)for(int j=0;j<128;j++)sram_before[i][j]=c[i]->busRead8(c[i],0x0e000000+j);
  if(kind==16)initial_role_mask=1u<<target;
  avatars();
- if(kind==16){
+ if(kind==18){
+  receive_hook=replay_start;
+  for(int i=0;i<count;i++)c[i]->setKeys(c[i],1);run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
+  if(!amount){
+   errors(-1,2000);
+   unsigned rx=c[target]->busRead16(c[target],received_addr),expected=c[target]->busRead16(c[target],expected_addr);
+   printf("REPLAY host_stage=%u child_stage=%u RX=%u OK=%u SIO=%04x/%04x\n",rd(0,error_addr),rd(target,error_addr),rx,expected,g[0]->sio.siocnt,g[target]->sio.siocnt);
+   assert(rd(0,error_addr)==3&&rd(target,error_addr)==2&&expected==0xa710&&rx!=expected);
+  }else{lobby(count);assert(fired==3);start();no_errors();}
+ }else if(kind==16){
   keys(target,1,12);run(60);for(int i=0;i<count;i++)if((unsigned)i!=target)keys(i,1,12);
   lobby(count);start();
  }else if(kind==0){
@@ -118,13 +149,15 @@ int main(int argc,char**argv){
   disconnected=-1;keys(2,1,12);run(200);
   if(synced(3)){puts("OUTCOME late join synchronized");start();}
   else{errors(-1,2000);puts("OUTCOME late join rejected safely");retry();}
- }else if(kind==8||kind==14||kind==15){
-  fired=0;if(kind==14)receive_hook=corrupt;else transfer_hook=trigger;
+ }else if(kind==8||kind==14||kind==15||kind==20){
+  fired=0;if(kind==14||kind==20)receive_hook=corrupt;else transfer_hook=trigger;
   for(int i=0;i<count;i++)c[i]->setKeys(c[i],1);run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
   for(int t=0;t<400&&!fired;t++)run(1);assert(fired);
   if(kind==15){c[target]->setKeys(c[target],0);assert(rd(target,game_addr+12)==26);errors(target,2000);}
+  else if(kind==14){lobby(count);start();no_errors();}
   else errors(-1,2000);
-  if(kind==8)release_irq();retry();
+  if(kind==20){assert(rd(0,error_addr)==phase&&rd(target,error_addr)==phase);assert(fired>10);}
+  if(kind==8)release_irq();if(kind!=14)retry();
  }else{
   if(kind==13)for(int i=0;i<count;i++){
    /* Set the clock before any transaction owns a deadline. Jumping it in
@@ -164,7 +197,8 @@ int main(int argc,char**argv){
    }else{
     if(kind==13)for(int i=0;i<count;i++)assert(c[i]->busRead16(c[i],0x0400010c)<0xff00);
     arm();
-    if(kind==4||kind==5||kind==9||kind==13){
+    if(kind==7||kind==19){run(180);no_errors();assert(rd(0,active_addr));}
+    else if(kind==4||kind==5||kind==9||kind==13){
      run(amount);ready_block=0;if(kind==5)release_irq();if(kind==9)disconnected=-1;
      if(amount<100&&kind!=9){run(160);no_errors();assert(rd(0,active_addr));}
      else if(amount>=180||kind==9){errors(-1,400);retry();}

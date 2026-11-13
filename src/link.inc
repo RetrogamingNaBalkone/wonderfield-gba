@@ -10,11 +10,11 @@ static u32 link_repeat_at;
 static volatile u32 link_serial;
 static u32 link_boot_serial;
 static volatile u16 link_received[4],link_status;
-/* Stop-and-wait byte phases. SD-ready describes the electrical mode, not
- * whether the remote CPU has consumed a word. Replies are published by IRQ
- * only after link_exchange has supplied the next application word. */
-static volatile u16 link_reply,link_decoded,link_low;
-static volatile unsigned link_pending,link_phase,link_done,link_fault;
+/* Stop-and-wait: low byte, high byte, CRC, commit. Tags alone do not
+ * validate the payload. Neither CPU may consume an unchecked word. */
+static volatile u16 link_reply,link_decoded,link_low,link_ack;
+static volatile unsigned link_pending,link_phase,link_done,link_fault,link_retries;
+static volatile u16 link_wire_word;
 static unsigned link_sequence;
 static int link_stage,link_error_stage;
 static volatile int link_master,link_started;
@@ -33,6 +33,16 @@ static u16 link_previous[sizeof link_snapshot/2];
 static char link_message1[96],link_message2[96];
 static void link_copy(volatile void*d,const volatile void*s,unsigned n){volatile u8*a=d;const volatile u8*b=s;while(n--)*a++=*b++;}
 static void link_text(char*d,const char*s,unsigned cap){unsigned i=0;while(s&&s[i]&&i+1<cap){d[i]=s[i];i++;}d[i]=0;}
+/* CRC-8/ATM over both bytes. The snapshot hash remains an independent
+ * end-to-end check; this CRC permits retransmission before consuming data. */
+static unsigned link_crc(u16 word){
+ unsigned crc=0;
+ for(unsigned byte=0;byte<2;byte++){
+  crc^=(word>>(byte*8))&255;
+  for(unsigned bit=0;bit<8;bit++)crc=((crc<<1)^((crc&128)?7:0))&255;
+ }
+ return crc;
+}
 static void link_irq(void){
  u16 status=REG16(0x04000128);
  /* A delayed IRQ may belong to a duplicate phase preceding the transfer
@@ -41,21 +51,33 @@ static void link_irq(void){
  if(status&128)return;
  link_status=status;
  for(int i=0;i<4;i++)link_received[i]=REG16(0x04000120+i*2);
+ if(game.mode==LINK_TEST){link_test_irq();link_serial++;return;}
  if(link_master==0&&link_received[0]!=0xffff)link_started=1;
  if(link_master==1)for(int i=1;i<4;i++)if(link_received[i]!=0xffff)link_started=1;
  if(link_status&64)link_fault=1;
  if(link_master==0&&!link_fault){
-  u16 word=link_received[0],tag=word&0xff00;
+  u16 word=link_received[0],tag=word&0xff00;link_wire_word=word;
   if(!link_done&&!(link_phase&1)&&(tag==0xa000||tag==0xa200))link_phase=tag&0x200;
   unsigned low=0xa000|(link_phase&0x200);
   if(link_pending&&tag==low){
-   link_low=word&255;
+   link_low=word&255;link_phase=(link_phase&0x200)|1;
    REG16(0x0400012a)=low|(link_reply&255);
-   link_phase|=1;
   }else if(link_pending&&(link_phase&1)&&tag==(low|0x100)){
    link_decoded=link_low|((word&255)<<8);
+   link_phase=(link_phase&0x200)|3;
    REG16(0x0400012a)=tag|(link_reply>>8);
-   link_pending=0;link_phase=(link_phase^0x200)&0x200;link_done++;
+  }else if(link_pending&&(link_phase&2)&&tag==(low|0x400)){
+   if((word&255)==link_crc(link_decoded)){
+    link_phase|=4;
+    REG16(0x0400012a)=tag|link_crc(link_reply);
+   }else{
+    link_phase&=~4u;link_retries++;
+    REG16(0x0400012a)=(low|0x800); /* NACK: retry both bytes. */
+   }
+  }else if(link_pending&&(link_phase&4)&&word==((low|0x500)|0x5a)){
+   link_ack=word;link_pending=0;
+   link_phase=(link_phase^0x200)&0x200;link_done++;
+   /* The main loop publishes this ACK only after copying link_decoded. */
   }
   /* Duplicate phases keep the last acknowledgement, including while the
    * main loop is drawing, hashing, or preparing the following word. */
@@ -69,7 +91,7 @@ static void link_open(void){
  link_text(link_name,mp.names[2],11);link_avatar=avatars[2];link_oldkeys=link_submit=0;
  for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
  for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
- link_pending=link_phase=link_done=link_fault=link_sequence=0;
+ link_pending=link_phase=link_done=link_fault=link_sequence=0;link_ack=link_wire_word=0;link_retries=0;
  link_master=-1;link_started=link_stage=link_error_stage=0;link_status=link_error_status=0;
  link_error_received=link_error_expected=0;
  link_boot_serial=link_serial;
@@ -92,7 +114,7 @@ static int link_timed_out(u32 start){
 static int link_wire_exchange(u16 value,u32 exchange_start){
  if(link_cancel_requested())return 0;
  u32 serial=link_serial,start=input_clock();int master=link_master;
- REG16(0x0400012a)=value;
+ link_wire_word=value;REG16(0x0400012a)=value;
  if(master){
   /* Inter-word turnaround gives slaves time to consume and prepare replies. */
   while(input_clock()-start<4096){}
@@ -117,33 +139,46 @@ static int link_exchange(u16 value){
    if(link_fault||link_cancel_requested()||link_timed_out(start))return 0;
   }
   link_remote[0]=link_decoded;
+  REG16(0x0400012a)=link_ack;
   mp.local=((link_status>>4&3)+2)%3;
   return 1;
  }
  u16 result[4]={value,0xffff,0xffff,0xffff};unsigned members=0;
- for(unsigned phase=0;phase<2;phase++){
-  u16 tag=0xa000|link_sequence|(phase<<8);
+ unsigned phase=0;
+ while(phase<4){
+  /* Keep the alternating word bit separate from the four phase tags. */
+  unsigned tags[4]={0,0x100,0x400,0x500};
+  u16 tag=0xa000|link_sequence|tags[phase];
+  unsigned payload=phase<2?(value>>(phase*8))&255:phase==2?link_crc(value):0x5a;
+  int retry=0;
   for(;;){
    int started=link_started;
-   if(!link_wire_exchange(tag|((value>>(phase*8))&255),start))return 0;
+   if(!link_wire_exchange(tag|payload,start))return 0;
    if(!started)start=input_clock();
    int ready=1;unsigned present=0;
    for(int i=1;i<4;i++)if(link_remote[i]!=0xffff){
     present|=1u<<i;
     if((link_remote[i]&0xff00)!=tag)ready=0;
+    if(phase==2&&((link_remote[i]&0xff00)==(0xa800|link_sequence)))retry=1;
    }
    if(phase&&present!=members)return 0;
+   if(retry)break;
    if(ready){
     if(!phase)members=present;
     for(int i=1;i<4;i++)if(present&(1u<<i)){
      if(!phase)result[i]=link_remote[i]&255;
-     else result[i]|=(link_remote[i]&255)<<8;
+     else if(phase==1)result[i]|=(link_remote[i]&255)<<8;
+     else if(phase==2&&(link_remote[i]&255)!=link_crc(result[i]))retry=1;
+     else if(phase==3&&(link_remote[i]&255)!=0x5a)return 0;
     }
     break;
    }
    if(link_cancel_requested()||link_timed_out(start))return 0;
   }
   if(!members)break;
+  if(link_timed_out(start))return 0;
+  if(retry)link_retries++;
+  phase=retry?0:phase+1;
  }
  /* With no peers, keep the first sequence for a console joining the lobby. */
  if(members)link_sequence^=0x200;

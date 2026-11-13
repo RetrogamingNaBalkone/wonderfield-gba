@@ -17,7 +17,7 @@ typedef unsigned int u32;
 #define R 256
 #define L 512
 #define A_RELEASE 0x8000
-enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,CASH=21,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY,MP_OPTION_HELP};
+enum {TITLE,TURN,SPIN,LETTER,PLUS,SOLVE,RESULT,PRIZE,CHEST,ROUND_END,GAME_OVER,HELP,RECORDS,NAME=14,INTRO,REVEAL,CREDITS,AI_ANSWER,GIFT_PAGES,CASH=21,AI_CHEST,MENU,AUTHORS,RESTART_CONFIRM,MP_SETUP,MP_NAME,MP_PASS,MP_LOBBY=30,MP_ERROR,MP_OPTIONS,MP_AVATAR,MP_COUNT,MP_DEPART,MP_SUMMARY,MP_OPTION_HELP,LINK_TEST};
 enum {REACTION,MISS,ZERO,BANKRUPT,BONUS,CHEST_RESULT,WRONG_WORD};
 enum {MESSAGE_TICKS=180,LONG_MESSAGE_TICKS=240};
 enum {TITLE_GRID_HALF=12,TITLE_LOGO_AT=24,TITLE_READY_AT=36};
@@ -90,6 +90,7 @@ static const char*mp_stage(void){
  title[i]=0;return title;
 }
 static void link_irq(void);
+static void link_test_irq(void);
 static void link_close(void);
 static int link_frame(void);
 static void mp_setup(void);
@@ -489,15 +490,17 @@ static void mp_defaults(void){
  for(int p=0;p<3;p++)for(int i=0;i<11;i++)mp.names[p][i]=i<len(n[p])?n[p][i]:0;
 }
 #include "link.inc"
+#include "link-test.inc"
 #include "presentation.inc"
 #include "scene.inc"
 static void update(u16 pressed,u16 repeat){
  scene.now=video_ticks;
  if(game.mode==MP_SETUP){
   if(pressed&B){set_mode(TITLE);return;}
-  if(repeat&UP){mp.choice=(mp.choice+2)%3;dirty=1;}
-  if(repeat&DOWN){mp.choice=(mp.choice+1)%3;dirty=1;}
+  if(repeat&UP){mp.choice=(mp.choice+3)%4;dirty=1;}
+  if(repeat&DOWN){mp.choice=(mp.choice+1)%4;dirty=1;}
   if(pressed&A){
+   if(mp.choice==3){link_test_enter();return;}
    mp.link=mp.choice==2;mp.humans=mp.choice?2:1;
    if(mp.choice==1)set_mode(MP_COUNT);else{mp_defaults();options_begin();}
   }
@@ -740,6 +743,15 @@ void gba_main(void){
   if(keys!=oldkeys||(pressed&(UP|DOWN|LEFT|RIGHT)))repeat_at=now+18;
   else if((keys&(UP|DOWN|LEFT|RIGHT))&&(int)(now-repeat_at)>=0){repeat|=keys&(UP|DOWN|LEFT|RIGHT);repeat_at=now+5;}
   oldkeys=keys;
+  if(game.mode==LINK_TEST){
+   link_test_update(pressed,repeat);
+   if(game.mode==LINK_TEST){
+    if(dirty||video_ticks-link_test_redraw>=6){render();present();link_test_redraw=video_ticks;dirty=0;}
+    else if(!link_test.running)vblank();
+    continue;
+   }
+   pressed=repeat=0;
+  }
   if(mp.link&&link_active){
    if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
    link_submit=link_name_edit?0:(keys|pressed)&~L;

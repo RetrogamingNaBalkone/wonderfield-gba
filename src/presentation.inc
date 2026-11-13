@@ -493,9 +493,64 @@ static void render(void){
  }
  if(game.mode==MP_SETUP){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,"Режим игры",0,0);
-  const char*options[]={"Один игрок","Локальный мультиплеер","Мультиплеер по кабелю"};
-  for(int i=0;i<3;i++){int y=42+i*29;if(mp.choice==i){rect(20,y-3,200,22,8);border(20,y-3,200,22,0);}centered(y,options[i],0,mp.choice==i?15:0);}
+  const char*options[]={"Один игрок","Локальный мультиплеер","Мультиплеер по кабелю","Проверка связи"};
+  for(int i=0;i<4;i++){int y=34+i*26;if(mp.choice==i){rect(20,y-3,200,22,8);border(20,y-3,200,22,0);}centered(y,options[i],0,mp.choice==i?15:0);}
   centered(151,"A: Выбрать  B: Назад",1,0);return;
+ }
+ if(game.mode==LINK_TEST){
+  /* Freeze one completed-transfer snapshot; drawing must not mix words
+   * from different IRQs or compare a new TX against an older RX. */
+  LinkTest test;unsigned hardware_errors,data_errors,changed;u16 completed_tx;
+  u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
+  link_copy(&test,&link_test,sizeof test);hardware_errors=link_test_hardware_errors;
+  data_errors=link_test_data_errors;changed=link_test_changed;completed_tx=link_test_completed_tx;
+  REG16(0x04000208)=ime;
+  rect(0,0,240,160,7);border(3,3,234,143,0);
+  const char*baud[]={"9600","38400","57600","115200"};
+  const char*pace[]={"0.25","1","4","16"};
+  if(!link_test_details){
+   centered(8,"Проверка связи",0,0);
+   const char*status=!link_test_ran?"Готов к проверке":test.timed_out?(test.peers?"Обмен прервался":"Нет ответа на запуск"):changed?"Состав GBA изменился":test.errors?"Обнаружены ошибки":!test.running?"Тест остановлен":!test.peers?"Ждем другую GBA":"Обмен идет без ошибок";
+   centered(29,status,0,test.errors||test.timed_out?4:0);
+   if(!link_test_ran){
+    centered(51,"Откройте тест на всех GBA",1,0);
+    centered(65,"Нажмите A на каждой консоли",1,0);
+   }else if(!test.peers){
+    centered(51,"Нет ответа от второй GBA",1,0);
+    centered(65,"Запустите этот тест и на нем",1,0);
+   }else{
+    centered(48,test.role==0?"Эта консоль - ведущая":"Эта консоль - клиент",1,0);
+    text(20,62,"Участников:",1,0);number(108,62,test.peers,1,0);
+    text(140,62,"Секунд:",1,0);number(196,62,link_test_seconds,1,0);
+   }
+   if(link_test_ran){
+    text(20,78,"Проверено:",1,0);number(108,78,test.passed,1,0);
+    text(20,92,"Искажения:",1,0);number(108,92,data_errors,1,0);
+    text(140,92,"Сбои:",1,0);number(188,92,hardware_errors,1,0);
+   }
+   text(20,108,"Бод:",1,0);text(52,108,baud[test.baud],1,0);
+   text(128,108,"Пауза:",1,0);text(176,108,pace[test.pace],1,0);text(212,108,"мс",1,0);
+   centered(124,test.running?"A: Стоп  B: Назад":"L/R: Бод  Вверх/вниз: Пауза",1,0);
+   centered(138,"SELECT: подробности",1,0);
+   centered(151,test.running?"Оставьте тест на 30 секунд":"A: Старт  B: Назад",1,0);return;
+  }
+  centered(6,"Данные диагностики",0,0);
+  text(10,24,"ID:",1,0);number(34,24,test.role+1,1,0);
+  text(64,24,"GBA:",1,0);number(96,24,test.peers,1,0);
+  text(128,24,"SIO:",1,0);number(160,24,test.status,1,0);
+  text(10,39,"RX:",1,0);number(42,39,test.transfers,1,0);
+  text(128,39,"OK:",1,0);number(160,39,test.passed,1,0);
+  text(10,54,"ERR:",1,0);number(42,54,test.errors,1,0);
+  text(128,54,"WAIT:",1,0);number(168,54,test.repeats,1,0);
+  text(10,69,"TX:",1,0);number(42,69,completed_tx,1,0);
+  text(128,69,"TO:",1,0);number(160,69,test.timeouts,1,0);
+  for(int i=0;i<4;i++){
+   int x=10+(i&1)*118,y=84+(i/2)*15;
+   number(x,y,i+1,1,0);text(x+8,y,":",1,0);number(x+24,y,test.rx[i],1,0);
+  }
+  centered(117,"WAIT: ожидания, не ошибки",1,0);
+  centered(132,"SELECT: результат  B: Назад",1,0);
+  centered(151,test.running?"A: Стоп с сохранением данных":"A: Начать заново",1,0);return;
  }
  if(game.mode==MP_COUNT){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(8,"Число игроков",0,0);
@@ -534,7 +589,7 @@ static void render(void){
   centered(122,link_connected<2?"Ожидание участников...":(link_snapshot.name_conflicts||link_snapshot.name_editing)?"Имена должны различаться":mp.local==2?"START: Начать игру":"Ждем ведущего игрока",0,0);
   centered(151,"B: Отменить ожидание",1,0);return;
  }
- if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,0);centered(65,"Одинаковая ROM и режим",1,0);centered(85,"Кабель GBA на 2/3 игроков",1,0);text(24,99,"Код:",1,0);number(64,99,link_error_stage,1,0);text(88,99,"SIO:",1,0);number(128,99,link_error_status,1,0);text(24,113,"RX:",1,0);number(56,113,link_error_received,1,0);text(112,113,"OK:",1,0);number(144,113,link_error_expected,1,0);centered(130,"B: В меню",1,0);return;}
+ if(game.mode==MP_ERROR){rect(0,0,240,160,7);border(3,3,234,143,0);centered(30,"Связь потеряна",0,0);centered(59,"Одинаковая ROM и режим",1,0);centered(76,"Кабель GBA на 2/3 игроков",1,0);text(24,90,"Код:",1,0);number(64,90,link_error_stage,1,0);text(88,90,"SIO:",1,0);number(128,90,link_error_status,1,0);text(24,104,"RX:",1,0);number(56,104,link_error_received,1,0);text(112,104,"OK:",1,0);number(144,104,link_error_expected,1,0);text(24,118,"CRC:",1,0);number(64,118,link_retries,1,0);text(112,118,"W:",1,0);number(144,118,link_wire_word,1,0);centered(137,"B: В меню",1,0);return;}
 
 
  if(game.mode==CASH){
