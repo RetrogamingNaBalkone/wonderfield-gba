@@ -15,6 +15,9 @@ static volatile u16 link_received[4],link_status;
 static volatile u16 link_reply,link_decoded,link_low;
 static volatile unsigned link_pending,link_phase,link_done,link_fault;
 static unsigned link_sequence;
+static int link_stage,link_error_stage;
+static volatile int link_master,link_started;
+static u16 link_error_status;
 static u16 link_remote[4];
 static char link_name[11],link_saved_names[8][11];
 static char link_incoming_names[3][11];
@@ -28,10 +31,17 @@ static char link_message1[96],link_message2[96];
 static void link_copy(volatile void*d,const volatile void*s,unsigned n){volatile u8*a=d;const volatile u8*b=s;while(n--)*a++=*b++;}
 static void link_text(char*d,const char*s,unsigned cap){unsigned i=0;while(s&&s[i]&&i+1<cap){d[i]=s[i];i++;}d[i]=0;}
 static void link_irq(void){
- link_status=REG16(0x04000128);
+ u16 status=REG16(0x04000128);
+ /* A delayed IRQ may belong to a duplicate phase preceding the transfer
+  * now in flight. Receive registers are partial and ERROR is undefined
+  * while BUSY. Wait for this transfer's completion instead. */
+ if(status&128)return;
+ link_status=status;
  for(int i=0;i<4;i++)link_received[i]=REG16(0x04000120+i*2);
+ if(link_master==0&&link_received[0]!=0xffff)link_started=1;
+ if(link_master==1)for(int i=1;i<4;i++)if(link_received[i]!=0xffff)link_started=1;
  if(link_status&64)link_fault=1;
- if((link_status&4)&&!link_fault){
+ if(link_master==0&&!link_fault){
   u16 word=link_received[0],tag=word&0xff00;
   if(!link_done&&!(link_phase&1)&&(tag==0xa000||tag==0xa200))link_phase=tag&0x200;
   unsigned low=0xa000|(link_phase&0x200);
@@ -57,6 +67,7 @@ static void link_open(void){
  for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
  for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
  link_pending=link_phase=link_done=link_fault=link_sequence=0;
+ link_master=-1;link_started=link_stage=link_error_stage=0;link_status=link_error_status=0;
  REG16(0x0400012a)=0;
  REG16(0x04000134)=0;REG16(0x04000128)=0x6003;
  REG16(0x04000202)=128;REG16(0x04000200)|=128;link_active=1;
@@ -67,29 +78,35 @@ static int link_cancel_requested(void){
  if(game.mode==MP_LOBBY&&!link_name_edit&&!(link_snapshot.name_conflicts&(1<<mp.local))&&((link_submit|~REG16(0x04000130))&B))link_cancelled=1;
  return link_cancelled;
 }
+static int link_timed_out(u32 start){
+ /* A player may still be booting the other cartridge or entering a name.
+  * Keep waiting until a peer transmits; malformed handshakes still time out. */
+ if(game.mode==MP_LOBBY&&!link_started)return 0;
+ return input_clock()-start>(game.mode==MP_LOBBY?503316480u:33554432u);
+}
 static int link_wire_exchange(u16 value){
  if(link_cancel_requested())return 0;
- u32 serial=link_serial,start=input_clock(),timeout=game.mode==MP_LOBBY?503316480u:33554432u;int master=!(REG16(0x04000128)&4);
+ u32 serial=link_serial,start=input_clock();int master=link_master;
  REG16(0x0400012a)=value;
  if(master){
   /* Inter-word turnaround gives slaves time to consume and prepare replies. */
   while(input_clock()-start<4096){}
-  while(!(REG16(0x04000128)&8)){if(link_cancel_requested()||input_clock()-start>timeout)return 0;}
+  while(!(REG16(0x04000128)&8)){if(link_cancel_requested()||link_timed_out(start))return 0;}
   REG16(0x04000128)|=128;
  }
- while(link_serial==serial){if(link_cancel_requested()||input_clock()-start>timeout)return 0;}
+ while(link_serial==serial){if(link_cancel_requested()||link_timed_out(start))return 0;}
  if(link_status&64)return 0;
  for(int i=0;i<4;i++)link_remote[i]=link_received[i];
  mp.local=((link_status>>4&3)+2)%3;
  return 1;
 }
 static int link_exchange(u16 value){
- u32 start=input_clock(),timeout=game.mode==MP_LOBBY?503316480u:33554432u;
- if(REG16(0x04000128)&4){
+ u32 start=input_clock();
+ if(!link_master){
   unsigned done=link_done;
   link_reply=value;link_pending=1;
   while(link_done==done){
-   if(link_fault||link_cancel_requested()||input_clock()-start>timeout)return 0;
+   if(link_fault||link_cancel_requested()||link_timed_out(start))return 0;
   }
   link_remote[0]=link_decoded;
   mp.local=((link_status>>4&3)+2)%3;
@@ -114,7 +131,7 @@ static int link_exchange(u16 value){
     }
     break;
    }
-   if(link_cancel_requested()||input_clock()-start>timeout)return 0;
+   if(link_cancel_requested()||link_timed_out(start))return 0;
   }
   if(!members)break;
  }
@@ -125,13 +142,21 @@ static int link_exchange(u16 value){
 }
 static u32 link_hash(const void*data,unsigned n){const u8*p=data;u32 h=2166136261u;while(n--)h=(h^*p++)*16777619u;return h;}
 static int link_word(u16 host,u16 reply,u16*out){
- int master=!(REG16(0x04000128)&4);
+ int master=link_master;
  if(!link_exchange(master?host:reply))return 0;
  if(out)*out=link_remote[0];return 1;
 }
 static int link_frame(void){
- int master=!(REG16(0x04000128)&4);u16 header=0xa710;
- u32 start=input_clock(),header_timeout=game.mode==MP_LOBBY?503316480u:33554432u;
+ if(link_master<0){
+  link_stage=1;
+  /* GBATEK initialization order: wait for SD-ready BEFORE reading SI.
+   * SI is not a reliable role indication while another GBA is booting. */
+  u16 status;
+  while(((status=REG16(0x04000128))&0x88)!=8)if(link_cancel_requested())return 0;
+  link_master=!(status&4);
+ }
+ int master=link_master;u16 header=0xa710;
+ u32 start=input_clock();link_stage=2;
  /* A client advertises readiness only after drawing its previous snapshot.
   * Repeated headers are harmless; the separate START word begins the packet. */
  if(master){
@@ -147,23 +172,25 @@ static int link_frame(void){
     if(game.mode==MP_LOBBY)mp.humans=connected;
     link_connected=connected;break;
    }
-   if(input_clock()-start>header_timeout)return 0;
+   if(link_timed_out(start))return 0;
   }
   if(!link_exchange(0xb17e))return 0;
  }else{
   for(;;){
    if(!link_exchange(header))return 0;
    if(link_remote[0]==0xb17e)break;
-   if(link_remote[0]!=header||input_clock()-start>header_timeout)return 0;
+   if(link_remote[0]!=header||link_timed_out(start))return 0;
   }
  }
  u16 value;
+ link_stage=3;
  if(!link_word(MULTIPLAYER_BUILD&65535,MULTIPLAYER_BUILD&65535,&value))return 0;
  if(value!=(MULTIPLAYER_BUILD&65535))return 0;
  if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;
  if(!link_word(MULTIPLAYER_BUILD>>16,MULTIPLAYER_BUILD>>16,&value))return 0;
  if(value!=(MULTIPLAYER_BUILD>>16))return 0;
  if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;
+ link_stage=4;
  if(!link_word(link_submit,link_submit,0))return 0;
  if(master){int device=(game.player+1)%3;link_keys=human(game.player)?link_remote[device]:link_remote[0];if(game.mode==MP_LOBBY)link_keys=link_remote[0];}
  for(int j=0;j<6;j++){
@@ -171,6 +198,7 @@ static int link_frame(void){
   if(!link_word(pair,pair,0))return 0;
   if(master)for(int i=0;i<mp.humans;i++){int p=(i+2)%3;link_incoming_names[p][j*2]=link_remote[i]&255;if(j<5)link_incoming_names[p][j*2+1]=link_remote[i]>>8;}
  }
+ link_stage=5;
  if(!link_word(link_avatar,link_avatar,0))return 0;
  if(master)for(int i=0;i<mp.humans;i++){
   if(link_remote[i]>(prefs.characters?8:6))return 0;
@@ -191,6 +219,7 @@ static int link_frame(void){
   link_copy(link_snapshot.durations,host_durations,sizeof host_durations);
   link_text(link_snapshot.first,message1,96);link_text(link_snapshot.second,message2,96);
  }
+ link_stage=6;
  u16*words=(u16*)&link_snapshot;unsigned changed=0;
  if(master)for(unsigned i=0;i<sizeof link_snapshot/2;i++)if(words[i]!=link_previous[i])changed++;
  if(!link_word(changed,0,&value))return 0;
@@ -207,6 +236,7 @@ static int link_frame(void){
    if(!link_word(0,0,&value))return 0;words[index]=value;
   }
  }
+ link_stage=7;
  u32 hash=link_hash(&link_snapshot,sizeof link_snapshot),remote_hash;
  if(!link_word(hash&65535,hash&65535,&value))return 0;remote_hash=value;
  if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;

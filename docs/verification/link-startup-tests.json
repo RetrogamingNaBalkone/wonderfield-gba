@@ -1,0 +1,125 @@
+{
+  "base_commit": "b842854431e68610265e88a9ca45fc83cf20b27f",
+  "rom_sha256": "93a2166d6a5f6248a1431ae60abcff01178976659508f611f39edc674277d3df",
+  "mgba_version": "0.10.5",
+  "transport": "custom hardware-oriented SIO bus over mGBA cores; not GUI lockstep",
+  "prior_rom_reproductions": [
+    "Host first, 2400-frame delay: waiting host enters MP_ERROR (31) before client joins.",
+    "Host first, 120-frame delay: both remain in lobby but roster never synchronizes.",
+    "Delayed IRQ with ERROR high during BUSY: client enters MP_ERROR (31) during initial lobby connection."
+  ],
+  "model_changes": [
+    "SD low until all physically connected devices enter multiplayer mode.",
+    "SI high before readiness, low on children during BUSY; role must be sampled idle and ready.",
+    "ERROR high while BUSY (undefined by GBATEK), cleared on successful completion."
+  ],
+  "checks": [
+    {
+      "scenario": "host-first",
+      "passed": 2,
+      "irq_delay_cycles": 20000,
+      "time_scale": 1,
+      "delayed_irqs_and_busy_irqs": [
+        [
+          557,
+          530
+        ],
+        [
+          904,
+          682
+        ]
+      ]
+    },
+    {
+      "scenario": "client-first",
+      "passed": 2,
+      "irq_delay_cycles": 20000,
+      "time_scale": 1,
+      "delayed_irqs_and_busy_irqs": [
+        [
+          557,
+          502
+        ],
+        [
+          925,
+          675
+        ]
+      ]
+    },
+    {
+      "scenario": "simultaneous names suite",
+      "passed": 12,
+      "irq_delay_cycles": 20000,
+      "time_scale": 1,
+      "delayed_irqs_and_busy_irqs": [
+        [
+          553,
+          477
+        ],
+        [
+          951,
+          881
+        ],
+        [
+          536,
+          471
+        ],
+        [
+          869,
+          787
+        ],
+        [
+          1108,
+          947
+        ],
+        [
+          775,
+          721
+        ],
+        [
+          919,
+          653
+        ],
+        [
+          2276,
+          1584
+        ],
+        [
+          909,
+          703
+        ],
+        [
+          1467,
+          1066
+        ],
+        [
+          2092,
+          1466
+        ],
+        [
+          914,
+          660
+        ]
+      ]
+    }
+  ],
+  "startup_delay_frames": 2400,
+  "additional_checks": [
+    "PASS: test-multiplayer.py, including cable-wait cancellation and retry",
+    "PASS: build-cloud.py (-Wall -Wextra -Werror)",
+    "PASS: git diff --check and download SHA256SUMS"
+  ],
+  "diagnostics": {
+    "screen": "Code (stage) and last completed SIOCNT decimal",
+    "stages": {
+      "1": "bus readiness",
+      "2": "header/start",
+      "3": "build fingerprint",
+      "4": "input/names",
+      "5": "avatar/edit status",
+      "6": "snapshot",
+      "7": "checksum"
+    }
+  },
+  "hardware_validation": "Not available. User must confirm on real consoles; model success does not establish hardware success."
+}

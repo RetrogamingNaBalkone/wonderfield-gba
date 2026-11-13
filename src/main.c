@@ -744,6 +744,7 @@ void gba_main(void){
    if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
    link_submit=link_name_edit?0:(keys|pressed)&~L;
    if(!link_frame()){
+    link_error_stage=link_stage;link_error_status=link_status;
     link_close();
     if(link_cancelled){
      mp_setup();mp.choice=2;pressed=repeat=0;
