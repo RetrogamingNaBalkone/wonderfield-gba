@@ -10,7 +10,15 @@ for choice in range(3):
   tap(e,8)
   if choice==2:
    assert e.state()[3]==39;tap(e,8)
+   assert e.state()[3]==32
+   e.run(2400);assert e.state()[3]==32
+   tap(e,0);assert e.state()[3]==39
+   tap(e,8);assert e.state()[3]==32
+   tap(e,8)
    assert e.state()[3]==30 and not struct.unpack('<i',read(e,'link_name_edit',4))[0]
+   # The standalone libretro core does not service a started SIO transfer.
+   # Long lobby waits use native linked cores in test-link-roles scenario 5.
+   e.run(120);assert e.state()[3]==30
    tap(e,0);assert e.state()[3]==39
    tap(e,0);assert e.state()[3]==26
    tap(e,0);assert e.state()[3]==0

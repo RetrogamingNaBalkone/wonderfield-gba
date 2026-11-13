@@ -560,7 +560,9 @@ static void update(u16 pressed,u16 repeat){
   if(repeat&(UP|DOWN)){game.choice^=1;dirty=1;}
   if(pressed&A){
    link_create=game.choice==0;mp.link=1;mp.humans=2;mp.local=mp.viewer=mp.edit=2;
-   mp_defaults();link_open();link_setup_ready=0;link_profile_pending=1;link_avatar_edit=1;set_mode(MP_LOBBY);
+   mp_defaults();
+   if(link_create)options_begin();
+   else{link_open();link_setup_ready=0;link_profile_pending=1;link_avatar_edit=1;set_mode(MP_LOBBY);}
   }
   return;
  }
@@ -592,7 +594,15 @@ static void update(u16 pressed,u16 repeat){
    else if(prefs.choice==2)prefs.characters^=1;
    else if(mp.humans>1&&prefs.choice==3){prefs.rule=(prefs.rule+3+delta)%3;if(prefs.rule==MP_WINS&&prefs.rounds>5)prefs.rounds=5;}
    else if(mp.humans>1&&prefs.choice==4){int limit=prefs.rule==MP_WINS?5:8;prefs.rounds=(prefs.rounds+limit-1+delta)%limit+1;}
-   else if(pressed&A){if(mp.humans==1)new_game();else{mp.edit=2;mp_name_begin();}}
+   else if(pressed&A){
+    if(mp.humans==1)new_game();
+    else if(mp.link&&!link_active){
+     /* Configure locally. Opening the lobby, not entering the settings,
+      * begins discovery; an absent cable peer must never block this menu. */
+     link_open();link_back_mode=MP_CONNECT;link_setup_ready=1;
+     link_profile_pending=1;link_avatar_edit=1;set_mode(MP_LOBBY);
+    }else{mp.edit=2;mp_name_begin();}
+   }
    dirty=1;
   }
   return;
@@ -863,6 +873,9 @@ void gba_main(void){
     if(link_profile_pending){
      link_profile_pending=0;link_name_edit=2;link_name_cursor=link_name_pos=0;
      for(int i=0;i<21;i++)link_name_answer[i]=0;
+     /* Waiting-screen taps captured during discovery are not name input. */
+     ime=REG16(0x04000208);REG16(0x04000208)=0;
+     capture_keys();input_read=input_write;REG16(0x04000208)=ime;
      link_avatar_edit=1;link_avatar_armed=0;pressed=repeat=0;
     }
     if(link_name_edit&&link_is_host())link_start_armed=0;

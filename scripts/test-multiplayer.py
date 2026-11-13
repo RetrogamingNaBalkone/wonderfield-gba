@@ -24,7 +24,8 @@ def options(e,humans=1,link=False):
  for _ in range(0 if humans==1 else 2 if link else 1):tap(e,5)
  tap(e,8)
  if link:
-  assert e.state()[3]==39;tap(e,8);assert e.state()[3]==30;return
+  assert e.state()[3]==39;tap(e,8);assert e.state()[3]==32
+  tap(e,8);assert e.state()[3]==30;return
  if humans>1 and not link:
   assert e.state()[3]==34
   if humans==3:tap(e,5)
@@ -162,6 +163,7 @@ def cancel_cable_wait():
   assert mp(e)[5]==2  # Keep the cable mode selected for another attempt.
   assert read(e,'record_names',88)+read(e,'record_scores',32)==records
   if delay==1:
+   tap(e,8);assert e.state()[3]==32
    tap(e,8);assert e.state()[3]==30
  e.close();return {'cable_wait_cancel':True,'retry':True,'records_unchanged':True}
 

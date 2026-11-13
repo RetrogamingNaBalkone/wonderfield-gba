@@ -1,0 +1,246 @@
+{
+  "rom_sha256": "bc4b1bf895ce6f3330db8886b3c358ccef79cb6201b061c45e74b482763efb57",
+  "native_roles": {
+    "rom_sha256": "bc4b1bf895ce6f3330db8886b3c358ccef79cb6201b061c45e74b482763efb57",
+    "native": true,
+    "tests": [
+      {
+        "host_device": 0,
+        "count": 2,
+        "scenario": 0,
+        "graphics": 0,
+        "passed": true,
+        "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=0 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 0,
+        "count": 2,
+        "scenario": 0,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=0 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 1,
+        "graphics": 0,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=1 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 1,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 2,
+        "graphics": 0,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=2 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 2,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=2 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 3,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=3 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 0,
+        "count": 2,
+        "scenario": 4,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=4 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 5,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=5 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 6,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=6 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 7,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: cancel during host settings returns to role menu; fresh election succeeds\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=7 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 0,
+        "count": 3,
+        "scenario": 0,
+        "graphics": 0,
+        "passed": true,
+        "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=0 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 0,
+        "count": 3,
+        "scenario": 0,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=0 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 3,
+        "scenario": 1,
+        "graphics": 0,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=1 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 3,
+        "scenario": 1,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 2,
+        "count": 3,
+        "scenario": 2,
+        "graphics": 0,
+        "passed": true,
+        "output": "PASS: host port 2, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=2 scenario=2 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 2,
+        "count": 3,
+        "scenario": 2,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 2, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=2 scenario=2 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 3,
+        "scenario": 3,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=3 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 0,
+        "count": 3,
+        "scenario": 4,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=4 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 3,
+        "scenario": 5,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=5 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 3,
+        "scenario": 6,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=6 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 1,
+        "count": 3,
+        "scenario": 7,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: cancel during host settings returns to role menu; fresh election succeeds\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=7 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      }
+    ]
+  },
+  "simultaneous_creators_with_conflicting_settings": {
+    "rom_sha256": "bc4b1bf895ce6f3330db8886b3c358ccef79cb6201b061c45e74b482763efb57",
+    "native": true,
+    "tests": [
+      {
+        "host_device": 0,
+        "count": 2,
+        "scenario": 4,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=4 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      },
+      {
+        "host_device": 0,
+        "count": 3,
+        "scenario": 4,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=4 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      }
+    ]
+  },
+  "standalone_setup_and_late_join": {
+    "rom_sha256": "bc4b1bf895ce6f3330db8886b3c358ccef79cb6201b061c45e74b482763efb57",
+    "native": true,
+    "tests": [
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 5,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=5 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      }
+    ]
+  },
+  "screenshots": {
+    "rom_sha256": "bc4b1bf895ce6f3330db8886b3c358ccef79cb6201b061c45e74b482763efb57",
+    "native": true,
+    "tests": [
+      {
+        "host_device": 1,
+        "count": 2,
+        "scenario": 1,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+      }
+    ]
+  },
+  "libretro_checks": {
+    "menu": "PASS: direct mode menu, all five routes, back navigation, wheel clearance, bottom hint overlay\n",
+    "local": "{'humans': 2, 'name_limit': True, 'wrong_word_elimination': True, 'perspective': True, 'ai_third': True}\n{'humans': 3, 'name_limit': True, 'wrong_word_elimination': True, 'perspective': True, 'ai_third': False}\n{'eight_rounds': True, 'unique_words': [683, 348, 476, 261, 159, 110, 573, 201], 'no_multiplayer_records': True}\n{'humans': 1, 'plus_count_and_bonus': True}\n{'humans': 2, 'plus_count_and_bonus': True}\n{'humans': 3, 'plus_count_and_bonus': True}\n{'humans': 1, 'defaults': (0, 0, 0), 'overrides': (1, 1, 1)}\n{'humans': 2, 'defaults': (1, 1, 1), 'overrides': (0, 0, 0)}\n{'humans': 3, 'defaults': (1, 1, 1), 'overrides': (0, 0, 0)}\n{'cable_wait_cancel': True, 'retry': True, 'records_unchanged': True}\n{'avatar_grid': 1, 'all_choices': 7, 'navigation_and_name_preserved': True}\n{'avatar_grid': 2, 'all_choices': 9, 'navigation_and_name_preserved': True}\n",
+    "names": "PASS: name/space collisions, AI reservation, empty and whitespace rejection, own-name edit, shared avatars, game start\nPASS: cable profile entry waits for an opened lobby\n"
+  },
+  "notes": [
+    "Settings and help accept local input before SIO is opened. Native scenario 5 spends 2400 frames in settings, then another 2400 frames in the open lobby before peers join.",
+    "Pending input captured during discovery is cleared when name editing begins. Guest START while waiting cannot confirm an empty name.",
+    "Long cable waits use native mGBA linked cores: standalone libretro does not complete an initiated serial transfer. No transport timeouts were changed.",
+    "Physical GBA and Pizza Boy were not available."
+  ]
+}

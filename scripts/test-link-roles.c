@@ -27,44 +27,54 @@ static void press(int node,unsigned keys){
 static void enter(int i,int creator){
  if(rd(i,game_addr+81*4)!=(unsigned)!creator)press(i,128);
  press(i,1);assert(rd(i,create_addr)==(unsigned)creator);
- assert(rd(i,address("ROLE_PROFILE_PENDING"))==1);
+ if(creator)assert(rd(i,game_addr+12)==32);
+ else assert(rd(i,address("ROLE_PROFILE_PENDING"))==1);
  assert(!rd(i,address("ROLE_NAME_EDIT")));
+}
+static void configure(int i){
+ assert(rd(i,game_addr+12)==32);
+ wr(i,prefs_addr,0);wr(i,prefs_addr+4,0);wr(i,prefs_addr+8,graphics);
+ wr(i,prefs_addr+16,1);wr(i,prefs_addr+20,5);
 }
 static void elect(void){
  if(scenario==5){
-  enter(host,1);run(2400);
-  assert(rd(host,host_addr)==0xffffffffu&&!rd(host,address("ROLE_NAME_EDIT")));
+  enter(host,1);run(2400);assert(rd(host,game_addr+12)==32);
+  /* Real settings/help input works for forty seconds with no participant. */
+  press(host,64);press(host,16);press(host,4);assert(rd(host,game_addr+12)==37);
+  press(host,2);assert(rd(host,game_addr+12)==32);
+  wr(host,prefs_addr+12,5);configure(host);press(host,1);run(2400);
+  assert(rd(host,game_addr+12)==30&&!rd(host,address("ROLE_NAME_EDIT")));
   for(int i=0;i<count;i++)if(i!=host)enter(i,0);
  }else{
   for(int i=0;i<count;i++)enter(i,scenario==3?0:scenario==4?1:i==host);
+  if(scenario==7&&!retried)return;
+  if(scenario==3){
+   run(240);
+   for(int i=0;i<count;i++)assert(rd(i,host_addr)==0xffffffffu&&!rd(i,address("ROLE_NAME_EDIT")));
+   press(host,1);run(240);
+   assert(rd(host,address("ROLE_CONFIG_MODE"))==32);
+   wr(host,prefs_addr,0);wr(host,prefs_addr+4,0);wr(host,prefs_addr+8,graphics);
+   wr(host,prefs_addr+16,1);wr(host,prefs_addr+20,5);press(host,1);
+  }else{
+   capture("host-settings");
+   /* A guest cannot affect the creator's offline settings. */
+   if(scenario!=4){
+    int guest=(host+1)%count;unsigned rule=rd(host,prefs_addr+16);
+    press(guest,16);press(guest,8);assert(rd(host,game_addr+12)==32&&rd(host,prefs_addr+16)==rule);
+   }
+   for(int i=0;i<count;i++)if(scenario==4||i==host){
+    configure(i);
+    if(i!=host){wr(i,prefs_addr,1);wr(i,prefs_addr+8,!graphics);wr(i,prefs_addr+16,2);}
+    c[i]->setKeys(c[i],1);
+   }
+   run(12);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
+  }
  }
- run(240);
+ run(300);
  if(scenario==6){
-  /* Late creation requests, including a lower port, cannot steal authority. */
   for(int i=0;i<count;i++)if(i!=host)wr(i,create_addr,1);
   run(120);
  }
- if(scenario==3){
-  for(int i=0;i<count;i++)assert(rd(i,host_addr)==0xffffffffu&&!rd(i,address("ROLE_NAME_EDIT"))&&!rd(i,address("ROLE_CONFIG_MODE")));
-  press(0,8);run(30);assert(rd(0,host_addr)==0xffffffffu);
-  press(host,1);run(240);
- }
- for(int i=0;i<count;i++){
-  assert(rd(i,host_addr)==(unsigned)host);
-  assert(rd(i,address("ROLE_CONFIG_MODE"))==(unsigned)(i==host?32:0));
-  assert(!rd(i,address("ROLE_NAME_EDIT"))&&!rd(i,address("ROLE_HOST_READY")));
- }
- capture("host-settings");
- if(scenario==7&&!retried)return;
- /* A joiner's input cannot change rules or start the match. */
- int guest=(host+1)%count;
- unsigned dictionary=rd(host,prefs_addr),rule=rd(host,prefs_addr+16);
- press(guest,16);press(guest,1);press(guest,8);
- assert(rd(host,prefs_addr)==dictionary&&rd(host,prefs_addr+16)==rule&&!rd(host,address("ROLE_SETUP_READY")));
- /* Rare rule/graphics values are fixtures; opening uses the real menu. */
- wr(host,prefs_addr,0);wr(host,prefs_addr+4,0);wr(host,prefs_addr+8,graphics);
- wr(host,prefs_addr+16,1);wr(host,prefs_addr+20,5);
- press(host,1);run(240);
  for(int i=0;i<count;i++){
   assert(rd(i,host_addr)==(unsigned)host&&rd(i,address("ROLE_HOST_READY")));
   assert(rd(i,address("ROLE_NAME_EDIT"))==2);
@@ -72,7 +82,7 @@ static void elect(void){
   assert(rd(i,prefs_addr+16)==1&&rd(i,prefs_addr+20)==5);
  }
  capture("name-entry");
- printf("PASS: host port %d, only host settings, no profile entry before lobby opens\n",host);
+ printf("PASS: host port %d, offline settings/open lobby, profiles only after discovery\n",host);
 }
 static void play(void){
  press(0,8);assert(rd(0,address("ROLE_NAME_EDIT"))==3);
