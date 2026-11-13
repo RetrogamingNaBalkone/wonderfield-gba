@@ -16,6 +16,8 @@ static struct mCore*c[3];static struct GBA*g[3];static int count,disconnected=-1
 static struct Node{struct GBASIODriver d;int id;}nodes[3];
 static uint16_t sent[4];static uint64_t deadline;static int pending,transfers;
 static unsigned irq_delay,time_scale=1,delayed_irqs,busy_irqs;
+static uint32_t perf_stage;static unsigned stage_transfers[16];
+static void record_transfer(void){if(perf_stage){unsigned stage=c[0]->busRead32(c[0],perf_stage);if(stage<16)stage_transfers[stage]++;}}
 static uint64_t irq_due[3];
 static uint64_t clock_offset[3];
 static uint64_t cable_clock(int i){return clock_offset[i]+mTimingGlobalTime(&g[i]->timing);}
@@ -54,7 +56,7 @@ static uint16_t cable_write(struct GBASIODriver*d,uint32_t address,uint16_t valu
  struct Node*n=(struct Node*)d;
  if(address==REG_SIOCNT){
   if(!n->id&&(value&128)&&!pending){
-   if(transfer_hook)transfer_hook();
+   record_transfer();if(transfer_hook)transfer_hook();
    for(int i=0;i<4;i++)sent[i]=i<count&&cable_online(i)&&g[i]->sio.mode==SIO_MULTI?g[i]->memory.io[REG_SIOMLT_SEND/2]:0xffff;
    deadline=cable_clock(0)+GBASIOCyclesPerTransfer[value&3][count-1];pending=1;
    for(int i=0;i<count;i++){
@@ -108,6 +110,15 @@ static void run(unsigned frames){
   cable_pins();
  }
 }
+static void benchmark(const char*label){
+ run(60);unsigned before=rd(0,game_addr+4),sent_before=transfers,stages[16];
+ memcpy(stages,stage_transfers,sizeof stages);uint64_t ticks=cable_clock(0);
+ run(600);ticks=cable_clock(0)-ticks;unsigned updates=rd(0,game_addr+4)-before;
+ for(int i=0;i<count;i++)assert(rd(i,game_addr+12)!=31);
+ printf("BENCH {\"profile\":\"%s\",\"consoles\":%d,\"updates\":%u,\"transfers\":%u,\"cycles\":%llu,\"by_stage\":[",label,count,updates,(unsigned)transfers-sent_before,(unsigned long long)ticks);
+ for(int i=0;i<16;i++)printf("%s%u",i?",":"",stage_transfers[i]-stages[i]);puts("]}");fflush(stdout);
+}
+#include "test-link-animations.inc"
 static int avatar_screen(int i){return getenv("LINK_AVATAR_EDIT_ADDR")&&rd(i,game_addr+12)==33&&rd(i,strtoul(getenv("LINK_AVATAR_EDIT_ADDR"),0,16));}
 static void finish_avatars(void){
  if(!getenv("LINK_AVATAR_EDIT_ADDR"))return;
@@ -119,6 +130,7 @@ static void finish_avatars(void){
  }
 }
 int main(int argc,char**argv){
+ if(getenv("LINK_STAGE_ADDR"))perf_stage=strtoul(getenv("LINK_STAGE_ADDR"),0,16);
  if(getenv("LINK_IRQ_DELAY"))irq_delay=strtoul(getenv("LINK_IRQ_DELAY"),0,0);
  if(getenv("LINK_TIME_SCALE"))time_scale=strtoul(getenv("LINK_TIME_SCALE"),0,0);
  if(getenv("LINK_JOIN_ORDER"))join_order=atoi(getenv("LINK_JOIN_ORDER"));
@@ -222,6 +234,7 @@ int main(int argc,char**argv){
  if(names_case==3){assert(!strcmp(roster[0],"ANNA"));if(count==3)assert(!strcmp(roster[2],"BORIS"));}
  finish_avatars();
  printf("PASS: unique bounded names synchronized in lobby (case %d)\n",names_case);
+ if(getenv("LINK_BENCHMARK"))benchmark("lobby");
  c[1]->setKeys(c[1],8);run(30);c[1]->setKeys(c[1],0);run(20);
  assert(rd(0,game_addr+12)==30);
  c[0]->setKeys(c[0],8);run(30);c[0]->setKeys(c[0],0);run(120);
@@ -233,6 +246,11 @@ int main(int argc,char**argv){
  for(int i=0;i<count;i++)for(int device=0;device<count;device++)for(int j=0;j<11;j++)assert(c[i]->busRead8(c[i],mp_addr+28+((device+2)%3)*11+j)==(unsigned char)roster[device][j]);
  printf("PASS: all selected avatars synchronized\n");
  printf("PASS: host dictionary, Plus and character settings synchronized\n");
+ if(getenv("LINK_ANIMATIONS")){animation_tests();return 0;}
+ if(getenv("LINK_BENCHMARK")){
+  wr(0,game_addr+12,1);wr(0,game_addr+20,2);wr(0,game_addr+81*4,1);
+  benchmark("human_turn");return 0;
+ }
  /* A spectator cannot choose for player two. The owning console can. */
  wr(0,game_addr+12,1);wr(0,game_addr+20,0);wr(0,game_addr+81*4,1);run(30);
  c[0]->setKeys(c[0],1);run(30);c[0]->setKeys(c[0],0);assert(rd(0,game_addr+12)==1);

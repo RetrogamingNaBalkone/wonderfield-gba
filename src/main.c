@@ -42,6 +42,9 @@ static u32 cash_initial_seed;
 static void cash_remote_sync(const Cash*target,u32 seed);
 static const char *message1,*message2;
 static char sector_message[32],turn_line[32];
+static u32 presentation_event;
+static int message_position;
+static u32 message_tokens[2]={0xffffffffu,0xffffffffu};
 volatile u32 video_ticks;
 typedef struct {
  u32 now,speech_at,last_redraw,start,phase_at,spin_at,title_at,chest_until;
@@ -211,9 +214,40 @@ static int load(void){
  return record_scores[0];
 }
 static const char*word(void){return words[game.word_id].word;}
-static void set_mode(int mode){if(mode==TITLE){scene.title_at=video_ticks-(title_seen?TITLE_READY_AT:0);title_seen=1;fast_input=1;start_pending=0;}game.mode=mode;game.wait=0;dirty=1;}
+static void set_mode(int mode){presentation_event++;if(mode==TITLE){scene.title_at=video_ticks-(title_seen?TITLE_READY_AT:0);title_seen=1;fast_input=1;start_pending=0;}game.mode=mode;game.wait=0;dirty=1;}
 static int message_done(u16 pressed,unsigned duration){return (pressed&A)||scene.now-scene.speech_at>=duration;}
+/* Template IDs are offsets in this fingerprint-checked ROM, never RAM
+ * addresses. Dynamic lines carry their arguments and are formatted locally. */
+static u32 message_token(const char*s){
+ if(!s||!*s)return 0xffffffffu;
+ if(s==turn_line){
+  if(game.mode==AI_ANSWER)return 0x81000000u|((unsigned)message_position<<8)|scene.ai_letter;
+  return 0x82000000u|(game.mode==ROUND_END?256:0)|game.player;
+ }
+ if(s==sector_message)return game.mode==PRIZE?0x83000000u|game.deal:0x84000000u|game.sector_value;
+ for(int i=0;i<3;i++)if(s==mp.names[i])return 0x85000000u|i;
+ return (u32)s-0x08000000u;
+}
+static const char*message_decode(u32 token,char*out){
+ unsigned kind=token>>24,arg=token&0xffffff;int p=0;const char*a="",*b="";
+ if(token==0xffffffffu)return "";
+ if(token<0x02000000u)return (const char*)(0x08000000u+token);
+ if(kind==0x85)return arg<3?mp.names[arg]:"";
+ if(kind==0x81){
+  unsigned position=arg>>8;
+  if(position){if(position>=10)out[p++]='0'+position/10;out[p++]='0'+position%10;a=msg_1fc6;}
+  else a=msg_1a30;
+  while(*a)out[p++]=*a++;
+  if(!position){out[p++]=128+(arg&255);b=msg_1a38;}
+ }else if(kind==0x82){a=(arg&255)==2?"Первый":(arg&255)==0?"Второй":"Третий";b=arg&256?msg_e9f:msg_da1;}
+ else if(kind==0x83){a=arg==1?msg_41be:arg==2?msg_41c2:arg==3?msg_41c7:msg_41cf;b=msg_ff1;}
+ else if(kind==0x84){a=msg_dbb;while(*a)out[p++]=*a++;if(arg>=10)out[p++]='0'+arg/10;out[p++]='0'+arg%10;b=msg_dc2;}
+ while(*a&&p<94)out[p++]=*a++;
+ while(*b&&p<95)out[p++]=*b++;
+ out[p]=0;return out;
+}
 static void say(const char*a,const char*b){
+ presentation_event++;message_tokens[0]=message_token(a);message_tokens[1]=message_token(b);
  message1=a;message2=b;scene.speech_at=scene.host_at=scene.host_phase_at=video_ticks;
  scene.host_active=1;scene.host_phase=0;effect(0);scene.host_seed=game.rng;
  host_durations[0]=12;host_durations[1]=host_durations[2]=9;host_durations[9]=6;
@@ -330,7 +364,7 @@ static void award_letter(int letter){
   if(game.sector_value==100){
    /* DOS 1fcf returns straight to 1698. Only ordinary letter selection
     * (1a3a) calls host dialogue 3: Plus has no "there is that letter". */
-   message1=message2="";scene.host_active=0;
+   message1=message2="";message_tokens[0]=message_tokens[1]=0xffffffffu;scene.host_active=0;
    game.next_mode=TURN;game.next_player=game.player;
    set_mode(hidden()?TURN:ROUND_END);return;
   }
@@ -349,6 +383,7 @@ static void choose_letter(int letter){
 }
 
 static void ai_announce(int letter,int position){
+ message_position=position;
  int p=0;const char*a=position?msg_1fc6:msg_1a30;
  if(position){int v=position;if(v>=10)turn_line[p++]='0'+v/10;turn_line[p++]='0'+v%10;}
  while(*a)turn_line[p++]=*a++;
@@ -372,6 +407,18 @@ static int spin_draw(void){
  }
  return (half_steps+1)/2;
 }
+static void spin_tick(u16 pressed,int authoritative){
+  if(authoritative&&(pressed&A)){game.sector=scene.spin_target;game.spin_steps=0;scene.spin_half=0;stop_spin();return;}
+  /* The original renderer spent five VBlank per wheel phase. Preserve
+   * its speed explicitly without changing spin_wait or the tone pitch. */
+  if(game.spin_steps<=0)return;
+  unsigned spin_delay=game.spin_wait<5?5:(unsigned)game.spin_wait;
+  while(game.spin_steps>0&&scene.now-scene.spin_at>=spin_delay){game.wait=0;scene.spin_half^=1;scene.spin_at+=spin_delay;dirty=1;
+   if(!scene.spin_half){game.spin_ticks++;game.sector=(game.sector+15)&15;game.spin_steps--;if(game.spin_steps<8)game.spin_wait=2+(8-game.spin_steps)*2;speaker_tone(55+(game.spin_steps%10)*10+game.spin_wait*100,1);if(game.spin_steps<=0){game.sector=scene.spin_target;if(authoritative)stop_spin();}}
+   spin_delay=game.spin_wait<5?5:(unsigned)game.spin_wait;
+  }return;
+ }
+
 static void start_spin(void){
  seed_from_input();
  set_mode(SPIN);say(msg_da9,"");scene.host_active=0;
@@ -646,15 +693,7 @@ static void update(u16 pressed,u16 repeat){
   return;
  }
  if(game.mode==TURN){if(!human(game.player)){if(message_done(pressed,MESSAGE_TICKS))start_spin();}else{if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}if(pressed&A){if(game.choice)start_spin();else solve_word();}}return;}
- if(game.mode==SPIN){
-  if(pressed&A){game.sector=scene.spin_target;game.spin_steps=0;scene.spin_half=0;stop_spin();return;}
-  /* The original renderer spent five VBlank per wheel phase. Preserve
-   * its speed explicitly without changing spin_wait or the tone pitch. */
-  unsigned spin_delay=game.spin_wait<5?5:(unsigned)game.spin_wait;
-  if(scene.now-scene.spin_at>=spin_delay){game.wait=0;scene.spin_half^=1;scene.spin_at=scene.now;dirty=1;
-   if(!scene.spin_half){game.spin_ticks++;game.sector=(game.sector+15)&15;game.spin_steps--;if(game.spin_steps<8)game.spin_wait=2+(8-game.spin_steps)*2;game_tone(55+(game.spin_steps%10)*10+game.spin_wait*100,1);if(game.spin_steps<=0){game.sector=scene.spin_target;stop_spin();}}
-  }return;
- }
+ if(game.mode==SPIN){spin_tick(pressed,1);return;}
  if(game.mode==AI_ANSWER){if(message_done(pressed,MESSAGE_TICKS))choose_letter(scene.ai_letter);return;}
  if(game.mode==MP_DEPART){if(message_done(pressed,MESSAGE_TICKS))mp_depart_finish();return;}
  if(game.mode==RESULT){
@@ -781,8 +820,12 @@ void gba_main(void){
   }
   if(mp.link&&link_active){
    if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
-   link_submit=(link_name_edit||link_avatar_edit)?0:(keys|pressed)&~L;
-   if(!link_frame()){
+   link_taps|=pressed&~L;
+   link_submit=(link_name_edit||link_avatar_edit)?0:((keys|link_taps)&~L)|((link_taps&15)<<10);
+   int exchanged=link_due();
+   int success=1;
+   if(exchanged){success=link_frame();link_taps=0;}
+   if(!success){
     link_error_stage=link_stage;link_error_status=link_status;
     link_close();
     if(link_cancelled){
@@ -803,8 +846,14 @@ void gba_main(void){
     if(link_name_edit){link_render_name();continue;}
     if(link_avatar_edit){link_edit_avatar(pressed,repeat);if(link_avatar_edit){link_render_avatar();continue;}}
    }
-   if(link_active&&mp.local!=2){dirty=1;render();mute_icon();present();continue;}
-   if(link_active){keys=link_keys;pressed=keys&~link_oldkeys;repeat=pressed;
+   if(link_active&&mp.local!=2){
+    scene.now=video_ticks;
+    if(game.mode==SPIN)spin_tick(0,0);else scene_tick(0);
+    visual_tick();u32 key=visual_key();if(key!=rendered_key)dirty=1;
+    if(dirty){render();mute_icon();present();rendered_key=key;rendered_frames++;dirty=0;}else vblank();
+    continue;
+   }
+   if(link_active){keys=link_keys&1023;pressed=(keys&~link_oldkeys)|(exchanged?((link_keys>>10)&15):0);repeat=pressed;
     if(keys!=link_oldkeys)link_repeat_at=video_ticks+18;
     else if((keys&(UP|DOWN|LEFT|RIGHT))&&(int)(video_ticks-link_repeat_at)>=0){repeat|=keys&(UP|DOWN|LEFT|RIGHT);link_repeat_at=video_ticks+5;}
     link_oldkeys=keys;

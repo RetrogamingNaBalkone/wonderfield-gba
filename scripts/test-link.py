@@ -12,6 +12,8 @@ from emulator import ROOT, symbols
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--consoles', type=int, choices=(2, 3))
 parser.add_argument('--scenario', type=int, choices=range(6))
+parser.add_argument('--animations',action='store_true',help='assert local animation advances without pose events')
+parser.add_argument('--benchmark',action='store_true',help='measure updates and wire transfers in a fixed simulated interval')
 parser.add_argument('--native', action='store_true', help='use the stock mGBA lockstep driver, without fault injection')
 parser.add_argument('--rom', type=Path, default=ROOT / 'build/gba/pole.gba')
 parser.add_argument('--elf', type=Path, default=ROOT / 'build/gba/pole.elf')
@@ -42,6 +44,11 @@ subprocess.run(['cc', *flags, str(ROOT / 'scripts/test-link.c'), '-L' + str(buil
                 '-Wl,-rpath,' + str(build), '-lmgba', '-o', str(executable)], check=True)
 s = symbols(args.elf)
 s['prefs'] = s.get('prefs', s.get('prefs.0'))
+if args.animations:
+    os.environ['LINK_ANIMATIONS']='1'
+    for key in ('scene','cash','link_events','video_ticks','message1','message2'):os.environ['LINK_'+key.removeprefix('link_').upper()+'_ADDR']=hex(s[key])
+if args.benchmark:
+    os.environ['LINK_BENCHMARK']='1';os.environ['LINK_STAGE_ADDR']=hex(s['link_stage'])
 for key in ('link_create','link_avatar_edit','link_name_edit'):
  if key in s:os.environ[key.upper()+'_ADDR']=hex(s[key])
  else:os.environ.pop(key.upper()+'_ADDR',None)

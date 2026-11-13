@@ -12,7 +12,7 @@ static bool native_signal(struct mLockstep*b,unsigned mask){
  if(!native_wait_mask&&!native_awake[0]){native_awake[0]=1;return true;}return false;
 }
 static bool native_wait(struct mLockstep*b,unsigned mask){
- if(b->transferActive==TRANSFER_STARTED)transfers++;
+ if(b->transferActive==TRANSFER_STARTED){transfers++;record_transfer();}
  int was_awake=native_awake[0];native_wait_mask|=mask;native_awake[0]=0;return was_awake;
 }
 static void native_add(struct mLockstep*b,int id,int32_t cycles){

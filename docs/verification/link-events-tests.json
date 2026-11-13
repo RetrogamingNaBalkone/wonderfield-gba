@@ -1,0 +1,378 @@
+{
+  "rom_sha256": "b224b0adc866c27d63f94f40f1318915d32d3beaf67dfbe87eac38b68a5413f4",
+  "baseline_commit": "a7ead085a2ebb540c83f05cd805c7141f226cb72",
+  "baseline_rom_sha256": "e74a074252b3a360495191ed3f358570ca1ef1433e8193b7d9c8bd032829e90f",
+  "environment": "mGBA stock lockstep driver; fault injection uses the test cable bus",
+  "physical_gba_tested": false,
+  "pizza_boy_advance_tested": false,
+  "benchmark": {
+    "before": [
+      {
+        "profile": "lobby",
+        "consoles": 2,
+        "updates": 50,
+        "transfers": 9600,
+        "cycles": 168537601,
+        "by_stage": [
+          0,
+          0,
+          800,
+          800,
+          2800,
+          800,
+          2800,
+          800,
+          800,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "profile": "human_turn",
+        "consoles": 2,
+        "updates": 46,
+        "transfers": 13395,
+        "cycles": 168537799,
+        "by_stage": [
+          0,
+          0,
+          5993,
+          736,
+          2590,
+          752,
+          1852,
+          736,
+          736,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "profile": "lobby",
+        "consoles": 3,
+        "updates": 43,
+        "transfers": 8223,
+        "cycles": 168537654,
+        "by_stage": [
+          0,
+          0,
+          688,
+          688,
+          2408,
+          676,
+          2387,
+          688,
+          688,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "profile": "human_turn",
+        "consoles": 3,
+        "updates": 40,
+        "transfers": 10920,
+        "cycles": 168537835,
+        "by_stage": [
+          0,
+          0,
+          4520,
+          640,
+          2240,
+          640,
+          1600,
+          640,
+          640,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "after": [
+      {
+        "profile": "lobby",
+        "consoles": 2,
+        "updates": 75,
+        "transfers": 8400,
+        "cycles": 168537846,
+        "by_stage": [
+          0,
+          0,
+          1200,
+          0,
+          600,
+          1200,
+          4200,
+          1200,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "profile": "human_turn",
+        "consoles": 2,
+        "updates": 450,
+        "transfers": 2325,
+        "cycles": 168537692,
+        "by_stage": [
+          0,
+          0,
+          1725,
+          0,
+          600,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "profile": "lobby",
+        "consoles": 3,
+        "updates": 67,
+        "transfers": 7450,
+        "cycles": 168537796,
+        "by_stage": [
+          0,
+          0,
+          1056,
+          0,
+          528,
+          1056,
+          3738,
+          1072,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "profile": "human_turn",
+        "consoles": 3,
+        "updates": 450,
+        "transfers": 2325,
+        "cycles": 168537736,
+        "by_stage": [
+          0,
+          0,
+          1725,
+          0,
+          600,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "interval_vblanks": 600,
+    "updates_meaning": "host main-loop iterations; not rendered FPS"
+  },
+  "native_gameplay": {
+    "cases": 12,
+    "passed": true,
+    "output": "RUN: 2 consoles, name scenario 0\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: unique bounded names synchronized in lobby (case 0)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 86 transfers 9119\ndevice 1 mode 15 player 2 local 0 viewer 0 word 86 transfers 9119\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (10451 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 1\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 27, consoles 2\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 1)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 155 transfers 24143\ndevice 1 mode 15 player 2 local 0 viewer 0 word 155 transfers 24143\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (25439 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 2\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: unique bounded names synchronized in lobby (case 2)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 143 transfers 9148\ndevice 1 mode 15 player 2 local 0 viewer 0 word 143 transfers 9148\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (10449 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 3\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 3)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 675 transfers 21279\ndevice 1 mode 15 player 2 local 0 viewer 0 word 675 transfers 21279\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (22583 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 4\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 4)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 58 transfers 31287\ndevice 1 mode 15 player 2 local 0 viewer 0 word 58 transfers 31287\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (32591 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 2 consoles, name scenario 5\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 5)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 294 transfers 18970\ndevice 1 mode 15 player 2 local 0 viewer 0 word 294 transfers 18970\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 2 consoles, perspectives, dictionary/word sync, owner-only input (20283 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 0\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: unique bounded names synchronized in lobby (case 0)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 285 transfers 8220\ndevice 1 mode 15 player 2 local 0 viewer 0 word 285 transfers 8220\ndevice 2 mode 15 player 2 local 1 viewer 1 word 285 transfers 8220\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (9504 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 1\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 1)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 392 transfers 33714\ndevice 1 mode 15 player 2 local 0 viewer 0 word 392 transfers 33714\ndevice 2 mode 15 player 2 local 1 viewer 1 word 392 transfers 33714\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (34994 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 2\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: unique bounded names synchronized in lobby (case 2)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 544 transfers 7815\ndevice 1 mode 15 player 2 local 0 viewer 0 word 544 transfers 7815\ndevice 2 mode 15 player 2 local 1 viewer 1 word 544 transfers 7815\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (9101 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 3\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 3)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 444 transfers 18374\ndevice 1 mode 15 player 2 local 0 viewer 0 word 444 transfers 18374\ndevice 2 mode 15 player 2 local 1 viewer 1 word 444 transfers 18374\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (19658 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 4\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: duplicate blocks start; A/B preserve text/cursor; retry and correction keep cable connected\nPASS: unique bounded names synchronized in lobby (case 4)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 581 transfers 30227\ndevice 1 mode 15 player 2 local 0 viewer 0 word 581 transfers 30227\ndevice 2 mode 15 player 2 local 1 viewer 1 word 581 transfers 30227\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (31521 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\nRUN: 3 consoles, name scenario 5\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: unique bounded names synchronized in lobby (case 5)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 274 transfers 8219\ndevice 1 mode 15 player 2 local 0 viewer 0 word 274 transfers 8219\ndevice 2 mode 15 player 2 local 1 viewer 1 word 274 transfers 8219\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nPASS: 3 consoles, perspectives, dictionary/word sync, owner-only input (9463 transfers)\nPASS: host rules/round count, standings, leader-only repeated shootout and winner synchronized\nPASS: disconnect reports error without continuing the game\n"
+  },
+  "native_animations": {
+    "consoles": [
+      2,
+      3
+    ],
+    "passed": true,
+    "output": "RUN: 2 consoles, name scenario 0\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: unique bounded names synchronized in lobby (case 0)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 86 transfers 9119\ndevice 1 mode 15 player 2 local 0 viewer 0 word 86 transfers 9119\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nANIMATION spin: 267 transfers over 84 VBlanks, zero pose events; spectator cannot skip\nPASS: local wheel animation reaches authoritative target on every console\nPASS: owner skip retains the previously announced wheel target\nANIMATION assistant reaction=0: 190 transfers over 60 VBlanks, zero pose events\nANIMATION assistant reaction=1: 186 transfers over 60 VBlanks, zero pose events\nPASS: helper moves/opens letters locally; score is committed only by the host\nPASS: credits clock and host mouth animate locally; round transition remains authoritative\nPASS: AI position announcement is formatted locally\nPASS: AI letter announcement is formatted locally\nPASS: all four prize offers are formatted locally\nANIMATION cash: 164 transfers over 60 VBlanks, zero note events\nPASS: cash seed/amount animates locally; skip converges to identical final state\nPASS: keepalive detects disconnect during local presentation\nRUN: 3 consoles, name scenario 0\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: unique bounded names synchronized in lobby (case 0)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 285 transfers 8220\ndevice 1 mode 15 player 2 local 0 viewer 0 word 285 transfers 8220\ndevice 2 mode 15 player 2 local 1 viewer 1 word 285 transfers 8220\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nANIMATION spin: 263 transfers over 84 VBlanks, zero pose events; spectator cannot skip\nPASS: local wheel animation reaches authoritative target on every console\nPASS: owner skip retains the previously announced wheel target\nANIMATION assistant reaction=0: 185 transfers over 60 VBlanks, zero pose events\nANIMATION assistant reaction=1: 186 transfers over 60 VBlanks, zero pose events\nPASS: helper moves/opens letters locally; score is committed only by the host\nPASS: credits clock and host mouth animate locally; round transition remains authoritative\nPASS: all four prize offers are formatted locally\nANIMATION cash: 135 transfers over 60 VBlanks, zero note events\nPASS: cash seed/amount animates locally; skip converges to identical final state\nPASS: keepalive detects disconnect during local presentation\n"
+  },
+  "delayed_irq_animations": {
+    "consoles": [
+      2,
+      3
+    ],
+    "delay_cycles": 60000,
+    "passed": true,
+    "output": "RUN: 2 consoles, name scenario 0\nlobby device 0: mode 30, consoles 2\nlobby device 1: mode 30, consoles 2\nPASS: unique bounded names synchronized in lobby (case 0)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 525 transfers 9013\ndevice 1 mode 15 player 2 local 0 viewer 0 word 525 transfers 9013\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nANIMATION spin: 294 transfers over 84 VBlanks, zero pose events; spectator cannot skip\nPASS: local wheel animation reaches authoritative target on every console\nPASS: owner skip retains the previously announced wheel target\nANIMATION assistant reaction=0: 227 transfers over 60 VBlanks, zero pose events\nANIMATION assistant reaction=1: 198 transfers over 60 VBlanks, zero pose events\nPASS: helper moves/opens letters locally; score is committed only by the host\nPASS: credits clock and host mouth animate locally; round transition remains authoritative\nPASS: AI position announcement is formatted locally\nANIMATION cash: 174 transfers over 60 VBlanks, zero note events\nPASS: cash seed/amount animates locally; skip converges to identical final state\nPASS: keepalive detects disconnect during local presentation\nRUN: 3 consoles, name scenario 0\nlobby device 0: mode 30, consoles 3\nlobby device 1: mode 30, consoles 3\nlobby device 2: mode 30, consoles 3\nPASS: unique bounded names synchronized in lobby (case 0)\nPASS: automatic console count, lobby waits, host-only start\ndevice 0 mode 15 player 2 local 2 viewer 2 word 185 transfers 8207\ndevice 1 mode 15 player 2 local 0 viewer 0 word 185 transfers 8207\ndevice 2 mode 15 player 2 local 1 viewer 1 word 185 transfers 8207\nPASS: all selected avatars synchronized\nPASS: host dictionary, Plus and character settings synchronized\nANIMATION spin: 263 transfers over 84 VBlanks, zero pose events; spectator cannot skip\nPASS: local wheel animation reaches authoritative target on every console\nPASS: owner skip retains the previously announced wheel target\nANIMATION assistant reaction=0: 186 transfers over 60 VBlanks, zero pose events\nANIMATION assistant reaction=1: 181 transfers over 60 VBlanks, zero pose events\nPASS: helper moves/opens letters locally; score is committed only by the host\nPASS: credits clock and host mouth animate locally; round transition remains authoritative\nANIMATION cash: 146 transfers over 60 VBlanks, zero note events\nPASS: cash seed/amount animates locally; skip converges to identical final state\nPASS: keepalive detects disconnect during local presentation\n"
+  },
+  "native_roles": {
+    "rom_sha256": "b224b0adc866c27d63f94f40f1318915d32d3beaf67dfbe87eac38b68a5413f4",
+    "native": true,
+    "tests": [
+      {
+        "count": 2,
+        "scenario": 0,
+        "graphics": 0,
+        "passed": true,
+        "output": "PASS create/join count=2 scenario=0 graphics=0: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 2,
+        "scenario": 0,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=2 scenario=0 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 2,
+        "scenario": 1,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=2 scenario=1 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 2,
+        "scenario": 2,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=2 scenario=2 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 2,
+        "scenario": 3,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=2 scenario=3 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 2,
+        "scenario": 4,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=2 scenario=4 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 3,
+        "scenario": 0,
+        "graphics": 0,
+        "passed": true,
+        "output": "PASS create/join count=3 scenario=0 graphics=0: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 3,
+        "scenario": 0,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=3 scenario=0 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 3,
+        "scenario": 1,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=3 scenario=1 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 3,
+        "scenario": 2,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=3 scenario=2 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 3,
+        "scenario": 3,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=3 scenario=3 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      },
+      {
+        "count": 3,
+        "scenario": 4,
+        "graphics": 1,
+        "passed": true,
+        "output": "PASS create/join count=3 scenario=4 graphics=1: roles, host settings, avatar readiness, start, SRAM\n"
+      }
+    ]
+  },
+  "native_diagnostic": {
+    "rom_sha256": "b224b0adc866c27d63f94f40f1318915d32d3beaf67dfbe87eac38b68a5413f4",
+    "native": true,
+    "tests": [
+      {
+        "count": 2,
+        "baud": 3,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2546 ok=1273 err=0 wait=1273 timeout=0\n running=1 inflight=0 last_at=178926955 now_hi=2730 now_lo=15550 mode=38 SIO=600b\nnode=1 role=1 transfers=2546 ok=1274 err=0 wait=1272 timeout=0\n running=1 inflight=0 last_at=178921827 now_hi=2730 now_lo=15134 mode=38 SIO=601f\nnode=0 role=0 transfers=2472 ok=1236 err=0 wait=1236 timeout=0\n running=1 inflight=0 last_at=321661636 now_hi=4916 now_lo=12226 mode=38 SIO=600b\nnode=1 role=1 transfers=2472 ok=1237 err=0 wait=1235 timeout=0\n running=1 inflight=0 last_at=321656098 now_hi=4916 now_lo=11864 mode=38 SIO=601f\nPASS raw diagnostic count=2 baud=3 pace=0 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 0,
+        "pace": 3,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=191095089 now_hi=2935 now_lo=64752 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=191424932 now_hi=2935 now_lo=64869 mode=38 SIO=601c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=334636168 now_hi=5121 now_lo=60559 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=334563433 now_hi=5121 now_lo=60618 mode=38 SIO=601c\nPASS raw diagnostic count=2 baud=0 pace=3 first=1\n"
+      },
+      {
+        "count": 3,
+        "baud": 3,
+        "pace": 0,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2094 ok=1047 err=0 wait=1047 timeout=0\n running=1 inflight=0 last_at=185667278 now_hi=2833 now_lo=6641 mode=38 SIO=600b\nnode=1 role=1 transfers=2094 ok=1048 err=0 wait=1046 timeout=0\n running=1 inflight=0 last_at=185659715 now_hi=2833 now_lo=6640 mode=38 SIO=601f\nnode=2 role=2 transfers=2093 ok=1047 err=0 wait=1046 timeout=0\n running=1 inflight=0 last_at=186079567 now_hi=2839 now_lo=38976 mode=38 SIO=602f\nnode=0 role=0 transfers=2064 ok=1032 err=0 wait=1032 timeout=0\n running=1 inflight=0 last_at=327854642 now_hi=5019 now_lo=3540 mode=38 SIO=600b\nnode=1 role=1 transfers=2064 ok=1033 err=0 wait=1031 timeout=0\n running=1 inflight=0 last_at=327846828 now_hi=5019 now_lo=3272 mode=38 SIO=601f\nnode=2 role=2 transfers=2064 ok=1033 err=0 wait=1031 timeout=0\n running=1 inflight=0 last_at=327849987 now_hi=5019 now_lo=3602 mode=38 SIO=602f\nPASS raw diagnostic count=3 baud=3 pace=0 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 0,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198568292 now_hi=3038 now_lo=56067 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=198633663 now_hi=3038 now_lo=55797 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=198462055 now_hi=3038 now_lo=55763 mode=38 SIO=602c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=342105424 now_hi=5224 now_lo=51876 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=341999336 now_hi=5224 now_lo=51620 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=342000158 now_hi=5224 now_lo=51696 mode=38 SIO=602c\nPASS raw diagnostic count=3 baud=0 pace=3 first=0\n"
+      }
+    ]
+  },
+  "irq_stack_review": {
+    "game_irq_frame_bytes": 40,
+    "max_nested_path": "game_irq -> speaker_irq -> fill -> pole_udiv",
+    "nested_c_bytes": 104,
+    "bios_and_stub_bytes": 32,
+    "reserved_bytes": 160
+  },
+  "additional_checks": [
+    "test-walk-names.py",
+    "test-chest-transition.py",
+    "test-intro-roster.py"
+  ]
+}

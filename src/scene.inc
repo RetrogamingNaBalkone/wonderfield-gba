@@ -15,7 +15,7 @@ static void intro_begin(void){
 static void reveal_begin(void){
  scene.pending_mode=game.mode;scene.pending_wait=game.wait;
  /* Be visible while the host reacts; do not wait outside the screen. */
- set_mode(REVEAL);scene.start=video_ticks;scene.actor_x=32;scene.actor_stop=0;scene.phase_at=video_ticks;
+ set_mode(REVEAL);scene.start=video_ticks;scene.actor_x=32;scene.actor_stop=0;scene.phase_at=video_ticks+(game.sector_value==100?0:MESSAGE_TICKS);
 }
 static void credits_begin(void){set_mode(CREDITS);scene.start=video_ticks;}
 static void complete_reveal(void){
@@ -36,6 +36,7 @@ static u32 cash_advance(u32 seed,unsigned count){
  u32 mul=134775813u,add=1;
  while(count){if(count&1)seed=seed*mul+add;add*=mul+1;mul*=mul;count>>=1;}return seed;
 }
+static int cash_replaying;
 static void cash_note(void){
  /* DOS 1000:4442..447c: Random(50), Random(400), Random(295),
   * transparent colour 2; retain every previous stamp. */
@@ -50,7 +51,7 @@ static void cash_note(void){
   if(c!=2&&(unsigned)dx<240&&(unsigned)dy<150)cash_canvas[dy*240+dx]=c;
  }
  unsigned before=cash.drawn*5672/1000;cash.drawn++;
- if(!mp.link||mp.local==2)speaker_queue_tone(hz,cash.drawn*5672/1000-before);
+ if(!cash_replaying)speaker_queue_tone(hz,cash.drawn*5672/1000-before);
 }
 static void cash_skip(void){
  if(cash.total>=10000){
@@ -67,11 +68,11 @@ static void cash_background(void){
  dma_words((u32*)cash_canvas,(const u32*)framebuffer,9600);
 }
 static void cash_remote_sync(const Cash*target,u32 seed){
- static u32 previous_seed;static int valid;
+ static u32 previous_seed;static int valid;cash_replaying=1;
  if(!valid||previous_seed!=seed||cash.drawn>target->drawn){cash_background();cash.drawn=0;cash.rng=seed;previous_seed=seed;valid=1;}
  if(target->total>=10000&&target->drawn==target->total){dma_words((u32*)cash_canvas,(const u32*)cash_finished_bitmap,9600);}
  else while(cash.drawn<target->drawn)cash_note();
- link_copy(&cash,target,sizeof cash);
+ link_copy(&cash,target,sizeof cash);cash_replaying=0;
 }
 static void cash_begin(void){
  game.deal=5;game.keyboard=0;set_mode(CASH);say(msg_ffa,msg_1004);
@@ -103,8 +104,9 @@ static u32 visual_key(void){
  return key;
 }
 static int scene_tick(u16 pressed){
+ int authoritative=!mp.link||mp.local==2;
  if(game.mode==CASH){
-  if(pressed&A){
+  if(authoritative&&(pressed&A)){
    if(cash.drawn<cash.total){
     cash_skip();
    }else if(mp.humans>1)mp_depart(0);else farewell();
@@ -121,6 +123,7 @@ static int scene_tick(u16 pressed){
   return 1;
  }
  if(game.mode==INTRO){
+  if(!authoritative)return 1;
   if((pressed&A)||(scene.now-scene.phase_at>=MESSAGE_TICKS)){
    scene.phase++;
    /* The multiplayer roster stays fixed across rounds and shootouts. */
@@ -132,17 +135,18 @@ static int scene_tick(u16 pressed){
   return 1;
  }
  if(game.mode==CREDITS){
+  if(!authoritative)return 1;
   if(((pressed&A)&&scene.now-scene.start>30)||scene.now-scene.start>600){game.round++;new_round();}
   return 1;
  }
  if(game.mode==REVEAL){
-  if(pressed&A){complete_reveal();return 1;}
+  if(authoritative&&(pressed&A)){complete_reveal();return 1;}
   if(game.sector_value!=100&&scene.now-scene.start<MESSAGE_TICKS)return 1;
   scene.host_active=0;
   /* Walking and each stop previously advanced once per five-VBlank
    * rendered frame. Use that cadence independently of rendering cost. */
-  if(scene.now-scene.phase_at>=5){
-   scene.phase_at=scene.now;
+  while(scene.actor_x<225&&scene.now-scene.phase_at>=5){
+   scene.phase_at+=5;
    int n=len(word()),left=30+((20-n)/2)*9,next=-1;
    for(int i=0;i<n;i++)if(scene.reveal_target[i]&&!game.revealed[i]){next=i;break;}
    if(scene.actor_stop>0){
@@ -155,7 +159,7 @@ static int scene_tick(u16 pressed){
     else scene.actor_x+=4;
    }
    dirty=1;
-   if(scene.actor_x>=225){complete_reveal();return 1;}
+   if(scene.actor_x>=225){if(authoritative)complete_reveal();return 1;}
   }
   return 1;
  }

@@ -153,15 +153,15 @@ int main(int argc,char**argv){
   disconnected=-1;keys(2,1,12);run(200);
   if(synced(3)){puts("OUTCOME late join synchronized");start();}
   else{errors(-1,2000);puts("OUTCOME late join rejected safely");retry();}
- }else if(kind==8||kind==14||kind==15||kind==20){
-  fired=0;if(kind==14||kind==20)receive_hook=corrupt;else transfer_hook=trigger;
+ }else if(kind==8||kind==14||kind==15||kind==20||(kind==19&&phase==3)){
+  fired=0;if(kind==19)receive_hook=corrupt_reply;else if(kind==14||kind==20)receive_hook=corrupt;else transfer_hook=trigger;
   for(int i=0;i<count;i++)c[i]->setKeys(c[i],1);run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
   for(int t=0;t<400&&!fired;t++)run(1);assert(fired);
   if(kind==15){c[target]->setKeys(c[target],0);assert(rd(target,game_addr+12)==26);errors(target,2000);}
-  else if(kind==14){lobby(count);start();no_errors();}
+  else if(kind==14||kind==19){lobby(count);start();no_errors();}
   else errors(-1,2000);
   if(kind==20){assert(rd(0,error_addr)==phase&&rd(target,error_addr)==phase);assert(fired>10);}
-  if(kind==8)release_irq();if(kind!=14)retry();
+  if(kind==8)release_irq();if(kind!=14&&kind!=19)retry();
  }else{
   if(kind==13)for(int i=0;i<count;i++){
    /* Set the clock before any transaction owns a deadline. Jumping it in
