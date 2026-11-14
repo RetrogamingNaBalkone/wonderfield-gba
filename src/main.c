@@ -561,7 +561,7 @@ static void update(u16 pressed,u16 repeat){
   if(pressed&A){
    link_create=game.choice==0;mp.link=1;mp.humans=2;mp.local=mp.viewer=mp.edit=2;
    mp_defaults();
-   if(link_create)options_begin();
+   if(link_create){link_open();link_setup_ready=0;link_profile_pending=1;link_avatar_edit=1;options_begin();}
    else{link_open();link_setup_ready=0;link_profile_pending=1;link_avatar_edit=1;set_mode(MP_LOBBY);}
   }
   return;
@@ -580,7 +580,7 @@ static void update(u16 pressed,u16 repeat){
  }
  if(game.mode==MP_OPTIONS){
   if(mp.humans>1&&(pressed&SELECT)){option_help_value=option_value();set_mode(MP_OPTION_HELP);return;}
-  if(pressed&B){set_mode(mp.link?MP_CONNECT:mp.humans>1?MP_COUNT:MP_SETUP);return;}
+  if(pressed&B){if(mp.link&&link_active&&!link_config_mode)link_close();set_mode(mp.link?MP_CONNECT:mp.humans>1?MP_COUNT:MP_SETUP);return;}
   int count=mp.humans>1?6:4;
   const int order[]={3,4,0,1,2,5};int position=prefs.choice;
   if(mp.humans>1)for(int i=0;i<count;i++)if(order[i]==prefs.choice)position=i;
@@ -596,10 +596,10 @@ static void update(u16 pressed,u16 repeat){
    else if(mp.humans>1&&prefs.choice==4){int limit=prefs.rule==MP_WINS?5:8;prefs.rounds=(prefs.rounds+limit-1+delta)%limit+1;}
    else if(pressed&A){
     if(mp.humans==1)new_game();
-    else if(mp.link&&!link_active){
-     /* Configure locally. Opening the lobby, not entering the settings,
-      * begins discovery; an absent cable peer must never block this menu. */
-     link_open();link_back_mode=MP_CONNECT;link_setup_ready=1;
+    else if(mp.link&&(!link_active||link_host_device<0)){
+     /* Discovery runs alongside settings. Confirming rules opens the
+      * lobby even if no participant has answered the background probe. */
+     if(!link_active)link_open();link_back_mode=MP_CONNECT;link_setup_ready=1;
      link_profile_pending=1;link_avatar_edit=1;set_mode(MP_LOBBY);
     }else{mp.edit=2;mp_name_begin();}
    }
@@ -843,7 +843,11 @@ void gba_main(void){
    }
    pressed=repeat=0;
   }
-  if(mp.link&&link_active){
+  int probing=mp.link&&link_active&&(game.mode==MP_OPTIONS||game.mode==MP_OPTION_HELP);
+  if(probing&&link_probe()){
+   link_config_mode=game.mode;set_mode(MP_LOBBY);probing=0;
+  }
+  if(mp.link&&link_active&&!probing){
    if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
    link_taps|=pressed&~L;
    link_submit=(link_name_edit||link_avatar_edit)?0:((keys|link_taps)&~L)|((link_taps&15)<<10);
@@ -863,6 +867,17 @@ void gba_main(void){
    }
    if(link_active&&game.mode==TITLE){link_close();mp.link=0;mp.humans=1;dirty=1;}
    if(link_active&&game.mode==MP_LOBBY){
+    if(link_create&&link_host_device>=0&&!link_is_host()){
+     if(!link_join_prompt){
+      link_join_prompt=1;link_config_mode=0;
+      /* Discovery/menu taps cannot accept the invitation. */
+      ime=REG16(0x04000208);REG16(0x04000208)=0;
+      capture_keys();input_read=input_write;REG16(0x04000208)=ime;
+      pressed=repeat=0;
+     }
+     if(pressed&A){link_create=0;link_join_prompt=0;pressed=repeat=0;}
+     else{render();mute_icon();present();continue;}
+    }
     if(!link_host_ready){
      if(REG16(0x04000130)&A)link_choose_armed=1;
      if(link_host_device<0&&link_choose_armed&&(pressed&A))link_create=1;

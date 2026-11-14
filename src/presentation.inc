@@ -589,6 +589,12 @@ static void render(void){
  if(game.mode==MP_PASS){rect(0,0,240,160,7);border(3,3,234,143,0);centered(40,"Передайте GBA игроку",0,0);centered(70,player_name(game.player),0,0);centered(115,"A: Готов",0,0);return;}
  if(game.mode==MP_LOBBY){
   rect(0,0,240,160,7);border(3,3,234,143,0);centered(16,"Мультиплеер по кабелю",0,0);
+  if(link_join_prompt){
+   centered(53,"Игра уже создана",0,0);
+   centered(78,"Подключиться к ней?",0,0);
+   centered(101,"Правила задает создатель",1,0);
+   centered(151,"A: Подключиться  B: Назад",1,0);return;
+  }
   if(!link_host_ready){
    centered(57,link_host_device<0?(link_create?"Ожидаем участников":"Ожидаем создания игры"):"Хост выбирает правила",0,0);
    centered(82,link_connected<2?"Подключите остальные GBA":"Имя и аватар - после",1,0);

@@ -7,7 +7,7 @@ static int scenario,graphics,host,retried;
 static uint32_t address(const char*name){const char*v=getenv(name);assert(v);return strtoul(v,0,16);}
 static void capture(const char*stage){
  const char*directory=getenv("ROLE_SCREENSHOTS");
- if(!directory||count!=2||scenario!=1||graphics!=1)return;
+ if(!directory||count!=2||(scenario!=1&&scenario!=8)||graphics!=1)return;
  for(int i=0;i<count;i++){
   char path[1024];snprintf(path,sizeof path,"%s/%s-port%d.ppm",directory,stage,i);
   FILE*out=fopen(path,"wb");assert(out);fprintf(out,"P6\n240 160\n255\n");
@@ -27,17 +27,41 @@ static void press(int node,unsigned keys){
 static void enter(int i,int creator){
  if(rd(i,game_addr+81*4)!=(unsigned)!creator)press(i,128);
  press(i,1);assert(rd(i,create_addr)==(unsigned)creator);
- if(creator)assert(rd(i,game_addr+12)==32);
+ if(creator)assert(rd(i,game_addr+12)==32||rd(i,game_addr+12)==30);
  else assert(rd(i,address("ROLE_PROFILE_PENDING"))==1);
  assert(!rd(i,address("ROLE_NAME_EDIT")));
 }
 static void configure(int i){
- assert(rd(i,game_addr+12)==32);
+ assert(rd(i,game_addr+12)==32||rd(i,address("ROLE_CONFIG_MODE"))==32);
  wr(i,prefs_addr,0);wr(i,prefs_addr+4,0);wr(i,prefs_addr+8,graphics);
  wr(i,prefs_addr+16,1);wr(i,prefs_addr+20,5);
 }
 static void elect(void){
- if(scenario==5){
+ if(scenario>=8){
+  /* Existing host on a child port, then create on the cable parent. */
+  enter(host,1);configure(host);press(host,1);run(120);
+  assert(rd(host,game_addr+12)==30);
+  for(int i=0;i<count;i++)if(i!=host)enter(i,1);
+  run(300);
+  for(int i=0;i<count;i++)if(i!=host){
+   assert(rd(i,host_addr)==(unsigned)host);
+   assert(rd(i,address("ROLE_JOIN_PROMPT"))==1);
+   assert(!rd(i,address("ROLE_NAME_EDIT"))&&rd(i,address("ROLE_PROFILE_PENDING")));
+  }
+  /* The invitation keeps waiting and cannot consume the create tap. */
+  run(180);
+  capture("existing-lobby-invitation");
+  if(scenario==9){
+   int guest=0;press(guest,2);assert(rd(guest,game_addr+12)==39);
+   /* Two-console retry is the reported flow. With three consoles, also
+    * verify declining does not accept the other pending invitation. */
+   if(count==3){assert(rd(2,address("ROLE_JOIN_PROMPT")));return;}
+   enter(guest,1);run(300);
+   assert(rd(guest,address("ROLE_JOIN_PROMPT"))&&rd(guest,host_addr)==(unsigned)host);
+  }
+  for(int i=0;i<count;i++)if(i!=host){press(i,1);assert(!rd(i,address("ROLE_JOIN_PROMPT"))&&!rd(i,create_addr));}
+  printf("PASS: existing child-port lobby wins; new creators explicitly accept before profile entry\n");
+ }else if(scenario==5){
   enter(host,1);run(2400);assert(rd(host,game_addr+12)==32);
   /* Real settings/help input works for forty seconds with no participant. */
   press(host,64);press(host,16);press(host,4);assert(rd(host,game_addr+12)==37);
@@ -60,9 +84,9 @@ static void elect(void){
    /* A guest cannot affect the creator's offline settings. */
    if(scenario!=4){
     int guest=(host+1)%count;unsigned rule=rd(host,prefs_addr+16);
-    press(guest,16);press(guest,8);assert(rd(host,game_addr+12)==32&&rd(host,prefs_addr+16)==rule);
+    press(guest,16);press(guest,8);assert(rd(host,address("ROLE_CONFIG_MODE"))==32&&rd(host,prefs_addr+16)==rule);
    }
-   for(int i=0;i<count;i++)if(scenario==4||i==host){
+   for(int i=0;i<count;i++)if(i==host){
     configure(i);
     if(i!=host){wr(i,prefs_addr,1);wr(i,prefs_addr+8,!graphics);wr(i,prefs_addr+16,2);}
     c[i]->setKeys(c[i],1);
@@ -71,9 +95,11 @@ static void elect(void){
   }
  }
  run(300);
+ if(scenario==4)for(int i=0;i<count;i++)if(i!=host){assert(rd(i,address("ROLE_JOIN_PROMPT")));press(i,1);}
  if(scenario==6){
   for(int i=0;i<count;i++)if(i!=host)wr(i,create_addr,1);
   run(120);
+  for(int i=0;i<count;i++)if(i!=host){assert(rd(i,address("ROLE_JOIN_PROMPT")));press(i,1);}
  }
  for(int i=0;i<count;i++){
   assert(rd(i,host_addr)==(unsigned)host&&rd(i,address("ROLE_HOST_READY")));
@@ -159,7 +185,7 @@ int main(int argc,char**argv){
   for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==39);
   retried=1;elect();printf("PASS: cancel during host settings returns to role menu; fresh election succeeds\n");
  }
- play();
+ if(scenario!=9||count!=3)play();
  for(int i=0;i<count;i++)for(int j=0;j<128;j++)assert(c[i]->busRead8(c[i],0x0e000000+j)==saved[i][j]);
  printf("PASS create/join count=%d host=%d scenario=%d graphics=%d: election, profiles, settings, input, disconnect, SRAM\n",count,host,scenario,graphics);
  return 0;

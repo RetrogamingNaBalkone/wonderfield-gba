@@ -11,7 +11,7 @@ p.add_argument('--graphics',type=int,choices=(0,1))
 p.add_argument('--screenshots',type=Path)
 p.add_argument('--native',action='store_true')
 p.add_argument('--jobs',type=int,default=4)
-p.add_argument('--scenario',type=int,choices=range(8))
+p.add_argument('--scenario',type=int,choices=range(10))
 p.add_argument('--report',type=Path,default=ROOT/'build/qa/link-roles.json')
 a=p.parse_args();build=Path(os.environ['MGBA_BUILD']).resolve();flags=[]
 for line in (build/'CMakeFiles/mgba.dir/flags.make').read_text().splitlines():
@@ -25,14 +25,14 @@ rom=ROOT/'build/qa/link-chaos-roms'/f'{sha}.gba';rom.parent.mkdir(parents=True,e
 if not rom.exists():
  temporary=rom.with_suffix(f'.{os.getpid()}.tmp');temporary.write_bytes(data);os.replace(temporary,rom)
 s=symbols();s['prefs']=s.get('prefs',s.get('prefs.0'))
-for key in ('link_profile_pending','link_name_edit','link_name_pos','link_config_mode','link_setup_ready','link_host_ready','scene','link_events'):
+for key in ('link_profile_pending','link_name_edit','link_name_pos','link_config_mode','link_setup_ready','link_host_ready','link_join_prompt','scene','link_events'):
  os.environ['ROLE_'+key.removeprefix('link_').upper()]=hex(s[key])
 for key in ('scene','cash','link_events','video_ticks','message1','message2','message_tokens'):
  os.environ['LINK_'+key.removeprefix('link_').upper()+'_ADDR']=hex(s[key])
 os.environ['ROLE_STAGE']=hex(s['link_stage'])
 if a.animations:os.environ['LINK_ANIMATIONS']='1'
 if a.benchmark:os.environ['LINK_BENCHMARK']='1'
-cases=[(n,scenario,graphics) for n in (2,3) for scenario in range(8) for graphics in ((0,1) if scenario<=2 else (1,))]
+cases=[(n,scenario,graphics) for n in (2,3) for scenario in range(10) for graphics in ((0,1) if scenario<=2 else (1,))]
 if a.consoles is not None:cases=[case for case in cases if case[0]==a.consoles]
 if a.graphics is not None:cases=[case for case in cases if case[2]==a.graphics]
 if a.screenshots:

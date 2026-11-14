@@ -5,6 +5,7 @@ static int link_create,link_avatar_edit,link_avatar_armed;
 /* SIO parent clocks the bus; game authority is elected independently. */
 static int link_host_device=-1,link_host_ready,link_setup_ready;
 static int link_profile_pending,link_config_mode,link_choose_armed,link_back_mode;
+static int link_join_prompt;
 static int link_is_host(void){return link_host_device>=0&&(mp.local+1)%3==link_host_device;}
 static int link_active,link_connected,link_start_armed,link_cancelled;
 static u16 link_avatar;
@@ -128,6 +129,7 @@ static void link_close(void){if(link_active&&!link_is_host()){link_copy(record_n
 static void link_open(void){
  link_back_mode=game.mode==MP_CONNECT?MP_CONNECT:MP_SETUP;
  link_host_device=-1;link_host_ready=0;link_setup_ready=1;link_profile_pending=link_config_mode=link_choose_armed=0;
+ link_join_prompt=0;
  link_last_packet=video_ticks;link_event_valid=0;link_taps=0;link_packets=link_events=0;
  link_session=0;for(int i=0;i<11;i++)link_sent_name[i]=0;
  link_avatar_edit=!link_create;link_avatar_armed=0;
@@ -143,6 +145,18 @@ static void link_open(void){
  REG16(0x0400012a)=0;
  REG16(0x04000134)=0;REG16(0x04000128)=0x6003;
  REG16(0x04000202)=128;REG16(0x04000200)|=128;link_active=1;
+}
+/* Discover while the creator edits rules. Only start a hardware transfer
+ * when the bus is ready; absent peers must leave the settings responsive. */
+static int link_probe(void){
+ if(link_serial!=link_boot_serial){
+  if((link_status>>4)&3)return 1;
+  for(int i=1;i<4;i++)if(link_received[i]!=0xffff)return 1;
+ }
+ if((REG16(0x04000128)&0x88)==8){
+  REG16(0x0400012a)=0xc091;REG16(0x04000128)|=128;
+ }
+ return 0;
 }
 /* Poll local input inside the SIO waits too: an absent peer must not trap
  * either console in the lobby until the cable timeout expires. */
@@ -308,7 +322,12 @@ static int link_frame(void){
    if(ready&&connected>=2){
     if(link_connected!=connected)full=1;
     link_connected=connected;mp.humans=connected;
-    if(link_host_device<0)for(int i=0;i<connected;i++)if(link_remote[i]&4){link_host_device=i;break;}
+    if(link_host_device<0){
+     /* An already opened lobby beats a new creator still editing rules,
+      * including when the existing host occupies a child cable port. */
+     for(int ready_host=1;ready_host>=0&&link_host_device<0;ready_host--)
+      for(int i=0;i<connected;i++)if((link_remote[i]&4)&&(!ready_host||(link_remote[i]&8))){link_host_device=i;break;}
+    }
     if(link_host_device>=connected)return 0;
     if(link_host_device>=0){
      unsigned host_request=link_remote[link_host_device];
