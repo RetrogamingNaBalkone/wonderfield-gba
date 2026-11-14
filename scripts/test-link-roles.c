@@ -36,6 +36,45 @@ static void configure(int i){
  wr(i,prefs_addr,0);wr(i,prefs_addr+4,0);wr(i,prefs_addr+8,graphics);
  wr(i,prefs_addr+16,1);wr(i,prefs_addr+20,5);
 }
+static unsigned key_color(int node,unsigned cursor){
+ unsigned page=(c[node]->busRead16(c[node],0x04000000)&16)?0xa000:0;
+ return c[node]->busRead8(c[node],0x06000000+page+(88+cursor/8*16)*240+10+cursor%8*28);
+}
+static void verify_keyboard_frame(int node,int shared){
+ unsigned char pixels[240*160];
+ unsigned page=(c[node]->busRead16(c[node],0x04000000)&16)?0xa000:0;
+ for(unsigned i=0;i<sizeof pixels;i++)pixels[i]=c[node]->busRead8(c[node],0x06000000+page+i);
+ if(shared){wr(node,address("ROLE_KEYBOARD_VALID"),0);wr(node,address("ROLE_DIRTY"),1);}
+ else{wr(node,address("ROLE_PROFILE_CURSOR"),0xffffffffu);wr(node,address("ROLE_PROFILE_RENDER_KEY"),0xffffffffu);}
+ run(24);page=(c[node]->busRead16(c[node],0x04000000)&16)?0xa000:0;
+ for(unsigned i=0;i<sizeof pixels;i++)assert(pixels[i]==c[node]->busRead8(c[node],0x06000000+page+i));
+ printf("PASS: incremental %s keyboard matches a full redraw (node %d)\n",shared?"game":"name",node);
+}
+static void latency(const char*label,int node,uint32_t cursor,int shared){
+ unsigned worst=0,local_worst=0,owner_worst=0,paint_worst=0;
+ for(int phase=0;phase<8;phase++){
+  run(24+phase);unsigned before=rd(shared?host:node,cursor),frames=0,local=0,owner=0,paint=0,synced=0;
+  assert(key_color(node,before)==14);
+  c[node]->setKeys(c[node],16);
+  for(;frames<120;frames++){
+   run(1);if(frames==1)c[node]->setKeys(c[node],0);
+   if(!local&&rd(shared?host:node,cursor)!=before)local=frames+1;
+   if(!owner&&(rd(node,cursor)!=before||(shared&&getenv("LINK_PREVIEW_SUPPORTED")&&rd(node,address("ROLE_PREVIEW_VALID"))&&rd(node,address("ROLE_PREVIEW_CURSOR"))!=before)))owner=frames+1;
+   if(!paint&&key_color(node,(before+1)%32)==14&&key_color(node,before)==11)paint=frames+1;
+   int ready=1;for(int i=0;i<count;i++)if((shared||i==node)&&rd(i,cursor)==before)ready=0;
+   if(ready&&!synced)synced=frames+1;
+   if(ready&&paint)break;
+  }
+  c[node]->setKeys(c[node],0);assert(frames<120);
+  if(synced>worst)worst=synced;if(local>local_worst)local_worst=local;
+  if(owner>owner_worst)owner_worst=owner;
+  if(paint>paint_worst)paint_worst=paint;
+  run(30);for(int i=0;i<count;i++)if(shared||i==node)assert(rd(i,cursor)==(before+1)%32);
+ }
+ printf("LATENCY {\"profile\":\"%s\",\"node\":%d,\"owner_frames\":%u,\"visible_frames\":%u,\"host_frames\":%u,\"all_frames\":%u}\n",label,node,owner_worst,paint_worst,local_worst,worst);fflush(stdout);
+ if(getenv("LINK_PREVIEW_SUPPORTED")&&count==2){assert(owner_worst<=8);assert(paint_worst<=10);assert(local_worst<=10);assert(worst<=(shared?20u:6u));}
+ if(getenv("LINK_PREVIEW_SUPPORTED"))verify_keyboard_frame(node,shared);
+}
 static void elect(void){
  if(scenario>=8){
   /* Existing host on a child port, then create on the cable parent. */
@@ -52,12 +91,16 @@ static void elect(void){
   run(180);
   capture("existing-lobby-invitation");
   if(scenario==9){
-   int guest=0;press(guest,2);assert(rd(guest,game_addr+12)==39);
+   int guest=0;
    /* Two-console retry is the reported flow. With three consoles, also
     * verify declining does not accept the other pending invitation. */
-   if(count==3){assert(rd(2,address("ROLE_JOIN_PROMPT")));return;}
-   enter(guest,1);run(300);
-   assert(rd(guest,address("ROLE_JOIN_PROMPT"))&&rd(guest,host_addr)==(unsigned)host);
+   if(count==3){press(guest,2);assert(rd(guest,game_addr+12)==39);assert(rd(2,address("ROLE_JOIN_PROMPT")));return;}
+   for(int attempt=0;attempt<3;attempt++){
+    run(3*attempt);press(guest,2);assert(rd(guest,game_addr+12)==39);
+    enter(guest,1);run(300);
+    assert(rd(guest,address("ROLE_JOIN_PROMPT"))&&rd(guest,host_addr)==(unsigned)host);
+   }
+   printf("PASS: three decline/reopen attempts preserve the existing host and profile\n");
   }
   for(int i=0;i<count;i++)if(i!=host){press(i,1);assert(!rd(i,address("ROLE_JOIN_PROMPT"))&&!rd(i,create_addr));}
   printf("PASS: existing child-port lobby wins; new creators explicitly accept before profile entry\n");
@@ -135,6 +178,23 @@ static void play(void){
  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)!=30&&rd(i,game_addr+12)!=31&&rd(i,game_addr+24)==rd(host,game_addr+24));
  capture("game");
  /* The elected host owns rules, but still cannot act for another player. */
+ if(getenv("LINK_LATENCY")){
+  for(int i=0;i<count;i++){
+   wr(host,game_addr+12,1);wr(host,game_addr+20,(i+2)%3);wr(host,game_addr+81*4,0);run(120);
+   press(i,1);run(180);
+   for(int j=0;j<count;j++)assert(rd(j,game_addr+12)==5);
+   latency("keyboard",i,game_addr+70*4,1);
+   unsigned cursor=rd(host,game_addr+70*4);
+   c[i]->setKeys(c[i],16);run(2);c[i]->setKeys(c[i],0);run(1);
+   c[i]->setKeys(c[i],1);run(2);c[i]->setKeys(c[i],0);run(180);
+   for(int j=0;j<count;j++){
+    assert(rd(j,game_addr+70*4)==(cursor+1)%32);
+    assert(rd(j,game_addr+80*4)==1);
+    assert(c[j]->busRead8(c[j],game_addr+88*4)==128+(cursor+1)%32);
+   }
+   printf("PASS: queued direction then A selects the authoritative letter once (owner %d)\n",i);
+  }
+ }
  int owner=(host+1)%count;wr(host,game_addr+12,1);wr(host,game_addr+20,(owner+2)%3);wr(host,game_addr+81*4,1);run(120);
  if(getenv("LINK_BENCHMARK"))benchmark("elected_host_human_turn");
  press(host,1);assert(rd(host,game_addr+12)==1);
@@ -157,7 +217,7 @@ int main(int argc,char**argv){
  count=atoi(argv[2]);scenario=atoi(argv[3]);graphics=atoi(argv[4]);
  host=scenario==0||scenario==4?0:scenario==2?count-1:1;
  char host_text[4];snprintf(host_text,sizeof host_text,"%d",host);setenv("LINK_AUTHORITY",host_text,1);
- if(getenv("LINK_BENCHMARK"))perf_stage=address("ROLE_STAGE");
+ if(getenv("LINK_BENCHMARK")||getenv("LINK_LATENCY"))perf_stage=address("ROLE_STAGE");
  game_addr=strtoul(argv[5],0,16);mp_addr=strtoul(argv[6],0,16);prefs_addr=strtoul(argv[7],0,16);
  avatars_addr=strtoul(argv[8],0,16);create_addr=strtoul(argv[9],0,16);avatar_edit_addr=strtoul(argv[10],0,16);host_addr=strtoul(argv[11],0,16);
  unsigned char saved[3][128];
@@ -178,10 +238,11 @@ int main(int argc,char**argv){
  press(-1,1);press(-1,128);press(-1,128);press(-1,1);
  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==39);
  elect();
+ if(getenv("LINK_LATENCY"))for(int i=0;i<count;i++)latency("name",i,address("ROLE_NAME_CURSOR"),0);
  if(scenario==7){
-  int guest=(host+1)%count;press(guest,2);assert(rd(guest,game_addr+12)==39);
-  for(int i=0;i<count;i++)if(i!=guest)c[i]->setKeys(c[i],2);
-  run(32);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);run(32);
+  /* Cancel together: otherwise faster polling may correctly report that
+   * the first guest has disconnected before the others press B. */
+  press(-1,2);
   for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==39);
   retried=1;elect();printf("PASS: cancel during host settings returns to role menu; fresh election succeeds\n");
  }

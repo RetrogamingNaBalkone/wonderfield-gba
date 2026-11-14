@@ -6,6 +6,7 @@ from emulator import ROOT, symbols
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--animations',action='store_true')
 p.add_argument('--benchmark',action='store_true')
+p.add_argument('--latency',action='store_true')
 p.add_argument('--consoles',type=int,choices=(2,3))
 p.add_argument('--graphics',type=int,choices=(0,1))
 p.add_argument('--screenshots',type=Path)
@@ -13,6 +14,8 @@ p.add_argument('--native',action='store_true')
 p.add_argument('--jobs',type=int,default=4)
 p.add_argument('--scenario',type=int,choices=range(10))
 p.add_argument('--report',type=Path,default=ROOT/'build/qa/link-roles.json')
+p.add_argument('--rom',type=Path,default=ROOT/'build/gba/pole.gba')
+p.add_argument('--elf',type=Path,default=ROOT/'build/gba/pole.elf')
 a=p.parse_args();build=Path(os.environ['MGBA_BUILD']).resolve();flags=[]
 for line in (build/'CMakeFiles/mgba.dir/flags.make').read_text().splitlines():
  if line.startswith(('C_DEFINES =','C_INCLUDES =')):flags+=shlex.split(line.split('=',1)[1])
@@ -20,18 +23,21 @@ for line in (build/'CMakeFiles/mgba.dir/flags.make').read_text().splitlines():
 if a.native:flags+=['-DLINK_NATIVE']
 exe=ROOT/'build/qa'/('roles-'+a.report.stem);exe.parent.mkdir(parents=True,exist_ok=True)
 subprocess.run(['cc',*flags,str(ROOT/'scripts/test-link-roles.c'),'-L'+str(build),'-Wl,-rpath,'+str(build),'-lmgba','-o',str(exe)],check=True)
-data=(ROOT/'build/gba/pole.gba').read_bytes();sha=hashlib.sha256(data).hexdigest()
+data=a.rom.read_bytes();sha=hashlib.sha256(data).hexdigest()
 rom=ROOT/'build/qa/link-chaos-roms'/f'{sha}.gba';rom.parent.mkdir(parents=True,exist_ok=True)
 if not rom.exists():
  temporary=rom.with_suffix(f'.{os.getpid()}.tmp');temporary.write_bytes(data);os.replace(temporary,rom)
-s=symbols();s['prefs']=s.get('prefs',s.get('prefs.0'))
-for key in ('link_profile_pending','link_name_edit','link_name_pos','link_config_mode','link_setup_ready','link_host_ready','link_join_prompt','scene','link_events'):
- os.environ['ROLE_'+key.removeprefix('link_').upper()]=hex(s[key])
+s=symbols(a.elf);s['prefs']=s.get('prefs',s.get('prefs.0'))
+for key in ('link_profile_pending','link_name_edit','link_name_pos','link_name_cursor','link_preview_valid','link_preview_cursor','link_profile_cursor','link_profile_render_key','link_keyboard_valid','dirty','link_config_mode','link_setup_ready','link_host_ready','link_join_prompt','scene','link_events'):
+ os.environ['ROLE_'+key.removeprefix('link_').upper()]=hex(s.get(key,0) if key.startswith(('link_preview_','link_profile_cursor','link_profile_render_key','link_keyboard_valid')) else s[key])
+if s.get('link_preview_valid'):os.environ['LINK_PREVIEW_SUPPORTED']='1'
+else:os.environ.pop('LINK_PREVIEW_SUPPORTED',None)
 for key in ('scene','cash','link_events','video_ticks','message1','message2','message_tokens'):
  os.environ['LINK_'+key.removeprefix('link_').upper()+'_ADDR']=hex(s[key])
 os.environ['ROLE_STAGE']=hex(s['link_stage'])
 if a.animations:os.environ['LINK_ANIMATIONS']='1'
 if a.benchmark:os.environ['LINK_BENCHMARK']='1'
+if a.latency:os.environ['LINK_LATENCY']='1'
 cases=[(n,scenario,graphics) for n in (2,3) for scenario in range(10) for graphics in ((0,1) if scenario<=2 else (1,))]
 if a.consoles is not None:cases=[case for case in cases if case[0]==a.consoles]
 if a.graphics is not None:cases=[case for case in cases if case[2]==a.graphics]

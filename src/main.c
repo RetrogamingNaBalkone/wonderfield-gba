@@ -97,6 +97,7 @@ static void link_test_irq(void);
 static void link_close(void);
 static int link_frame(void);
 static int link_is_host(void);
+static void link_capture_input(u16 pressed);
 static void mp_setup(void);
 static void mp_depart(int wrong);
 static void intro_begin(void);
@@ -142,6 +143,7 @@ static void seed_from_input(void){
 }
 static void capture_keys(void){
  u16 keys=(~REG16(0x04000130))&1023,changed=keys^input_keys,pressed=keys&changed;input_keys=keys;
+ link_capture_input(pressed);
  if(changed){
   /* Capture both edges, including hold duration and releases during rendering.
    * Keep timing separate until a new draw: pause/skip cannot reroll a spin. */
@@ -792,11 +794,20 @@ static void link_edit_name(u16 pressed,u16 repeat){
  }
 }
 static void link_render_name(void){
+ u32 state[]={MP_NAME,link_name_cursor,link_name_pos,link_name_edit,mp.local,mp.humans,sound_on};
+ u32 answer=link_hash(link_name_answer,sizeof link_name_answer),base=link_hash(state+3,sizeof state-3*sizeof *state);
+ u32 key=link_hash(state,sizeof state)^answer;
+ dirty=0;if(key==link_profile_render_key){vblank();return;}link_profile_render_key=key;
  Game saved=game;int edit=mp.edit,error=mp_name_error;
  game.mode=MP_NAME;game.cursor=link_name_cursor;game.solve_pos=link_name_pos;
  for(int i=0;i<21;i++)game.answer[i]=link_name_answer[i];
  mp.edit=mp.local;mp_name_error=link_name_edit==3?2:link_name_edit==1;
- render();game=saved;mp.edit=edit;mp_name_error=error;
+ if(link_name_edit==2&&link_profile_cursor>=0&&base==link_profile_base_key){
+  if(link_profile_cursor!=link_name_cursor){keyboard_key(link_profile_cursor);keyboard_key(link_name_cursor);}
+  if(answer!=link_profile_answer_key){rect(70,60,80,14,7);text(70,60,(const char*)game.answer,0,0);}
+ }else render();
+ link_profile_base_key=base;link_profile_answer_key=answer;link_profile_cursor=link_name_cursor;
+ game=saved;mp.edit=edit;mp_name_error=error;
  mute_icon();present();
 }
 static void link_edit_avatar(u16 pressed,u16 repeat){
@@ -813,10 +824,47 @@ static void link_edit_avatar(u16 pressed,u16 repeat){
  if(pressed&(A|START))link_avatar_edit=0;
 }
 static void link_render_avatar(void){
+ link_profile_cursor=-1;
+ u32 state[]={MP_AVATAR,link_avatar,prefs.characters,mp.local,mp.humans,sound_on};
+ u32 key=link_hash(state,sizeof state);
+ dirty=0;if(key==link_profile_render_key){vblank();return;}link_profile_render_key=key;
  Game saved=game;int edit=mp.edit,avatar=avatars[mp.local];
  game.mode=MP_AVATAR;mp.edit=mp.local;avatars[mp.local]=link_avatar;
  render();game=saved;mp.edit=edit;avatars[mp.local]=avatar;
  mute_icon();present();
+}
+/* Navigation may be displayed immediately by its owner. It never edits the
+ * synchronized game, selects a letter, or confirms an answer locally. */
+static int link_preview_navigation(u16 pressed){
+ if(link_preview_valid&&(game.mode!=link_preview_mode||game.player!=link_preview_player||game.cursor!=link_preview_base_cursor||game.choice!=link_preview_base_choice))link_preview_valid=0;
+ if(link_is_host()||game.player!=mp.local||link_preview_valid||!(pressed&(LEFT|RIGHT|UP|DOWN)))return 0;
+ if(game.mode!=TURN&&game.mode!=LETTER&&game.mode!=SOLVE)return 0;
+ int cursor=game.cursor,choice=game.choice;
+ if(game.mode==TURN){if(pressed&(LEFT|RIGHT))choice=(pressed&RIGHT)!=0;}
+ else{
+  if(pressed&LEFT)cursor=(cursor+31)%32;if(pressed&RIGHT)cursor=(cursor+1)%32;
+  if(pressed&UP)cursor=(cursor+24)%32;if(pressed&DOWN)cursor=(cursor+8)%32;
+ }
+ if(cursor==game.cursor&&choice==game.choice)return 0;
+ link_preview_mode=game.mode;link_preview_player=game.player;
+ link_preview_base_cursor=game.cursor;link_preview_base_choice=game.choice;
+ link_preview_cursor=cursor;link_preview_choice=choice;link_preview_valid=1;return 1;
+}
+static void link_render_game(void){
+ link_preview_navigation(0);
+ int cursor=game.cursor,choice=game.choice;
+ if(link_preview_valid){game.cursor=link_preview_cursor;game.choice=link_preview_choice;}
+ if(game.mode==SOLVE||(game.mode==LETTER&&game.keyboard)){
+  Game body=game;body.cursor=0;body.frame=body.rng=0;body.wait=0;
+  u32 key=link_hash(&body,sizeof body)^visual_key()^presentation_event^(unsigned)sound_on^solve_fixed;
+  if(link_keyboard_valid&&key==link_keyboard_key){
+   if(game.cursor==link_keyboard_cursor){game.cursor=cursor;game.choice=choice;dirty=0;vblank();return;}
+   keyboard_key(link_keyboard_cursor);keyboard_key(game.cursor);
+  }else render();
+  link_keyboard_valid=1;link_keyboard_key=key;link_keyboard_cursor=game.cursor;
+ }else{link_keyboard_valid=0;render();}
+ game.cursor=cursor;game.choice=choice;
+ mute_icon();present();rendered_key=visual_key();rendered_frames++;dirty=0;
 }
 void gba_main(void){
  REG16(0x0400010a)=0;REG16(0x0400010e)=0;
@@ -849,11 +897,18 @@ void gba_main(void){
   }
   if(mp.link&&link_active&&!probing){
    if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
-   link_taps|=pressed&~L;
-   link_submit=(link_name_edit||link_avatar_edit)?0:((keys|link_taps)&~L)|((link_taps&15)<<10);
+   link_submit=(link_name_edit||link_avatar_edit)?0:keys&~L;
+   if(game.mode!=MP_LOBBY&&link_preview_navigation(pressed))link_render_game();
    int exchanged=link_due();
    int success=1;
-   if(exchanged){success=link_frame();link_taps=0;}
+   if(exchanged)success=link_frame();
+   if(!success&&link_restart){
+    /* Keep the lobby/profile, but join the parent's new CRC/commit stream. */
+    ime=REG16(0x04000208);REG16(0x04000208)=0;
+    link_pending=link_phase=link_done=link_fault=link_sequence=0;link_ack=0;
+    link_session=0;link_event_valid=0;link_sent_status=~0u;link_restart=0;
+    REG16(0x04000208)=ime;success=1;exchanged=0;
+   }
    if(!success){
     link_error_stage=link_stage;link_error_status=link_status;
     link_close();
@@ -903,7 +958,7 @@ void gba_main(void){
     scene.now=video_ticks;
     if(game.mode==SPIN)spin_tick(0,0);else scene_tick(0);
     visual_tick();u32 key=visual_key();if(key!=rendered_key)dirty=1;
-    if(dirty){render();mute_icon();present();rendered_key=key;rendered_frames++;dirty=0;}else vblank();
+    if(dirty)link_render_game();else vblank();
     continue;
    }
    if(link_active){mp.viewer=mp.local;keys=link_keys&1023;pressed=(keys&~link_oldkeys)|(exchanged?((link_keys>>10)&15):0);repeat=pressed;
@@ -919,6 +974,10 @@ void gba_main(void){
   }
   game.frame++;update(pressed,repeat);
   scene.now=video_ticks;visual_tick();u32 key=visual_key();if(key!=rendered_key)dirty=1;
-  if(dirty){scene.last_redraw=scene.now;render();mute_icon();present();rendered_key=key;rendered_frames++;dirty=0;}else vblank();
+  if(dirty){
+   scene.last_redraw=scene.now;
+   if(mp.link&&link_active)link_render_game();
+   else{render();mute_icon();present();rendered_key=key;rendered_frames++;dirty=0;}
+  }else vblank();
  }
 }

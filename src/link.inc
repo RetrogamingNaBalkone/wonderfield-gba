@@ -6,6 +6,11 @@ static int link_create,link_avatar_edit,link_avatar_armed;
 static int link_host_device=-1,link_host_ready,link_setup_ready;
 static int link_profile_pending,link_config_mode,link_choose_armed,link_back_mode;
 static int link_join_prompt;
+static u32 link_profile_render_key;
+static u32 link_profile_base_key,link_profile_answer_key,link_keyboard_key;
+static int link_profile_cursor,link_keyboard_cursor,link_keyboard_valid;
+static int link_preview_valid,link_preview_mode,link_preview_player;
+static int link_preview_cursor,link_preview_choice,link_preview_base_cursor,link_preview_base_choice;
 static int link_is_host(void){return link_host_device>=0&&(mp.local+1)%3==link_host_device;}
 static int link_active,link_connected,link_start_armed,link_cancelled;
 static u16 link_avatar;
@@ -19,7 +24,26 @@ static volatile u32 link_completed_at;
 static int link_session;
 static u32 link_last_packet,link_event_key,link_packets,link_events;
 static int link_event_valid;
-static u16 link_taps;
+static volatile u16 link_tap_queue[32];
+static volatile u8 link_tap_read,link_tap_write;
+static void link_capture_input(u16 pressed){
+ pressed&=~L;
+ if(link_active&&!link_name_edit&&!link_avatar_edit&&pressed){
+  unsigned next=(link_tap_write+1)&31;
+  if(next!=link_tap_read){link_tap_queue[link_tap_write]=pressed;link_tap_write=next;}
+ }
+}
+static void link_sample_input(void){
+ u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
+ u16 taps=0;
+ if(link_name_edit||link_avatar_edit)link_tap_read=link_tap_write;
+ else if(link_tap_read!=link_tap_write){taps=link_tap_queue[link_tap_read];link_tap_read=(link_tap_read+1)&31;}
+ /* A held button whose press is still queued must not overtake an earlier
+  * direction and then execute again when its own edge reaches the head. */
+ u16 pending=0;for(unsigned i=link_tap_read;i!=link_tap_write;i=(i+1)&31)pending|=link_tap_queue[i];
+ link_submit=(link_name_edit||link_avatar_edit)?0:(((input_keys&~pending)|taps)&~L)|((taps&15)<<10);
+ REG16(0x04000208)=ime;
+}
 /* Compare rule state, not the clock, RNG cursor or intermediate poses. This
  * also catches input changes within a mode (cursor, choice, typed answer). */
 static u32 link_semantic_key(void);
@@ -30,6 +54,7 @@ static void link_rebase(u32 elapsed){
  cash.next_at+=elapsed;cash.pause_at+=elapsed;
 }
 static char link_sent_name[11];
+static unsigned link_sent_status;
 static volatile u16 link_received[4],link_status;
 /* Stop-and-wait: low byte, high byte, CRC, commit. Tags alone do not
  * validate the payload. Neither CPU may consume an unchecked word. */
@@ -39,11 +64,18 @@ static volatile u16 link_wire_word;
 static unsigned link_sequence;
 static int link_stage,link_error_stage;
 static volatile int link_master,link_started;
+static volatile int link_restart;
 static u16 link_error_status;
 static u16 link_error_received,link_error_expected;
 static int link_mismatch(u16 received,u16 expected){link_error_received=received;link_error_expected=expected;return 0;}
 static u16 link_remote[4];
 static char link_name[11],link_saved_names[8][11];
+static unsigned link_lobby_status(void){return link_avatar|(link_name_edit?16:0)|(link_avatar_edit?32:0);}
+static int link_lobby_changed(void){
+ if(link_lobby_status()!=link_sent_status)return 1;
+ for(int i=0;i<11;i++)if(link_name[i]!=link_sent_name[i])return 1;
+ return 0;
+}
 static char link_incoming_names[3][11];
 static int link_saved_scores[8];
 static struct {
@@ -69,9 +101,20 @@ static u32 link_semantic_key(void){
   cash.total,cash.drawn==cash.total,game.mode==SPIN||game.mode==CASH?0:sound_command.sequence};
  return key^link_hash(extra,sizeof extra)^link_hash(&match,sizeof match)^link_hash(&prefs,sizeof prefs)^(unsigned)mp.eliminated;
 }
+static int link_navigation_only(u32 event_key){
+ if(!link_event_valid||event_key==link_event_key||game.mode!=link_snapshot.game.mode)return 0;
+ if(game.mode!=TURN&&game.mode!=LETTER&&game.mode!=SOLVE&&game.mode!=PLUS)return 0;
+ if(game.cursor<0||game.cursor>31||game.choice<0||game.choice>1)return 0;
+ /* Compare with the previous publication after undoing only navigation.
+  * Scores, answer text, turn changes and presentation events use snapshots. */
+ int cursor=game.cursor,choice=game.choice;
+ game.cursor=link_snapshot.game.cursor;game.choice=link_snapshot.game.choice;
+ u32 previous=link_semantic_key();game.cursor=cursor;game.choice=choice;
+ return previous==link_event_key;
+}
 static int link_due(void){
- if(game.mode==MP_LOBBY||!link_session)return 1;
- if(link_master)return (link_is_host()&&(!link_event_valid||link_semantic_key()!=link_event_key))||video_ticks-link_last_packet>=6;
+ if(!link_session)return 1;
+ if(link_master)return (game.mode==MP_LOBBY&&link_lobby_changed())||(link_is_host()&&(!link_event_valid||link_semantic_key()!=link_event_key))||video_ticks-link_last_packet>=2;
  /* A new low-byte phase is the host's request. The final commit ACK from
   * the preceding packet is not a request. Keep rendering until it arrives. */
  return (link_received[0]&0xff00)==(0xa000|(link_phase&0x200))||video_ticks-link_last_packet>=120;
@@ -98,6 +141,10 @@ static void link_irq(void){
  if(link_status&64)link_fault=1;
  if(link_master==0&&!link_fault){
   u16 word=link_received[0],tag=word&0xff00;link_wire_word=word;
+  /* A parent re-entering from the role menu starts a fresh transport.
+   * Abort the old wait; its alternating phase cannot be reused safely. */
+  if(word==0xc091&&link_session&&game.mode==MP_LOBBY){link_restart=1;REG16(0x0400012a)=0xc092;return;}
+  if(link_restart)return;
   if(!link_done&&!(link_phase&1)&&(tag==0xa000||tag==0xa200))link_phase=tag&0x200;
   unsigned low=0xa000|(link_phase&0x200);
   if(link_pending&&tag==low){
@@ -130,8 +177,12 @@ static void link_open(void){
  link_back_mode=game.mode==MP_CONNECT?MP_CONNECT:MP_SETUP;
  link_host_device=-1;link_host_ready=0;link_setup_ready=1;link_profile_pending=link_config_mode=link_choose_armed=0;
  link_join_prompt=0;
- link_last_packet=video_ticks;link_event_valid=0;link_taps=0;link_packets=link_events=0;
+ link_preview_valid=0;
+ link_profile_render_key=~0u;
+ link_profile_cursor=-1;link_keyboard_valid=0;
+ link_last_packet=video_ticks;link_event_valid=0;link_tap_read=link_tap_write=0;link_packets=link_events=0;
  link_session=0;for(int i=0;i<11;i++)link_sent_name[i]=0;
+ link_sent_status=~0u;
  link_avatar_edit=!link_create;link_avatar_armed=0;
  link_connected=1;link_start_armed=link_cancelled=link_name_edit=0;link_name_cursor=game.cursor;
  link_copy(link_saved_names,record_names,sizeof record_names);link_copy(link_saved_scores,record_scores,sizeof record_scores);
@@ -140,6 +191,7 @@ static void link_open(void){
  for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
  link_pending=link_phase=link_done=link_fault=link_sequence=0;link_ack=link_wire_word=0;link_retries=0;
  link_master=-1;link_started=link_stage=link_error_stage=0;link_status=link_error_status=0;
+ link_restart=0;
  link_error_received=link_error_expected=0;
  link_boot_serial=link_serial;
  REG16(0x0400012a)=0;
@@ -151,7 +203,9 @@ static void link_open(void){
 static int link_probe(void){
  if(link_serial!=link_boot_serial){
   if((link_status>>4)&3)return 1;
-  for(int i=1;i<4;i++)if(link_received[i]!=0xffff)return 1;
+  /* A completion from the previous connection may arrive after reopen.
+   * The parent must send its new bootstrap before starting phase zero. */
+  if(link_received[0]==0xc091)for(int i=1;i<4;i++)if(link_received[i]!=0xffff)return 1;
  }
  if((REG16(0x04000128)&0x88)==8){
   REG16(0x0400012a)=0xc091;REG16(0x04000128)|=128;
@@ -196,8 +250,9 @@ static int link_exchange(u16 value){
   unsigned done=link_done;
   link_reply=value;link_pending=1;
   while(link_done==done){
-   if(link_fault||link_cancel_requested()||link_timed_out(start))return 0;
+   if(link_restart||link_fault||link_cancel_requested()||link_timed_out(start))return 0;
   }
+  if(link_restart)return 0;
   link_remote[0]=link_decoded;
   REG16(0x0400012a)=link_ack;
   mp.local=((link_status>>4&3)+2)%3;
@@ -299,7 +354,8 @@ static int link_frame(void){
  int master=link_master,full=!link_session,lobby=game.mode==MP_LOBBY;
  int input_device=0,expected_members=mp.humans;
  u32 event_key=link_is_host()?link_semantic_key():0;
- int event=lobby||!link_event_valid||event_key!=link_event_key;
+ int event=!link_event_valid||event_key!=link_event_key||(lobby&&link_lobby_changed());
+ int was_ready=link_host_ready;
  /* Requests share one logical word: fresh session, changed event, create,
   * configured lobby, lobby/game. The first accepted create request wins;
   * requests in the same exchange tie deterministically by physical port. */
@@ -335,7 +391,11 @@ static int link_frame(void){
      if(!lobby&&(full||connected!=expected_members))return 0;
      input_device=lobby?link_host_device:(host_request>>5)&3;
      if(input_device>=connected)return 0;
-     event=full||lobby||(host_request&2);
+     event=full||(host_request&2);
+     if(lobby){
+      if(link_host_ready!=was_ready)event=1;
+      for(int i=0;i<connected;i++)if(link_remote[i]&2)event=1;
+     }
     }else{lobby=1;link_host_ready=0;event=0;}
     break;
    }
@@ -359,8 +419,8 @@ static int link_frame(void){
    if(link_timed_out(start))return 0;
   }
  }
- int authority=link_is_host();
- u16 value;
+ int authority=link_is_host(),navigation=0;
+ u16 value,*words=(u16*)&link_snapshot;
  if(full){
  link_stage=3;
  if(!link_word(MULTIPLAYER_BUILD&65535,MULTIPLAYER_BUILD&65535,&value))return 0;
@@ -376,6 +436,7 @@ static int link_frame(void){
  else for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
  }
  link_stage=4;
+ link_sample_input();
  if(!link_word(link_submit,link_submit,0))return 0;
  if(master)link_keys=link_remote[input_device];
  if(link_host_device>0){if(!link_word(link_keys,0,&value))return 0;link_keys=value;}
@@ -383,14 +444,29 @@ static int link_frame(void){
  if(!event)return 1; /* Input/keepalive: no poses, text or snapshot hash. */
  link_events++;
  u32 event_at=video_ticks;
+ if(!lobby){
+  u16 control=authority&&!full&&link_navigation_only(event_key)?0x8000|(game.cursor&31)|((game.choice&1)<<5)|(game.mode<<6)|(game.player<<12):0;
+  if(!link_publish(control,&value))return 0;
+  if(authority&&value!=control)return 0;
+  if(value&&(!(value&0x8000)||(value&0x4000)||full))return 0;
+  navigation=value!=0;
+  if(navigation){
+   if(((value>>6)&63)!=(unsigned)link_snapshot.game.mode||((value>>12)&3)!=(unsigned)link_snapshot.game.player)return 0;
+   link_snapshot.game.cursor=value&31;link_snapshot.game.choice=(value>>5)&1;
+   /* A committed CRC-checked assignment preserves the verified baseline:
+    * every peer applies the same cursor/choice to the same snapshot. */
+   goto commit_event;
+  }
+ }
  if(lobby){
   int name_changed=full;
   for(int j=0;j<11;j++)if(link_name[j]!=link_sent_name[j])name_changed=1;
   /* Avatar and edit flags fit in one word. Names are sent only when at
    * least one participant changed theirs, or a fresh session needs them. */
-  unsigned status=link_avatar|(link_name_edit?16:0)|(link_avatar_edit?32:0)|(name_changed?64:0);
+  unsigned status=link_lobby_status()|(name_changed?64:0);
   link_stage=5;
   if(!link_collect(status))return 0;
+  link_sent_status=status&63;
   unsigned names_needed=full;
   if(authority){
    link_snapshot.name_editing=link_snapshot.avatar_editing=0;
@@ -428,7 +504,7 @@ static int link_frame(void){
   link_snapshot.event=presentation_event;link_copy(link_snapshot.tokens,message_tokens,sizeof message_tokens);
  }
  link_stage=6;
- u16*words=(u16*)&link_snapshot;unsigned changed=0;
+ unsigned changed=0;
  if(authority)for(unsigned i=0;i<sizeof link_snapshot/2;i++)if(words[i]!=link_previous[i])changed++;
  if(!link_publish(changed,&value))return 0;
  if(value>sizeof link_snapshot/2)return 0;
@@ -464,8 +540,10 @@ static int link_frame(void){
  if(!link_word(hash>>16,hash>>16,&value))return 0;remote_hash|=(u32)value<<16;
  if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;
  if(hash!=remote_hash)return 0;
+commit_event:
  if(authority)for(unsigned i=0;i<sizeof link_snapshot/2;i++)link_previous[i]=words[i];
- if(!authority){
+ if(!authority&&navigation){game.cursor=link_snapshot.game.cursor;game.choice=link_snapshot.game.choice;}
+ else if(!authority){
   if(link_snapshot.humans<2||link_snapshot.humans>3)return 0;
   match=link_snapshot.match;prefs.rule=link_snapshot.rule;prefs.rounds=link_snapshot.rounds;
   mp.humans=link_connected=link_snapshot.humans;
@@ -483,7 +561,7 @@ static int link_frame(void){
   }
  }
  /* Delivery time does not consume the local animation's lifetime. */
- if(!lobby)link_rebase(video_ticks-(authority?event_at:link_snapshot.scene.now));
+ if(!lobby&&!navigation)link_rebase(video_ticks-(authority?event_at:link_snapshot.scene.now));
  link_event_key=authority?link_semantic_key():0;link_event_valid=1;link_last_packet=video_ticks;dirty=1;
  return 1;
 }

@@ -215,16 +215,17 @@ static void speech(void){
  label_center(x+3,y+2,w-6,message1,0,0);
  if(message2&&*message2)label_center(x+3,y+18,w-6,message2,0,0);
 }
-static void keyboard(void){
- rect(3,84,234,66,1);border(3,84,234,66,0);
- for(int i=0;i<32;i++){
+static void keyboard_key(int i){
   int x=8+(i%8)*28,y=86+(i/8)*16;
   int used=game.mode==SOLVE?fixed_letter(i):game.mode==LETTER&&game.used[i];
   rect(x,y,26,15,i==game.cursor?14:11);border(x,y,26,15,0);
   /* The first row of CP866 0x89 is its breve: keep it off the key border. */
   glyph(x+9,y+1,128+i,0,used?8:0);
   if(used)line(x+3,y+7,20,0);
- }
+}
+static void keyboard(void){
+ rect(3,84,234,66,1);border(3,84,234,66,0);
+ for(int i=0;i<32;i++)keyboard_key(i);
  if(game.mode==SOLVE){
   int n=len(word());rect(4,62,232,20,0);
   for(int i=0;i<n;i++){int x=(240-n*10)/2+i*10;glyph(x,64,game.answer[i]?(u8)game.answer[i]:'_',0,game.revealed[i]?8:15);}

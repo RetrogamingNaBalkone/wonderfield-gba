@@ -39,7 +39,7 @@ static void animation_tests(void){
  for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==2);assert(rd(i,game_addr+73*4)>poses[i]);assert(rd(i,events)==before[i]);}
  printf("ANIMATION spin: %u transfers over 84 VBlanks, zero pose events; spectator cannot skip\n",(unsigned)transfers-sent_before);
  for(int t=0;t<1000&&rd(authority,game_addr+12)==2;t++)run(1);
- assert(rd(authority,game_addr+12)!=2);run(60);
+ assert(rd(authority,game_addr+12)!=2);anim_mode(rd(authority,game_addr+12));
  for(int i=0;i<count;i++)assert(rd(i,game_addr+28)==target);
  anim_messages();printf("PASS: local wheel animation reaches authoritative target on every console\n");
  /* Start another spin and skip from its owner. */
@@ -96,7 +96,11 @@ static void animation_tests(void){
  sent_before=transfers;run(60);
  for(int i=0;i<count;i++){assert(rd(i,cash)>poses[i]);assert(rd(i,events)==before[i]);}
  printf("ANIMATION cash: %u transfers over 60 VBlanks, zero note events\n",(unsigned)transfers-sent_before);
- anim_tap(0);run(60);
+ anim_tap(0);
+ for(int t=0;t<300;t++){
+  int ready=1;for(int i=0;i<count;i++){assert(rd(i,game_addr+12)!=31);if(rd(i,cash)!=10000)ready=0;}
+  if(ready)break;run(1);assert(t<299);
+ }
  for(int i=0;i<count;i++){assert(rd(i,cash)==10000);assert(rd(i,cash+4)==10000);assert(rd(i,cash+8)==rd(authority,cash+8));}
  printf("PASS: cash seed/amount animates locally; skip converges to identical final state\n");
  disconnected=count-1;run(300);
