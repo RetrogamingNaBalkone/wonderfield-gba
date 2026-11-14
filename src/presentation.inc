@@ -517,8 +517,8 @@ static void render(void){
   const char*baud[]={"9600","38400","57600","115200"};
   const char*pace[]={"0.25","1","4","16"};
   if(!link_test_details){
-   centered(8,"Проверка связи",0,0);
-   const char*status=!link_test_ran?"Готов к проверке":test.timed_out?(test.peers?"Обмен прервался":"Нет ответа на запуск"):changed?"Состав GBA изменился":test.errors?"Обнаружены ошибки":!test.running?"Тест остановлен":!test.peers?"Ждем другую GBA":"Обмен идет без ошибок";
+   centered(8,"Эхо-тест кабеля",0,0);
+   const char*status=!link_test_ran?"Готов к проверке":test.timed_out?(test.peers?"Обмен прервался":"Нет ответа на запуск"):changed?"Состав GBA изменился":test.errors?"Обнаружены ошибки":!test.running?"Тест остановлен":!test.peers?"Ждем другую GBA":!test.passed?"Ждем проверенного эхо":"Эхо идет без ошибок";
    centered(29,status,0,test.errors||test.timed_out?4:0);
    if(!link_test_ran){
     centered(51,"Откройте тест на всех GBA",1,0);
@@ -527,7 +527,7 @@ static void render(void){
     centered(51,"Нет ответа от второй GBA",1,0);
     centered(65,"Запустите этот тест и на нем",1,0);
    }else{
-    centered(48,test.role==0?"Эта консоль - ведущая":"Эта консоль - клиент",1,0);
+    centered(48,test.role==0?"Порт кабеля: ведущий":"Порт кабеля: ведомый",1,0);
     text(20,62,"Участников:",1,0);number(108,62,test.peers,1,0);
     text(140,62,"Секунд:",1,0);number(196,62,link_test_seconds,1,0);
    }
@@ -539,8 +539,8 @@ static void render(void){
    text(20,108,"Бод:",1,0);text(52,108,baud[test.baud],1,0);
    text(128,108,"Пауза:",1,0);text(176,108,pace[test.pace],1,0);text(212,108,"мс",1,0);
    centered(124,test.running?"A: Стоп  B: Назад":"L/R: Бод  Вверх/вниз: Пауза",1,0);
-   centered(138,"SELECT: подробности",1,0);
-   centered(151,test.running?"Оставьте тест на 30 секунд":"A: Старт  B: Назад",1,0);return;
+   centered(138,"Только кабель, не протокол игры",1,0);
+   centered(151,test.running?"SELECT: Данные":"A: Старт SELECT: Данные B: Назад",1,0);return;
   }
   centered(6,"Данные диагностики",0,0);
   text(10,24,"ID:",1,0);number(34,24,test.role+1,1,0);

@@ -4,6 +4,7 @@
 #undef main
 static uint32_t test_addr;
 static unsigned injected;
+static unsigned hardware_injected,hardware_passed,hardware_errors;
 static uint32_t field(int i,unsigned offset){return rd(i,test_addr+offset);}
 static void press(int device,unsigned key){
  for(int i=0;i<count;i++)if(device<0||i==device)c[i]->setKeys(c[i],key);
@@ -14,6 +15,18 @@ static void press(int device,unsigned key){
 static void corrupt_echo(int i){
  if(i||injected||sent[0]==0xace1||sent[1]!=sent[0])return;
  g[0]->memory.io[REG_SIOMULTI1/2]^=1;injected=1;
+}
+static void hardware_fault(int i){
+ if(i!=1||hardware_injected==2)return;
+ if(hardware_injected){
+  assert(field(i,32)==hardware_passed&&field(i,36)==hardware_errors+1);
+  hardware_injected=2;return;
+ }
+ unsigned last=c[i]->busRead16(c[i],test_addr+58);
+ if(last&&g[i]->memory.io[REG_SIOMULTI0/2]!=last){
+  hardware_passed=field(i,32);hardware_errors=field(i,36);
+  g[i]->sio.siocnt|=64;hardware_injected=1;
+ }
 }
 static void healthy(void){
  for(int i=0;i<count;i++){
@@ -59,6 +72,9 @@ int main(int argc,char**argv){
  for(int i=0;i<count;i++)assert(field(i,0)&&!field(i,44));
  irq_delay=20000;run(180);irq_delay=0;
  for(int i=0;i<count;i++)assert(field(i,0)&&!field(i,44));
+ receive_hook=hardware_fault;run(180);receive_hook=0;
+ assert(hardware_injected==2);
+ printf("PASS: hardware-faulted child sample is not counted as checked\n");
 #endif
  press(count-1,2);assert(rd(count-1,game_addr+12)==26);run(180);
  for(int i=0;i<count-1;i++)assert(!field(i,0)&&field(i,20)&&field(i,44)==1);

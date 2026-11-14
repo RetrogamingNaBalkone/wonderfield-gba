@@ -1,0 +1,530 @@
+{
+  "rom_sha256": "2573770c7f14cbab33c1b4e74ade4219a7bd00675052aa356a0ab257083b082c",
+  "scope": "Raw SIO echo only. Not game host election, packet CRC/commit, event relay or lobby integration.",
+  "native": {
+    "rom_sha256": "2573770c7f14cbab33c1b4e74ade4219a7bd00675052aa356a0ab257083b082c",
+    "native": true,
+    "tests": [
+      {
+        "count": 2,
+        "baud": 0,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=453 ok=227 err=0 wait=226 timeout=0\n running=1 inflight=1 last_at=199100928 now_hi=3038 now_lo=54649 mode=38 SIO=6088\nnode=1 role=1 transfers=453 ok=227 err=0 wait=226 timeout=0\n running=1 inflight=0 last_at=199030380 now_hi=3038 now_lo=11055 mode=38 SIO=601c\nnode=0 role=0 transfers=440 ok=220 err=0 wait=220 timeout=0\n running=1 inflight=0 last_at=341949759 now_hi=5224 now_lo=50240 mode=38 SIO=6008\nnode=1 role=1 transfers=440 ok=221 err=0 wait=219 timeout=0\n running=1 inflight=0 last_at=341879204 now_hi=5224 now_lo=50237 mode=38 SIO=601c\nPASS raw diagnostic count=2 baud=0 pace=0 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 0,
+        "pace": 0,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=440 ok=220 err=0 wait=220 timeout=0\n running=1 inflight=0 last_at=198131021 now_hi=3038 now_lo=54637 mode=38 SIO=6008\nnode=1 role=1 transfers=440 ok=221 err=0 wait=219 timeout=0\n running=1 inflight=0 last_at=198463139 now_hi=3038 now_lo=54662 mode=38 SIO=601c\nnode=0 role=0 transfers=440 ok=220 err=0 wait=220 timeout=0\n running=1 inflight=0 last_at=341949719 now_hi=5224 now_lo=50238 mode=38 SIO=6008\nnode=1 role=1 transfers=440 ok=221 err=0 wait=219 timeout=0\n running=1 inflight=0 last_at=341879916 now_hi=5224 now_lo=49732 mode=38 SIO=601c\nPASS raw diagnostic count=2 baud=0 pace=0 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 0,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=103 ok=52 err=0 wait=51 timeout=0\n running=1 inflight=1 last_at=192092361 now_hi=2935 now_lo=63115 mode=38 SIO=6088\nnode=1 role=1 transfers=103 ok=52 err=0 wait=51 timeout=0\n running=1 inflight=0 last_at=192021182 now_hi=2935 now_lo=16741 mode=38 SIO=601c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=334353400 now_hi=5121 now_lo=58942 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=334286013 now_hi=5121 now_lo=58942 mode=38 SIO=601c\nPASS raw diagnostic count=2 baud=0 pace=3 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 0,
+        "pace": 3,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=191096074 now_hi=2935 now_lo=63440 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=191426200 now_hi=2935 now_lo=63104 mode=38 SIO=601c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=334633318 now_hi=5121 now_lo=59234 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=334560762 now_hi=5121 now_lo=58378 mode=38 SIO=601c\nPASS raw diagnostic count=2 baud=0 pace=3 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 1,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1424 ok=712 err=0 wait=712 timeout=0\n running=1 inflight=1 last_at=192403112 now_hi=2935 now_lo=62456 mode=38 SIO=6089\nnode=1 role=1 transfers=1424 ok=713 err=0 wait=711 timeout=0\n running=1 inflight=0 last_at=192387484 now_hi=2935 now_lo=62474 mode=38 SIO=601d\nnode=0 role=0 transfers=1380 ok=690 err=0 wait=690 timeout=0\n running=1 inflight=0 last_at=335157496 now_hi=5121 now_lo=58947 mode=38 SIO=6009\nnode=1 role=1 transfers=1380 ok=691 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=335141740 now_hi=5121 now_lo=58799 mode=38 SIO=601d\nPASS raw diagnostic count=2 baud=1 pace=0 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 1,
+        "pace": 0,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1380 ok=690 err=0 wait=690 timeout=0\n running=1 inflight=0 last_at=191338692 now_hi=2935 now_lo=62432 mode=38 SIO=6009\nnode=1 role=1 transfers=1380 ok=691 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=191724619 now_hi=2935 now_lo=62461 mode=38 SIO=601d\nnode=0 role=0 transfers=1380 ok=690 err=0 wait=690 timeout=0\n running=1 inflight=0 last_at=335157496 now_hi=5121 now_lo=58947 mode=38 SIO=6009\nnode=1 role=1 transfers=1380 ok=691 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=335141538 now_hi=5121 now_lo=58602 mode=38 SIO=601d\nPASS raw diagnostic count=2 baud=1 pace=0 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 1,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=124 ok=62 err=0 wait=62 timeout=0\n running=1 inflight=0 last_at=185477965 now_hi=2833 now_lo=5508 mode=38 SIO=6009\nnode=1 role=1 transfers=124 ok=63 err=0 wait=61 timeout=0\n running=1 inflight=0 last_at=185459916 now_hi=2833 now_lo=5344 mode=38 SIO=601d\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=327908048 now_hi=5019 now_lo=1088 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=327891324 now_hi=5019 now_lo=907 mode=38 SIO=601d\nPASS raw diagnostic count=2 baud=1 pace=3 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 1,
+        "pace": 3,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=184369375 now_hi=2833 now_lo=5570 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=184756943 now_hi=2833 now_lo=5483 mode=38 SIO=601d\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=327626595 now_hi=5019 now_lo=1479 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=327610402 now_hi=5019 now_lo=1435 mode=38 SIO=601d\nPASS raw diagnostic count=2 baud=1 pace=3 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 2,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1878 ok=939 err=0 wait=939 timeout=0\n running=1 inflight=0 last_at=185667647 now_hi=2833 now_lo=5544 mode=38 SIO=600a\nnode=1 role=1 transfers=1878 ok=940 err=0 wait=938 timeout=0\n running=1 inflight=0 last_at=185657426 now_hi=2833 now_lo=4601 mode=38 SIO=601e\nnode=0 role=0 transfers=1820 ok=910 err=0 wait=910 timeout=0\n running=1 inflight=0 last_at=328417630 now_hi=5019 now_lo=2507 mode=38 SIO=600a\nnode=1 role=1 transfers=1820 ok=911 err=0 wait=909 timeout=0\n running=1 inflight=0 last_at=328408346 now_hi=5019 now_lo=2478 mode=38 SIO=601e\nPASS raw diagnostic count=2 baud=2 pace=0 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 2,
+        "pace": 0,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1820 ok=910 err=0 wait=910 timeout=0\n running=1 inflight=0 last_at=184597888 now_hi=2833 now_lo=5281 mode=38 SIO=600a\nnode=1 role=1 transfers=1820 ok=911 err=0 wait=909 timeout=0\n running=1 inflight=0 last_at=184991668 now_hi=2833 now_lo=5409 mode=38 SIO=601e\nnode=0 role=0 transfers=1820 ok=910 err=0 wait=910 timeout=0\n running=1 inflight=0 last_at=328417628 now_hi=5019 now_lo=2281 mode=38 SIO=600a\nnode=1 role=1 transfers=1820 ok=911 err=0 wait=909 timeout=0\n running=1 inflight=0 last_at=328408318 now_hi=5019 now_lo=2308 mode=38 SIO=601e\nPASS raw diagnostic count=2 baud=2 pace=0 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 2,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=124 ok=62 err=0 wait=62 timeout=0\n running=1 inflight=0 last_at=178710817 now_hi=2730 now_lo=14035 mode=38 SIO=600a\nnode=1 role=1 transfers=124 ok=63 err=0 wait=61 timeout=0\n running=1 inflight=0 last_at=178699776 now_hi=2730 now_lo=13323 mode=38 SIO=601e\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=321130255 now_hi=4916 now_lo=9653 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=321120524 now_hi=4916 now_lo=9621 mode=38 SIO=601e\nPASS raw diagnostic count=2 baud=2 pace=3 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 2,
+        "pace": 3,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=177591267 now_hi=2730 now_lo=14007 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=177985038 now_hi=2730 now_lo=14063 mode=38 SIO=601e\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=320849287 now_hi=4916 now_lo=9567 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=320841261 now_hi=4916 now_lo=9629 mode=38 SIO=601e\nPASS raw diagnostic count=2 baud=2 pace=3 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 3,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2570 ok=1285 err=0 wait=1285 timeout=0\n running=1 inflight=1 last_at=178915646 now_hi=2730 now_lo=14284 mode=38 SIO=600b\nnode=1 role=1 transfers=2570 ok=1286 err=0 wait=1284 timeout=0\n running=1 inflight=0 last_at=178910218 now_hi=2730 now_lo=10314 mode=38 SIO=601f\nnode=0 role=0 transfers=2493 ok=1247 err=0 wait=1246 timeout=0\n running=1 inflight=0 last_at=321661241 now_hi=4916 now_lo=11159 mode=38 SIO=600b\nnode=1 role=1 transfers=2493 ok=1247 err=0 wait=1246 timeout=0\n running=1 inflight=0 last_at=321656209 now_hi=4916 now_lo=11103 mode=38 SIO=601f\nPASS raw diagnostic count=2 baud=3 pace=0 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 3,
+        "pace": 0,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2492 ok=1246 err=0 wait=1246 timeout=0\n running=1 inflight=0 last_at=177842393 now_hi=2730 now_lo=14347 mode=38 SIO=600b\nnode=1 role=1 transfers=2492 ok=1247 err=0 wait=1245 timeout=0\n running=1 inflight=0 last_at=178239639 now_hi=2730 now_lo=14119 mode=38 SIO=601f\nnode=0 role=0 transfers=2493 ok=1247 err=0 wait=1246 timeout=0\n running=1 inflight=0 last_at=321661241 now_hi=4916 now_lo=10819 mode=38 SIO=600b\nnode=1 role=1 transfers=2493 ok=1247 err=0 wait=1246 timeout=0\n running=1 inflight=0 last_at=321656213 now_hi=4916 now_lo=10813 mode=38 SIO=601f\nPASS raw diagnostic count=2 baud=3 pace=0 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 3,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=144 ok=72 err=0 wait=72 timeout=0\n running=1 inflight=0 last_at=171943740 now_hi=2627 now_lo=22907 mode=38 SIO=600b\nnode=1 role=1 transfers=144 ok=73 err=0 wait=71 timeout=0\n running=1 inflight=0 last_at=171938008 now_hi=2627 now_lo=22852 mode=38 SIO=601f\nnode=0 role=0 transfers=140 ok=70 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=314631454 now_hi=4813 now_lo=18494 mode=38 SIO=600b\nnode=1 role=1 transfers=140 ok=71 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=314625196 now_hi=4813 now_lo=17165 mode=38 SIO=601f\nPASS raw diagnostic count=2 baud=3 pace=3 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 3,
+        "pace": 3,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=140 ok=70 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=171093272 now_hi=2627 now_lo=23617 mode=38 SIO=600b\nnode=1 role=1 transfers=140 ok=71 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=171489107 now_hi=2627 now_lo=23103 mode=38 SIO=601f\nnode=0 role=0 transfers=140 ok=70 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=314912374 now_hi=4813 now_lo=19695 mode=38 SIO=600b\nnode=1 role=1 transfers=140 ok=71 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=314906765 now_hi=4813 now_lo=18740 mode=38 SIO=601f\nPASS raw diagnostic count=2 baud=3 pace=3 first=1\n"
+      },
+      {
+        "count": 3,
+        "baud": 0,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=300 ok=150 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=205402382 now_hi=3141 now_lo=46071 mode=38 SIO=6008\nnode=1 role=1 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=205467377 now_hi=3141 now_lo=46018 mode=38 SIO=601c\nnode=2 role=2 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=205297185 now_hi=3141 now_lo=45784 mode=38 SIO=602c\nnode=0 role=0 transfers=300 ok=150 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=348100596 now_hi=5327 now_lo=42819 mode=38 SIO=6008\nnode=1 role=1 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=347997308 now_hi=5327 now_lo=42565 mode=38 SIO=601c\nnode=2 role=2 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=347996764 now_hi=5327 now_lo=42559 mode=38 SIO=602c\nPASS raw diagnostic count=3 baud=0 pace=0 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 0,
+        "pace": 0,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=304 ok=152 err=0 wait=152 timeout=0\n running=1 inflight=1 last_at=205844270 now_hi=3141 now_lo=46028 mode=38 SIO=6088\nnode=1 role=1 transfers=304 ok=153 err=0 wait=151 timeout=0\n running=1 inflight=0 last_at=205737281 now_hi=3141 now_lo=3392 mode=38 SIO=601c\nnode=2 role=2 transfers=304 ok=153 err=0 wait=151 timeout=0\n running=1 inflight=0 last_at=206174931 now_hi=3147 now_lo=47824 mode=38 SIO=602c\nnode=0 role=0 transfers=300 ok=150 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=348100866 now_hi=5327 now_lo=41838 mode=38 SIO=6008\nnode=1 role=1 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=347995498 now_hi=5327 now_lo=40413 mode=38 SIO=601c\nnode=2 role=2 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=347997753 now_hi=5327 now_lo=41625 mode=38 SIO=602c\nPASS raw diagnostic count=3 baud=0 pace=0 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 0,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198576726 now_hi=3038 now_lo=54663 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=198640848 now_hi=3038 now_lo=54614 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=198469799 now_hi=3038 now_lo=53374 mode=38 SIO=602c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=342114778 now_hi=5224 now_lo=50529 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=342007678 now_hi=5224 now_lo=49953 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=342007981 now_hi=5224 now_lo=50259 mode=38 SIO=602c\nPASS raw diagnostic count=3 baud=0 pace=3 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 0,
+        "pace": 3,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=101 ok=51 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198941262 now_hi=3038 now_lo=54641 mode=38 SIO=6008\nnode=1 role=1 transfers=101 ok=51 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198834193 now_hi=3038 now_lo=54175 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=198892363 now_hi=3040 now_lo=42150 mode=38 SIO=602c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=341553140 now_hi=5224 now_lo=50243 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=341446400 now_hi=5224 now_lo=50244 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=341447018 now_hi=5224 now_lo=49734 mode=38 SIO=602c\nPASS raw diagnostic count=3 baud=0 pace=3 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 1,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1000 ok=500 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=198637978 now_hi=3038 now_lo=53656 mode=38 SIO=6009\nnode=1 role=1 transfers=1000 ok=501 err=0 wait=499 timeout=0\n running=1 inflight=0 last_at=198784151 now_hi=3038 now_lo=53620 mode=38 SIO=601d\nnode=2 role=2 transfers=1000 ok=501 err=0 wait=499 timeout=0\n running=1 inflight=0 last_at=198612794 now_hi=3038 now_lo=53597 mode=38 SIO=602d\nnode=0 role=0 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=341333988 now_hi=5224 now_lo=50237 mode=38 SIO=6009\nnode=1 role=1 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=341310795 now_hi=5224 now_lo=49725 mode=38 SIO=601d\nnode=2 role=2 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=341311863 now_hi=5224 now_lo=49725 mode=38 SIO=602d\nPASS raw diagnostic count=3 baud=1 pace=0 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 1,
+        "pace": 0,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1016 ok=508 err=0 wait=507 timeout=0\n running=1 inflight=0 last_at=199151776 now_hi=3038 now_lo=53851 mode=38 SIO=6009\nnode=1 role=1 transfers=1016 ok=509 err=0 wait=507 timeout=0\n running=1 inflight=0 last_at=199126217 now_hi=3038 now_lo=53430 mode=38 SIO=601d\nnode=2 role=2 transfers=1015 ok=508 err=0 wait=507 timeout=0\n running=1 inflight=0 last_at=199530223 now_hi=3045 now_lo=6672 mode=38 SIO=602d\nnode=0 role=0 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=341333988 now_hi=5224 now_lo=50579 mode=38 SIO=6009\nnode=1 role=1 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=341310255 now_hi=5224 now_lo=50559 mode=38 SIO=601d\nnode=2 role=2 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=341310805 now_hi=5224 now_lo=50363 mode=38 SIO=602d\nPASS raw diagnostic count=3 baud=1 pace=0 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 1,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=191728454 now_hi=2935 now_lo=62478 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=191873803 now_hi=2935 now_lo=62409 mode=38 SIO=601d\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=191703657 now_hi=2935 now_lo=61626 mode=38 SIO=602d\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=334985524 now_hi=5121 now_lo=59318 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=334960797 now_hi=5121 now_lo=59223 mode=38 SIO=601d\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=334960031 now_hi=5121 now_lo=59243 mode=38 SIO=602d\nPASS raw diagnostic count=3 baud=1 pace=3 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 1,
+        "pace": 3,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=122 ok=61 err=0 wait=61 timeout=0\n running=1 inflight=0 last_at=192254466 now_hi=2935 now_lo=62449 mode=38 SIO=6009\nnode=1 role=1 transfers=122 ok=62 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=192229230 now_hi=2935 now_lo=62235 mode=38 SIO=601d\nnode=2 role=2 transfers=121 ok=61 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=192368290 now_hi=2939 now_lo=56598 mode=38 SIO=602d\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=334704616 now_hi=5121 now_lo=58941 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=334679044 now_hi=5121 now_lo=58774 mode=38 SIO=601d\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=334679100 now_hi=5121 now_lo=58831 mode=38 SIO=602d\nPASS raw diagnostic count=3 baud=1 pace=3 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 2,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1420 ok=710 err=0 wait=710 timeout=0\n running=1 inflight=0 last_at=191893366 now_hi=2935 now_lo=62495 mode=38 SIO=600a\nnode=1 role=1 transfers=1420 ok=711 err=0 wait=709 timeout=0\n running=1 inflight=0 last_at=192048108 now_hi=2935 now_lo=62446 mode=38 SIO=601e\nnode=2 role=2 transfers=1420 ok=711 err=0 wait=709 timeout=0\n running=1 inflight=0 last_at=191876903 now_hi=2935 now_lo=61170 mode=38 SIO=602e\nnode=0 role=0 transfers=1421 ok=711 err=0 wait=710 timeout=0\n running=1 inflight=0 last_at=334589162 now_hi=5121 now_lo=58121 mode=38 SIO=600a\nnode=1 role=1 transfers=1421 ok=711 err=0 wait=710 timeout=0\n running=1 inflight=0 last_at=334574307 now_hi=5121 now_lo=57917 mode=38 SIO=601e\nnode=2 role=2 transfers=1421 ok=711 err=0 wait=710 timeout=0\n running=1 inflight=0 last_at=334576004 now_hi=5121 now_lo=57917 mode=38 SIO=602e\nPASS raw diagnostic count=3 baud=2 pace=0 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 2,
+        "pace": 0,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1442 ok=721 err=0 wait=721 timeout=0\n running=1 inflight=1 last_at=192397658 now_hi=2935 now_lo=62269 mode=38 SIO=608a\nnode=1 role=1 transfers=1442 ok=722 err=0 wait=720 timeout=0\n running=1 inflight=0 last_at=192381733 now_hi=2935 now_lo=57118 mode=38 SIO=601e\nnode=2 role=2 transfers=1442 ok=722 err=0 wait=720 timeout=0\n running=1 inflight=0 last_at=192820044 now_hi=2942 now_lo=36653 mode=38 SIO=602e\nnode=0 role=0 transfers=1421 ok=711 err=0 wait=710 timeout=0\n running=1 inflight=0 last_at=334589210 now_hi=5121 now_lo=59321 mode=38 SIO=600a\nnode=1 role=1 transfers=1421 ok=711 err=0 wait=710 timeout=0\n running=1 inflight=0 last_at=334574610 now_hi=5121 now_lo=59279 mode=38 SIO=601e\nnode=2 role=2 transfers=1421 ok=711 err=0 wait=710 timeout=0\n running=1 inflight=0 last_at=334575035 now_hi=5121 now_lo=59105 mode=38 SIO=602e\nPASS raw diagnostic count=3 baud=2 pace=0 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 2,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=184926444 now_hi=2833 now_lo=5413 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=185080368 now_hi=2833 now_lo=5346 mode=38 SIO=601e\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=184909802 now_hi=2833 now_lo=4608 mode=38 SIO=602e\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=328183553 now_hi=5019 now_lo=1244 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=328168847 now_hi=5019 now_lo=1086 mode=38 SIO=601e\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=328167259 now_hi=5019 now_lo=687 mode=38 SIO=602e\nPASS raw diagnostic count=3 baud=2 pace=3 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 2,
+        "pace": 3,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=122 ok=61 err=0 wait=61 timeout=0\n running=1 inflight=0 last_at=185473258 now_hi=2833 now_lo=5685 mode=38 SIO=600a\nnode=1 role=1 transfers=122 ok=62 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=185457302 now_hi=2833 now_lo=5695 mode=38 SIO=601e\nnode=2 role=2 transfers=121 ok=61 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=185605540 now_hi=2836 now_lo=33550 mode=38 SIO=602e\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=327903015 now_hi=5019 now_lo=2113 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=327886966 now_hi=5019 now_lo=1603 mode=38 SIO=601e\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=327887730 now_hi=5019 now_lo=2109 mode=38 SIO=602e\nPASS raw diagnostic count=3 baud=2 pace=3 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 3,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2097 ok=1049 err=0 wait=1048 timeout=0\n running=1 inflight=0 last_at=185158440 now_hi=2833 now_lo=5546 mode=38 SIO=600b\nnode=1 role=1 transfers=2097 ok=1049 err=0 wait=1048 timeout=0\n running=1 inflight=0 last_at=185322399 now_hi=2833 now_lo=5417 mode=38 SIO=601f\nnode=2 role=2 transfers=2097 ok=1049 err=0 wait=1048 timeout=0\n running=1 inflight=0 last_at=185150842 now_hi=2833 now_lo=4998 mode=38 SIO=602f\nnode=0 role=0 transfers=2099 ok=1050 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=327853148 now_hi=5019 now_lo=1557 mode=38 SIO=600b\nnode=1 role=1 transfers=2099 ok=1050 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=327845225 now_hi=5018 now_lo=65207 mode=38 SIO=601f\nnode=2 role=2 transfers=2099 ok=1050 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=327847840 now_hi=5019 now_lo=1303 mode=38 SIO=602f\nPASS raw diagnostic count=3 baud=3 pace=0 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 3,
+        "pace": 0,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2132 ok=1066 err=0 wait=1066 timeout=0\n running=1 inflight=0 last_at=185668300 now_hi=2833 now_lo=5494 mode=38 SIO=600b\nnode=1 role=1 transfers=2132 ok=1067 err=0 wait=1065 timeout=0\n running=1 inflight=0 last_at=185660821 now_hi=2833 now_lo=5492 mode=38 SIO=601f\nnode=2 role=2 transfers=2131 ok=1066 err=0 wait=1065 timeout=0\n running=1 inflight=0 last_at=186080909 now_hi=2839 now_lo=40129 mode=38 SIO=602f\nnode=0 role=0 transfers=2099 ok=1050 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=327853148 now_hi=5019 now_lo=2109 mode=38 SIO=600b\nnode=1 role=1 transfers=2099 ok=1050 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=327846238 now_hi=5019 now_lo=1773 mode=38 SIO=601f\nnode=2 role=2 transfers=2099 ok=1050 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=327849365 now_hi=5019 now_lo=2109 mode=38 SIO=602f\nPASS raw diagnostic count=3 baud=3 pace=0 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 3,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=136 ok=68 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=178418474 now_hi=2730 now_lo=14310 mode=38 SIO=600b\nnode=1 role=1 transfers=136 ok=69 err=0 wait=67 timeout=0\n running=1 inflight=0 last_at=178581824 now_hi=2730 now_lo=14105 mode=38 SIO=601f\nnode=2 role=2 transfers=136 ok=69 err=0 wait=67 timeout=0\n running=1 inflight=0 last_at=178410826 now_hi=2730 now_lo=13167 mode=38 SIO=602f\nnode=0 role=0 transfers=139 ok=70 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=321956596 now_hi=4916 now_lo=10717 mode=38 SIO=600b\nnode=1 role=1 transfers=139 ok=70 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=321949918 now_hi=4916 now_lo=10302 mode=38 SIO=601f\nnode=2 role=2 transfers=139 ok=70 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=321950302 now_hi=4916 now_lo=10301 mode=38 SIO=602f\nPASS raw diagnostic count=3 baud=3 pace=3 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 3,
+        "pace": 3,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=141 ok=71 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=178700982 now_hi=2730 now_lo=14166 mode=38 SIO=600b\nnode=1 role=1 transfers=141 ok=71 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=178692822 now_hi=2730 now_lo=14079 mode=38 SIO=601f\nnode=2 role=2 transfers=140 ok=71 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=178849302 now_hi=2733 now_lo=19673 mode=38 SIO=602f\nnode=0 role=0 transfers=138 ok=69 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=321675694 now_hi=4916 now_lo=9790 mode=38 SIO=600b\nnode=1 role=1 transfers=138 ok=70 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=321667864 now_hi=4916 now_lo=8513 mode=38 SIO=601f\nnode=2 role=2 transfers=138 ok=70 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=321668990 now_hi=4916 now_lo=9645 mode=38 SIO=602f\nPASS raw diagnostic count=3 baud=3 pace=3 first=2\n"
+      }
+    ]
+  },
+  "faults": {
+    "rom_sha256": "2573770c7f14cbab33c1b4e74ade4219a7bd00675052aa356a0ab257083b082c",
+    "native": false,
+    "tests": [
+      {
+        "count": 2,
+        "baud": 0,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=453 ok=227 err=0 wait=226 timeout=0\n running=1 inflight=1 last_at=199100798 now_hi=3038 now_lo=54670 mode=38 SIO=6088\nnode=1 role=1 transfers=453 ok=227 err=0 wait=226 timeout=0\n running=1 inflight=0 last_at=199100532 now_hi=3038 now_lo=54617 mode=38 SIO=60d8\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=440 ok=220 err=0 wait=220 timeout=0\n running=1 inflight=0 last_at=493634939 now_hi=7539 now_lo=18908 mode=38 SIO=6008\nnode=1 role=1 transfers=440 ok=221 err=0 wait=219 timeout=0\n running=1 inflight=0 last_at=493634937 now_hi=7539 now_lo=18890 mode=38 SIO=601c\nnode=0 role=0 transfers=440 ok=220 err=0 wait=220 timeout=0\n running=1 inflight=0 last_at=601499005 now_hi=9185 now_lo=10958 mode=38 SIO=6008\nnode=1 role=1 transfers=440 ok=221 err=0 wait=219 timeout=0\n running=1 inflight=0 last_at=601499001 now_hi=9185 now_lo=10927 mode=38 SIO=601c\nPASS raw diagnostic count=2 baud=0 pace=0 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 0,
+        "pace": 0,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=440 ok=220 err=0 wait=220 timeout=0\n running=1 inflight=0 last_at=198131051 now_hi=3038 now_lo=54845 mode=38 SIO=6008\nnode=1 role=1 transfers=440 ok=221 err=0 wait=219 timeout=0\n running=1 inflight=0 last_at=198132641 now_hi=3038 now_lo=54751 mode=38 SIO=601c\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=440 ok=220 err=0 wait=220 timeout=0\n running=1 inflight=0 last_at=493634941 now_hi=7539 now_lo=18926 mode=38 SIO=6008\nnode=1 role=1 transfers=440 ok=221 err=0 wait=219 timeout=0\n running=1 inflight=0 last_at=493634939 now_hi=7539 now_lo=18888 mode=38 SIO=601c\nnode=0 role=0 transfers=440 ok=220 err=0 wait=220 timeout=0\n running=1 inflight=0 last_at=601499005 now_hi=9185 now_lo=11014 mode=38 SIO=6008\nnode=1 role=1 transfers=440 ok=221 err=0 wait=219 timeout=0\n running=1 inflight=0 last_at=601499003 now_hi=9185 now_lo=10955 mode=38 SIO=601c\nPASS raw diagnostic count=2 baud=0 pace=0 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 0,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=103 ok=52 err=0 wait=51 timeout=0\n running=1 inflight=1 last_at=192092361 now_hi=2935 now_lo=63449 mode=38 SIO=6088\nnode=1 role=1 transfers=103 ok=52 err=0 wait=51 timeout=0\n running=1 inflight=0 last_at=192092023 now_hi=2935 now_lo=63414 mode=38 SIO=60d8\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=486318912 now_hi=7436 now_lo=27693 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=486318454 now_hi=7436 now_lo=27579 mode=38 SIO=601c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=593901150 now_hi=9082 now_lo=19717 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=593901201 now_hi=9082 now_lo=19518 mode=38 SIO=601c\nPASS raw diagnostic count=2 baud=0 pace=3 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 0,
+        "pace": 3,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=191096074 now_hi=2935 now_lo=63549 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=191095158 now_hi=2935 now_lo=63441 mode=38 SIO=601c\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=486036890 now_hi=7436 now_lo=27709 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=486036575 now_hi=7436 now_lo=27667 mode=38 SIO=601c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=593901174 now_hi=9082 now_lo=19801 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=593901339 now_hi=9082 now_lo=19719 mode=38 SIO=601c\nPASS raw diagnostic count=2 baud=0 pace=3 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 1,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1424 ok=712 err=0 wait=712 timeout=0\n running=1 inflight=1 last_at=192403696 now_hi=2935 now_lo=62447 mode=38 SIO=6089\nnode=1 role=1 transfers=1424 ok=713 err=0 wait=711 timeout=0\n running=1 inflight=0 last_at=192403534 now_hi=2935 now_lo=62310 mode=38 SIO=60d9\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=1379 ok=690 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=486839878 now_hi=7436 now_lo=27393 mode=38 SIO=6009\nnode=1 role=1 transfers=1379 ok=690 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=486839811 now_hi=7436 now_lo=27322 mode=38 SIO=601d\nnode=0 role=0 transfers=1380 ok=690 err=0 wait=690 timeout=0\n running=1 inflight=0 last_at=594703760 now_hi=9082 now_lo=19491 mode=38 SIO=6009\nnode=1 role=1 transfers=1380 ok=691 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=594703762 now_hi=9082 now_lo=19357 mode=38 SIO=601d\nPASS raw diagnostic count=2 baud=1 pace=0 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 1,
+        "pace": 0,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1380 ok=690 err=0 wait=690 timeout=0\n running=1 inflight=0 last_at=191336822 now_hi=2935 now_lo=62469 mode=38 SIO=6009\nnode=1 role=1 transfers=1380 ok=691 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=191338324 now_hi=2935 now_lo=62439 mode=38 SIO=601d\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=1379 ok=690 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=486839706 now_hi=7436 now_lo=27709 mode=38 SIO=6009\nnode=1 role=1 transfers=1379 ok=690 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=486839706 now_hi=7436 now_lo=27577 mode=38 SIO=601d\nnode=0 role=0 transfers=1380 ok=690 err=0 wait=690 timeout=0\n running=1 inflight=0 last_at=594703760 now_hi=9082 now_lo=19823 mode=38 SIO=6009\nnode=1 role=1 transfers=1380 ok=691 err=0 wait=689 timeout=0\n running=1 inflight=0 last_at=594703762 now_hi=9082 now_lo=19609 mode=38 SIO=601d\nPASS raw diagnostic count=2 baud=1 pace=0 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 1,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=124 ok=62 err=0 wait=62 timeout=0\n running=1 inflight=0 last_at=185477965 now_hi=2833 now_lo=5508 mode=38 SIO=6009\nnode=1 role=1 transfers=124 ok=63 err=0 wait=61 timeout=0\n running=1 inflight=0 last_at=185476471 now_hi=2833 now_lo=5423 mode=38 SIO=601d\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=479311711 now_hi=7333 now_lo=35024 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=479312189 now_hi=7333 now_lo=35083 mode=38 SIO=601d\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=587175561 now_hi=8979 now_lo=27105 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=587176501 now_hi=8979 now_lo=26904 mode=38 SIO=601d\nPASS raw diagnostic count=2 baud=1 pace=3 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 1,
+        "pace": 3,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=184369401 now_hi=2833 now_lo=5578 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=184369413 now_hi=2833 now_lo=5504 mode=38 SIO=601d\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=479592192 now_hi=7333 now_lo=35093 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=479591990 now_hi=7333 now_lo=34880 mode=38 SIO=601d\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=587175910 now_hi=8979 now_lo=27152 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=587176469 now_hi=8979 now_lo=27089 mode=38 SIO=601d\nPASS raw diagnostic count=2 baud=1 pace=3 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 2,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1878 ok=939 err=0 wait=939 timeout=0\n running=1 inflight=0 last_at=185667647 now_hi=2833 now_lo=5544 mode=38 SIO=600a\nnode=1 role=1 transfers=1878 ok=940 err=0 wait=938 timeout=0\n running=1 inflight=0 last_at=185667504 now_hi=2833 now_lo=5469 mode=38 SIO=601e\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=1820 ok=910 err=0 wait=910 timeout=0\n running=1 inflight=0 last_at=480101752 now_hi=7333 now_lo=36413 mode=38 SIO=600a\nnode=1 role=1 transfers=1820 ok=911 err=0 wait=909 timeout=0\n running=1 inflight=0 last_at=480101750 now_hi=7333 now_lo=36412 mode=38 SIO=601e\nnode=0 role=0 transfers=1820 ok=910 err=0 wait=910 timeout=0\n running=1 inflight=0 last_at=587965750 now_hi=8979 now_lo=28511 mode=38 SIO=600a\nnode=1 role=1 transfers=1820 ok=911 err=0 wait=909 timeout=0\n running=1 inflight=0 last_at=587965819 now_hi=8979 now_lo=28292 mode=38 SIO=601e\nPASS raw diagnostic count=2 baud=2 pace=0 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 2,
+        "pace": 0,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1820 ok=910 err=0 wait=910 timeout=0\n running=1 inflight=0 last_at=184597880 now_hi=2833 now_lo=5281 mode=38 SIO=600a\nnode=1 role=1 transfers=1820 ok=911 err=0 wait=909 timeout=0\n running=1 inflight=0 last_at=184599635 now_hi=2833 now_lo=5412 mode=38 SIO=601e\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=1820 ok=910 err=0 wait=910 timeout=0\n running=1 inflight=0 last_at=480101240 now_hi=7333 now_lo=35259 mode=38 SIO=600a\nnode=1 role=1 transfers=1820 ok=911 err=0 wait=909 timeout=0\n running=1 inflight=0 last_at=480101238 now_hi=7333 now_lo=35192 mode=38 SIO=601e\nnode=0 role=0 transfers=1820 ok=910 err=0 wait=910 timeout=0\n running=1 inflight=0 last_at=587966608 now_hi=8979 now_lo=27201 mode=38 SIO=600a\nnode=1 role=1 transfers=1820 ok=911 err=0 wait=909 timeout=0\n running=1 inflight=0 last_at=587966616 now_hi=8979 now_lo=27197 mode=38 SIO=601e\nPASS raw diagnostic count=2 baud=2 pace=0 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 2,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=124 ok=62 err=0 wait=62 timeout=0\n running=1 inflight=0 last_at=178710817 now_hi=2730 now_lo=14035 mode=38 SIO=600a\nnode=1 role=1 transfers=124 ok=63 err=0 wait=61 timeout=0\n running=1 inflight=0 last_at=178710151 now_hi=2730 now_lo=14037 mode=38 SIO=601e\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=472533711 now_hi=7230 now_lo=43703 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=472533415 now_hi=7230 now_lo=43727 mode=38 SIO=601e\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=580397949 now_hi=8876 now_lo=35775 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=580397536 now_hi=8876 now_lo=35767 mode=38 SIO=601e\nPASS raw diagnostic count=2 baud=2 pace=3 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 2,
+        "pace": 3,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=177591267 now_hi=2730 now_lo=14007 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=177591195 now_hi=2730 now_lo=13888 mode=38 SIO=601e\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=472813749 now_hi=7230 now_lo=43407 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=472813592 now_hi=7230 now_lo=43073 mode=38 SIO=601e\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=580397763 now_hi=8876 now_lo=35396 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=580397390 now_hi=8876 now_lo=34884 mode=38 SIO=601e\nPASS raw diagnostic count=2 baud=2 pace=3 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 3,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2560 ok=1280 err=0 wait=1280 timeout=0\n running=1 inflight=1 last_at=178918200 now_hi=2730 now_lo=14217 mode=38 SIO=608b\nnode=1 role=1 transfers=2560 ok=1281 err=0 wait=1279 timeout=0\n running=1 inflight=0 last_at=178917018 now_hi=2730 now_lo=14221 mode=38 SIO=60db\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=2485 ok=1243 err=0 wait=1242 timeout=0\n running=1 inflight=0 last_at=473350012 now_hi=7230 now_lo=44972 mode=38 SIO=600b\nnode=1 role=1 transfers=2485 ok=1243 err=0 wait=1242 timeout=0\n running=1 inflight=0 last_at=473348556 now_hi=7230 now_lo=44943 mode=38 SIO=601f\nnode=0 role=0 transfers=2484 ok=1242 err=0 wait=1242 timeout=0\n running=1 inflight=0 last_at=581216103 now_hi=8876 now_lo=37152 mode=38 SIO=600b\nnode=1 role=1 transfers=2484 ok=1243 err=0 wait=1241 timeout=0\n running=1 inflight=0 last_at=581214968 now_hi=8876 now_lo=37024 mode=38 SIO=601f\nPASS raw diagnostic count=2 baud=3 pace=0 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 3,
+        "pace": 0,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2485 ok=1243 err=0 wait=1242 timeout=0\n running=1 inflight=0 last_at=177847395 now_hi=2730 now_lo=14305 mode=38 SIO=600b\nnode=1 role=1 transfers=2485 ok=1243 err=0 wait=1242 timeout=0\n running=1 inflight=0 last_at=177848163 now_hi=2730 now_lo=14111 mode=38 SIO=601f\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=2484 ok=1242 err=0 wait=1242 timeout=0\n running=1 inflight=0 last_at=473350086 now_hi=7230 now_lo=45118 mode=38 SIO=600b\nnode=1 role=1 transfers=2484 ok=1243 err=0 wait=1241 timeout=0\n running=1 inflight=0 last_at=473348572 now_hi=7230 now_lo=44963 mode=38 SIO=601f\nnode=0 role=0 transfers=2484 ok=1242 err=0 wait=1242 timeout=0\n running=1 inflight=0 last_at=581214056 now_hi=8876 now_lo=37248 mode=38 SIO=600b\nnode=1 role=1 transfers=2484 ok=1243 err=0 wait=1241 timeout=0\n running=1 inflight=0 last_at=581212537 now_hi=8876 now_lo=37065 mode=38 SIO=601f\nPASS raw diagnostic count=2 baud=3 pace=0 first=1\n"
+      },
+      {
+        "count": 2,
+        "baud": 3,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=144 ok=72 err=0 wait=72 timeout=0\n running=1 inflight=0 last_at=171943870 now_hi=2627 now_lo=22907 mode=38 SIO=600b\nnode=1 role=1 transfers=144 ok=73 err=0 wait=71 timeout=0\n running=1 inflight=0 last_at=171942263 now_hi=2627 now_lo=22856 mode=38 SIO=601f\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=140 ok=70 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=466596132 now_hi=7127 now_lo=52513 mode=38 SIO=600b\nnode=1 role=1 transfers=140 ok=71 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=466594563 now_hi=7127 now_lo=52493 mode=38 SIO=601f\nnode=0 role=0 transfers=140 ok=70 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=574181714 now_hi=8773 now_lo=44563 mode=38 SIO=600b\nnode=1 role=1 transfers=140 ok=71 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=574180134 now_hi=8773 now_lo=44519 mode=38 SIO=601f\nPASS raw diagnostic count=2 baud=3 pace=3 first=0\n"
+      },
+      {
+        "count": 2,
+        "baud": 3,
+        "pace": 3,
+        "first": 1,
+        "passed": true,
+        "output": "node=0 role=0 transfers=140 ok=70 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=171094918 now_hi=2627 now_lo=23615 mode=38 SIO=600b\nnode=1 role=1 transfers=140 ok=71 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=171093406 now_hi=2627 now_lo=23550 mode=38 SIO=601f\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=140 ok=70 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=466317508 now_hi=7127 now_lo=53618 mode=38 SIO=600b\nnode=1 role=1 transfers=140 ok=71 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=466316019 now_hi=7127 now_lo=53531 mode=38 SIO=601f\nnode=0 role=0 transfers=140 ok=70 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=573901082 now_hi=8773 now_lo=45621 mode=38 SIO=600b\nnode=1 role=1 transfers=140 ok=71 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=573901190 now_hi=8773 now_lo=45579 mode=38 SIO=601f\nPASS raw diagnostic count=2 baud=3 pace=3 first=1\n"
+      },
+      {
+        "count": 3,
+        "baud": 0,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=301 ok=151 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=205402486 now_hi=3141 now_lo=46057 mode=38 SIO=6008\nnode=1 role=1 transfers=301 ok=151 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=205402494 now_hi=3141 now_lo=45928 mode=38 SIO=601c\nnode=2 role=2 transfers=301 ok=151 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=205402490 now_hi=3141 now_lo=45783 mode=38 SIO=602c\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=300 ok=150 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=499782550 now_hi=7642 now_lo=9967 mode=38 SIO=6008\nnode=1 role=1 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=499782551 now_hi=7642 now_lo=9793 mode=38 SIO=601c\nnode=2 role=2 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=499782552 now_hi=7642 now_lo=9789 mode=38 SIO=602c\nnode=0 role=0 transfers=300 ok=150 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=607654268 now_hi=9288 now_lo=2031 mode=38 SIO=6008\nnode=1 role=1 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=607654267 now_hi=9288 now_lo=1987 mode=38 SIO=601c\nnode=2 role=2 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=607654269 now_hi=9288 now_lo=1964 mode=38 SIO=602c\nPASS raw diagnostic count=3 baud=0 pace=0 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 0,
+        "pace": 0,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=304 ok=152 err=0 wait=152 timeout=0\n running=1 inflight=1 last_at=205844164 now_hi=3141 now_lo=46141 mode=38 SIO=6088\nnode=1 role=1 transfers=304 ok=153 err=0 wait=151 timeout=0\n running=1 inflight=0 last_at=205843087 now_hi=3141 now_lo=46023 mode=38 SIO=60d8\nnode=2 role=2 transfers=304 ok=153 err=0 wait=151 timeout=0\n running=1 inflight=0 last_at=205843153 now_hi=3141 now_lo=46094 mode=38 SIO=60e8\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=300 ok=150 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=499789662 now_hi=7642 now_lo=10099 mode=38 SIO=6008\nnode=1 role=1 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=499789627 now_hi=7642 now_lo=9917 mode=38 SIO=601c\nnode=2 role=2 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=499789639 now_hi=7642 now_lo=10046 mode=38 SIO=602c\nnode=0 role=0 transfers=300 ok=150 err=0 wait=150 timeout=0\n running=1 inflight=0 last_at=607654268 now_hi=9288 now_lo=2109 mode=38 SIO=6008\nnode=1 role=1 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=607654263 now_hi=9288 now_lo=1971 mode=38 SIO=601c\nnode=2 role=2 transfers=300 ok=151 err=0 wait=149 timeout=0\n running=1 inflight=0 last_at=607654269 now_hi=9288 now_lo=2075 mode=38 SIO=602c\nPASS raw diagnostic count=3 baud=0 pace=0 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 0,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=101 ok=51 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198576824 now_hi=3038 now_lo=54665 mode=38 SIO=6008\nnode=1 role=1 transfers=101 ok=51 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198575826 now_hi=3038 now_lo=54645 mode=38 SIO=601c\nnode=2 role=2 transfers=101 ok=51 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198576578 now_hi=3038 now_lo=54370 mode=38 SIO=602c\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=493799428 now_hi=7539 now_lo=18636 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=493798774 now_hi=7539 now_lo=18672 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=493798775 now_hi=7539 now_lo=18613 mode=38 SIO=602c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=601101644 now_hi=9185 now_lo=10650 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=601100460 now_hi=9185 now_lo=10308 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=601100660 now_hi=9185 now_lo=10307 mode=38 SIO=602c\nPASS raw diagnostic count=3 baud=0 pace=3 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 0,
+        "pace": 3,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=101 ok=51 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198941262 now_hi=3038 now_lo=54845 mode=38 SIO=6008\nnode=1 role=1 transfers=101 ok=51 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198940052 now_hi=3038 now_lo=54845 mode=38 SIO=601c\nnode=2 role=2 transfers=101 ok=51 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=198940052 now_hi=3038 now_lo=54845 mode=38 SIO=602c\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=492956448 now_hi=7539 now_lo=18913 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=492956570 now_hi=7539 now_lo=18745 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=492956598 now_hi=7539 now_lo=18717 mode=38 SIO=602c\nnode=0 role=0 transfers=100 ok=50 err=0 wait=50 timeout=0\n running=1 inflight=0 last_at=600820798 now_hi=9185 now_lo=10979 mode=38 SIO=6008\nnode=1 role=1 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=600820568 now_hi=9185 now_lo=11016 mode=38 SIO=601c\nnode=2 role=2 transfers=100 ok=51 err=0 wait=49 timeout=0\n running=1 inflight=0 last_at=600820614 now_hi=9185 now_lo=10979 mode=38 SIO=602c\nPASS raw diagnostic count=3 baud=0 pace=3 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 1,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=198637948 now_hi=3038 now_lo=53640 mode=38 SIO=6009\nnode=1 role=1 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=198638366 now_hi=3038 now_lo=53595 mode=38 SIO=601d\nnode=2 role=2 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=198637948 now_hi=3038 now_lo=53608 mode=38 SIO=602d\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=493018380 now_hi=7539 now_lo=17473 mode=38 SIO=6009\nnode=1 role=1 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=493018372 now_hi=7539 now_lo=17467 mode=38 SIO=601d\nnode=2 role=2 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=493018388 now_hi=7539 now_lo=17470 mode=38 SIO=602d\nnode=0 role=0 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=600882042 now_hi=9185 now_lo=9789 mode=38 SIO=6009\nnode=1 role=1 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=600882038 now_hi=9185 now_lo=9762 mode=38 SIO=601d\nnode=2 role=2 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=600882040 now_hi=9185 now_lo=9773 mode=38 SIO=602d\nPASS raw diagnostic count=3 baud=1 pace=0 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 1,
+        "pace": 0,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1016 ok=508 err=0 wait=507 timeout=0\n running=1 inflight=0 last_at=199151776 now_hi=3038 now_lo=53851 mode=38 SIO=6009\nnode=1 role=1 transfers=1016 ok=509 err=0 wait=507 timeout=0\n running=1 inflight=0 last_at=199151201 now_hi=3038 now_lo=53852 mode=38 SIO=601d\nnode=2 role=2 transfers=1016 ok=509 err=0 wait=507 timeout=0\n running=1 inflight=0 last_at=199150995 now_hi=3038 now_lo=53772 mode=38 SIO=602d\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=493017462 now_hi=7539 now_lo=18747 mode=38 SIO=6009\nnode=1 role=1 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=493017462 now_hi=7539 now_lo=18681 mode=38 SIO=601d\nnode=2 role=2 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=493017464 now_hi=7539 now_lo=18783 mode=38 SIO=602d\nnode=0 role=0 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=600882040 now_hi=9185 now_lo=10793 mode=38 SIO=6009\nnode=1 role=1 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=600882040 now_hi=9185 now_lo=10725 mode=38 SIO=601d\nnode=2 role=2 transfers=1001 ok=501 err=0 wait=500 timeout=0\n running=1 inflight=0 last_at=600882040 now_hi=9185 now_lo=10813 mode=38 SIO=602d\nPASS raw diagnostic count=3 baud=1 pace=0 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 1,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=121 ok=61 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=191728332 now_hi=2935 now_lo=62441 mode=38 SIO=6009\nnode=1 role=1 transfers=121 ok=61 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=191729025 now_hi=2935 now_lo=62242 mode=38 SIO=601d\nnode=2 role=2 transfers=121 ok=61 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=191729135 now_hi=2935 now_lo=62220 mode=38 SIO=602d\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=486669688 now_hi=7436 now_lo=26156 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=486668491 now_hi=7436 now_lo=25669 mode=38 SIO=601d\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=486668393 now_hi=7436 now_lo=25665 mode=38 SIO=602d\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=593972522 now_hi=9082 now_lo=18159 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=593972751 now_hi=9082 now_lo=18257 mode=38 SIO=601d\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=593972841 now_hi=9082 now_lo=18215 mode=38 SIO=602d\nPASS raw diagnostic count=3 baud=1 pace=3 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 1,
+        "pace": 3,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=122 ok=61 err=0 wait=61 timeout=0\n running=1 inflight=0 last_at=192254466 now_hi=2935 now_lo=62449 mode=38 SIO=6009\nnode=1 role=1 transfers=122 ok=62 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=192253818 now_hi=2935 now_lo=62233 mode=38 SIO=601d\nnode=2 role=2 transfers=122 ok=62 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=192253820 now_hi=2935 now_lo=62235 mode=38 SIO=602d\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=486108102 now_hi=7436 now_lo=27387 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=486108817 now_hi=7436 now_lo=27449 mode=38 SIO=601d\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=486108667 now_hi=7436 now_lo=27393 mode=38 SIO=602d\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=593972486 now_hi=9082 now_lo=19433 mode=38 SIO=6009\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=593972949 now_hi=9082 now_lo=19523 mode=38 SIO=601d\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=593972847 now_hi=9082 now_lo=19461 mode=38 SIO=602d\nPASS raw diagnostic count=3 baud=1 pace=3 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 2,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1403 ok=702 err=0 wait=701 timeout=0\n running=1 inflight=0 last_at=191893284 now_hi=2935 now_lo=62476 mode=38 SIO=600a\nnode=1 role=1 transfers=1403 ok=702 err=0 wait=701 timeout=0\n running=1 inflight=0 last_at=191894283 now_hi=2935 now_lo=62450 mode=38 SIO=601e\nnode=2 role=2 transfers=1403 ok=702 err=0 wait=701 timeout=0\n running=1 inflight=0 last_at=191893564 now_hi=2935 now_lo=62411 mode=38 SIO=602e\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=1387 ok=694 err=0 wait=693 timeout=0\n running=1 inflight=0 last_at=486281590 now_hi=7436 now_lo=26482 mode=38 SIO=600a\nnode=1 role=1 transfers=1387 ok=694 err=0 wait=693 timeout=0\n running=1 inflight=0 last_at=486281562 now_hi=7436 now_lo=26385 mode=38 SIO=601e\nnode=2 role=2 transfers=1387 ok=694 err=0 wait=693 timeout=0\n running=1 inflight=0 last_at=486281544 now_hi=7436 now_lo=26363 mode=38 SIO=602e\nnode=0 role=0 transfers=1387 ok=694 err=0 wait=693 timeout=0\n running=1 inflight=0 last_at=594138004 now_hi=9082 now_lo=19005 mode=38 SIO=600a\nnode=1 role=1 transfers=1387 ok=694 err=0 wait=693 timeout=0\n running=1 inflight=0 last_at=594138011 now_hi=9082 now_lo=19006 mode=38 SIO=601e\nnode=2 role=2 transfers=1387 ok=694 err=0 wait=693 timeout=0\n running=1 inflight=0 last_at=594138011 now_hi=9082 now_lo=19008 mode=38 SIO=602e\nPASS raw diagnostic count=3 baud=2 pace=0 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 2,
+        "pace": 0,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=1423 ok=712 err=0 wait=711 timeout=0\n running=1 inflight=1 last_at=192402330 now_hi=2935 now_lo=62132 mode=38 SIO=608a\nnode=1 role=1 transfers=1423 ok=712 err=0 wait=711 timeout=0\n running=1 inflight=0 last_at=192402293 now_hi=2935 now_lo=62056 mode=38 SIO=60da\nnode=2 role=2 transfers=1423 ok=712 err=0 wait=711 timeout=0\n running=1 inflight=0 last_at=192402153 now_hi=2935 now_lo=62054 mode=38 SIO=60ea\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=1386 ok=693 err=0 wait=693 timeout=0\n running=1 inflight=0 last_at=486282644 now_hi=7436 now_lo=27643 mode=38 SIO=600a\nnode=1 role=1 transfers=1386 ok=694 err=0 wait=692 timeout=0\n running=1 inflight=0 last_at=486282638 now_hi=7436 now_lo=27631 mode=38 SIO=601e\nnode=2 role=2 transfers=1386 ok=694 err=0 wait=692 timeout=0\n running=1 inflight=0 last_at=486282640 now_hi=7436 now_lo=27479 mode=38 SIO=602e\nnode=0 role=0 transfers=1389 ok=695 err=0 wait=694 timeout=0\n running=1 inflight=0 last_at=594151040 now_hi=9082 now_lo=19681 mode=38 SIO=600a\nnode=1 role=1 transfers=1389 ok=695 err=0 wait=694 timeout=0\n running=1 inflight=0 last_at=594151054 now_hi=9082 now_lo=19517 mode=38 SIO=601e\nnode=2 role=2 transfers=1389 ok=695 err=0 wait=694 timeout=0\n running=1 inflight=0 last_at=594150898 now_hi=9082 now_lo=19517 mode=38 SIO=602e\nPASS raw diagnostic count=3 baud=2 pace=0 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 2,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=184928960 now_hi=2833 now_lo=5405 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=184930134 now_hi=2833 now_lo=5322 mode=38 SIO=601e\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=184929966 now_hi=2833 now_lo=5219 mode=38 SIO=602e\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=480151475 now_hi=7333 now_lo=34881 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=480151419 now_hi=7333 now_lo=34825 mode=38 SIO=601e\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=480151416 now_hi=7333 now_lo=34802 mode=38 SIO=602e\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=587451363 now_hi=8979 now_lo=26960 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=587451376 now_hi=8979 now_lo=26890 mode=38 SIO=601e\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=587451360 now_hi=8979 now_lo=26875 mode=38 SIO=602e\nPASS raw diagnostic count=3 baud=2 pace=3 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 2,
+        "pace": 3,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=122 ok=61 err=0 wait=61 timeout=0\n running=1 inflight=0 last_at=185475432 now_hi=2833 now_lo=5484 mode=38 SIO=600a\nnode=1 role=1 transfers=122 ok=62 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=185475446 now_hi=2833 now_lo=5413 mode=38 SIO=601e\nnode=2 role=2 transfers=122 ok=62 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=185475446 now_hi=2833 now_lo=5429 mode=38 SIO=602e\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=479310836 now_hi=7333 now_lo=34877 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=479309538 now_hi=7333 now_lo=34769 mode=38 SIO=601e\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=479309848 now_hi=7333 now_lo=34859 mode=38 SIO=602e\nnode=0 role=0 transfers=120 ok=60 err=0 wait=60 timeout=0\n running=1 inflight=0 last_at=587175030 now_hi=8979 now_lo=27029 mode=38 SIO=600a\nnode=1 role=1 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=587173974 now_hi=8979 now_lo=26811 mode=38 SIO=601e\nnode=2 role=2 transfers=120 ok=61 err=0 wait=59 timeout=0\n running=1 inflight=0 last_at=587173962 now_hi=8979 now_lo=26927 mode=38 SIO=602e\nPASS raw diagnostic count=3 baud=2 pace=3 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 3,
+        "pace": 0,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2093 ok=1047 err=0 wait=1046 timeout=0\n running=1 inflight=0 last_at=185145606 now_hi=2833 now_lo=5535 mode=38 SIO=600b\nnode=1 role=1 transfers=2093 ok=1047 err=0 wait=1046 timeout=0\n running=1 inflight=0 last_at=185145697 now_hi=2833 now_lo=5477 mode=38 SIO=601f\nnode=2 role=2 transfers=2093 ok=1047 err=0 wait=1046 timeout=0\n running=1 inflight=0 last_at=185144723 now_hi=2833 now_lo=5483 mode=38 SIO=602f\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=2098 ok=1049 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=479526134 now_hi=7333 now_lo=35233 mode=38 SIO=600b\nnode=1 role=1 transfers=2098 ok=1050 err=0 wait=1048 timeout=0\n running=1 inflight=0 last_at=479524866 now_hi=7333 now_lo=35024 mode=38 SIO=601f\nnode=2 role=2 transfers=2098 ok=1050 err=0 wait=1048 timeout=0\n running=1 inflight=0 last_at=479524619 now_hi=7333 now_lo=35189 mode=38 SIO=602f\nnode=0 role=0 transfers=2099 ok=1050 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=587404184 now_hi=8979 now_lo=27357 mode=38 SIO=600b\nnode=1 role=1 transfers=2099 ok=1050 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=587404185 now_hi=8979 now_lo=27383 mode=38 SIO=601f\nnode=2 role=2 transfers=2099 ok=1050 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=587404183 now_hi=8979 now_lo=27315 mode=38 SIO=602f\nPASS raw diagnostic count=3 baud=3 pace=0 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 3,
+        "pace": 0,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=2131 ok=1066 err=0 wait=1065 timeout=0\n running=1 inflight=0 last_at=185668248 now_hi=2833 now_lo=5492 mode=38 SIO=600b\nnode=1 role=1 transfers=2131 ok=1066 err=0 wait=1065 timeout=0\n running=1 inflight=0 last_at=185667231 now_hi=2833 now_lo=5480 mode=38 SIO=601f\nnode=2 role=2 transfers=2131 ok=1066 err=0 wait=1065 timeout=0\n running=1 inflight=0 last_at=185667271 now_hi=2833 now_lo=5520 mode=38 SIO=602f\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=2098 ok=1049 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=479526190 now_hi=7333 now_lo=35234 mode=38 SIO=600b\nnode=1 role=1 transfers=2098 ok=1050 err=0 wait=1048 timeout=0\n running=1 inflight=0 last_at=479524623 now_hi=7333 now_lo=35221 mode=38 SIO=601f\nnode=2 role=2 transfers=2098 ok=1050 err=0 wait=1048 timeout=0\n running=1 inflight=0 last_at=479524932 now_hi=7333 now_lo=35065 mode=38 SIO=602f\nnode=0 role=0 transfers=2098 ok=1049 err=0 wait=1049 timeout=0\n running=1 inflight=0 last_at=587389658 now_hi=8979 now_lo=27198 mode=38 SIO=600b\nnode=1 role=1 transfers=2098 ok=1050 err=0 wait=1048 timeout=0\n running=1 inflight=0 last_at=587388689 now_hi=8979 now_lo=27203 mode=38 SIO=601f\nnode=2 role=2 transfers=2098 ok=1050 err=0 wait=1048 timeout=0\n running=1 inflight=0 last_at=587389125 now_hi=8979 now_lo=27157 mode=38 SIO=602f\nPASS raw diagnostic count=3 baud=3 pace=0 first=2\n"
+      },
+      {
+        "count": 3,
+        "baud": 3,
+        "pace": 3,
+        "first": 0,
+        "passed": true,
+        "output": "node=0 role=0 transfers=137 ok=69 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=178418392 now_hi=2730 now_lo=14284 mode=38 SIO=600b\nnode=1 role=1 transfers=137 ok=69 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=178419659 now_hi=2730 now_lo=14277 mode=38 SIO=601f\nnode=2 role=2 transfers=137 ok=69 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=178418585 now_hi=2730 now_lo=14081 mode=38 SIO=602f\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=139 ok=70 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=473640812 now_hi=7230 now_lo=44939 mode=38 SIO=600b\nnode=1 role=1 transfers=139 ok=70 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=473640767 now_hi=7230 now_lo=44809 mode=38 SIO=601f\nnode=2 role=2 transfers=139 ok=70 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=473640730 now_hi=7230 now_lo=44815 mode=38 SIO=602f\nnode=0 role=0 transfers=139 ok=70 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=581225466 now_hi=8876 now_lo=36926 mode=38 SIO=600b\nnode=1 role=1 transfers=139 ok=70 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=581224648 now_hi=8876 now_lo=36843 mode=38 SIO=601f\nnode=2 role=2 transfers=139 ok=70 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=581224670 now_hi=8876 now_lo=36863 mode=38 SIO=602f\nPASS raw diagnostic count=3 baud=3 pace=3 first=0\n"
+      },
+      {
+        "count": 3,
+        "baud": 3,
+        "pace": 3,
+        "first": 2,
+        "passed": true,
+        "output": "node=0 role=0 transfers=142 ok=71 err=0 wait=71 timeout=0\n running=1 inflight=0 last_at=178701094 now_hi=2730 now_lo=14264 mode=38 SIO=600b\nnode=1 role=1 transfers=142 ok=72 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=178699638 now_hi=2730 now_lo=14293 mode=38 SIO=601f\nnode=2 role=2 transfers=142 ok=72 err=0 wait=70 timeout=0\n running=1 inflight=0 last_at=178699638 now_hi=2730 now_lo=14085 mode=38 SIO=602f\nPASS: hardware-faulted child sample is not counted as checked\nnode=0 role=0 transfers=138 ok=69 err=0 wait=69 timeout=0\n running=1 inflight=0 last_at=472798042 now_hi=7230 now_lo=44719 mode=38 SIO=600b\nnode=1 role=1 transfers=138 ok=70 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=472798052 now_hi=7230 now_lo=44821 mode=38 SIO=601f\nnode=2 role=2 transfers=138 ok=70 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=472798042 now_hi=7230 now_lo=44853 mode=38 SIO=602f\nnode=0 role=0 transfers=137 ok=69 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=580382730 now_hi=8876 now_lo=36775 mode=38 SIO=600b\nnode=1 role=1 transfers=137 ok=69 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=580382574 now_hi=8876 now_lo=36893 mode=38 SIO=601f\nnode=2 role=2 transfers=137 ok=69 err=0 wait=68 timeout=0\n running=1 inflight=0 last_at=580382604 now_hi=8876 now_lo=36923 mode=38 SIO=602f\nPASS raw diagnostic count=3 baud=3 pace=3 first=2\n"
+      }
+    ]
+  },
+  "visual_check": "link-diagnostic-scope.png: explicit scope, controls fit within 240x160.",
+  "limitations": "mGBA only; physical GBA and Pizza Boy not available."
+}

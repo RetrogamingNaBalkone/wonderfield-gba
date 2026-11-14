@@ -59,7 +59,9 @@ static void link_test_irq(void){
   if(received==0xffff)bad=1;
   else{
    if(link_test.last==received)link_test.repeats++;
-   else if(!link_test.last||received==link_test_next(link_test.last))link_test.passed++;
+   else if(!link_test.last||received==link_test_next(link_test.last)){
+    if(!hardware&&members==link_test_members)link_test.passed++;
+   }
    else bad=1;
    if(!bad&&!hardware&&members==link_test_members)link_test_progress_at=link_test.completed_at;
    link_test.last=received;link_test.tx=received;
