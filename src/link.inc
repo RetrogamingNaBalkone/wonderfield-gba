@@ -23,6 +23,7 @@ static u32 link_boot_serial;
 static volatile u32 link_completed_at;
 static int link_session;
 static u32 link_last_packet,link_event_key,link_packets,link_events;
+static u32 link_clock_offset;
 static int link_event_valid;
 static volatile u16 link_tap_queue[32];
 static volatile u8 link_tap_read,link_tap_write;
@@ -47,12 +48,13 @@ static void link_sample_input(void){
 /* Compare rule state, not the clock, RNG cursor or intermediate poses. This
  * also catches input changes within a mode (cursor, choice, typed answer). */
 static u32 link_semantic_key(void);
-static void link_rebase(u32 elapsed){
- scene.now+=elapsed;scene.speech_at+=elapsed;scene.start+=elapsed;
- scene.phase_at+=elapsed;scene.spin_at+=elapsed;scene.title_at+=elapsed;
- scene.chest_until+=elapsed;scene.host_at+=elapsed;scene.host_phase_at+=elapsed;
- cash.next_at+=elapsed;cash.pause_at+=elapsed;
+static void link_rebase_state(Scene*view,volatile Cash*money,u32 elapsed){
+ view->now+=elapsed;view->speech_at+=elapsed;view->start+=elapsed;
+ view->phase_at+=elapsed;view->spin_at+=elapsed;view->title_at+=elapsed;
+ view->chest_until+=elapsed;view->host_at+=elapsed;view->host_phase_at+=elapsed;
+ money->next_at+=elapsed;money->pause_at+=elapsed;
 }
+static void link_rebase(u32 elapsed){link_rebase_state(&scene,&cash,elapsed);}
 static char link_sent_name[11];
 static unsigned link_sent_status;
 static volatile u16 link_received[4],link_status;
@@ -83,6 +85,52 @@ static struct {
  u8 durations[10];int eliminated,dictionary,plus,characters,pool[8],ai_index,avatars[3],humans,name_conflicts,name_editing,avatar_editing;char records[8][11];int scores[8];
 } link_snapshot;
 static u16 link_previous[sizeof link_snapshot/2];
+/* Snapshot byte codec. XOR against the verified wire baseline. Each token
+ * combines a zero skip and a literal run (four bits each, 255-byte extensions).
+ * Small integer fields usually need just one token and one changed byte. */
+static u8 link_delta[sizeof link_snapshot*2];
+static unsigned link_encode_delta(void){
+ const u8*current=(const u8*)&link_snapshot,*previous=(const u8*)link_previous;
+ unsigned at=0,out=0;
+ while(at<sizeof link_snapshot){
+  unsigned start=at;
+  while(at<sizeof link_snapshot&&current[at]==previous[at])at++;
+  unsigned skip=at-start,literal=at;
+  while(at<sizeof link_snapshot&&current[at]!=previous[at])at++;
+  unsigned count=at-literal;
+  link_delta[out++]=((skip<15?skip:15)<<4)|(count<15?count:15);
+  if(skip>=15){unsigned n=skip-15;while(n>=255){link_delta[out++]=255;n-=255;}link_delta[out++]=n;}
+  if(count>=15){unsigned n=count-15;while(n>=255){link_delta[out++]=255;n-=255;}link_delta[out++]=n;}
+  for(unsigned i=0;i<count;i++)link_delta[out++]=current[literal+i]^previous[literal+i];
+ }
+ return out;
+}
+static int link_delta_count(unsigned*at,unsigned length,unsigned first,unsigned*out){
+ unsigned count=first;
+ if(first==15){
+  unsigned extra;
+  do{
+   if(*at>=length)return 0;
+   extra=link_delta[(*at)++];count+=extra;
+   if(count>sizeof link_snapshot)return 0;
+  }while(extra==255);
+ }
+ *out=count;return 1;
+}
+static int link_decode_delta(unsigned length){
+ u8*target=(u8*)&link_snapshot;unsigned at=0,out=0;
+ if(!length||length>sizeof link_delta)return 0;
+ while(at<length){
+  unsigned token=link_delta[at++],skip,count;
+  if(!link_delta_count(&at,length,token>>4,&skip)||!link_delta_count(&at,length,token&15,&count))return 0;
+  if((!skip&&!count)||skip>sizeof link_snapshot-out)return 0;
+  out+=skip;
+  if(count>sizeof link_snapshot-out||count>length-at)return 0;
+  for(unsigned i=0;i<count;i++)target[out++]^=link_delta[at++];
+ }
+ return out==sizeof link_snapshot;
+}
+/* End snapshot byte codec. */
 static char link_message1[96],link_message2[96];
 static void link_copy(volatile void*d,const volatile void*s,unsigned n){volatile u8*a=d;const volatile u8*b=s;while(n--)*a++=*b++;}
 static void link_text(char*d,const char*s,unsigned cap){unsigned i=0;while(s&&s[i]&&i+1<cap){d[i]=s[i];i++;}d[i]=0;}
@@ -181,6 +229,7 @@ static void link_open(void){
  link_profile_render_key=~0u;
  link_profile_cursor=-1;link_keyboard_valid=0;
  link_last_packet=video_ticks;link_event_valid=0;link_tap_read=link_tap_write=0;link_packets=link_events=0;
+ link_clock_offset=0;
  link_session=0;for(int i=0;i<11;i++)link_sent_name[i]=0;
  link_sent_status=~0u;
  link_avatar_edit=!link_create;link_avatar_armed=0;
@@ -317,6 +366,9 @@ static int link_word(u16 host,u16 reply,u16*out){
 static int link_publish(u16 value,u16*out){
  if(link_host_device==0)return link_word(value,0,out);
  if(!link_word(0,link_is_host()?value:0,0))return 0;
+ /* With two consoles the parent has already checked the child's reply,
+  * and the authority owns its source word. No third console needs a relay. */
+ if(link_connected==2){if(out)*out=link_master?link_remote[link_host_device]:value;return 1;}
  u16 relay=link_master?link_remote[link_host_device]:0;
  return link_word(relay,0,out);
 }
@@ -325,6 +377,7 @@ static int link_publish(u16 value,u16*out){
 static int link_collect(u16 value){
  if(!link_word(value,value,0))return 0;
  if(link_host_device==0)return 1;
+ if(link_connected==2){if(!link_master)link_remote[1]=value;return 1;}
  u16 collected[3];for(int i=0;i<link_connected;i++)collected[i]=link_remote[i];
  for(int i=0;i<link_connected;i++){
   u16 item;if(!link_word(collected[i],0,&item))return 0;collected[i]=item;
@@ -439,7 +492,10 @@ static int link_frame(void){
  link_sample_input();
  if(!link_word(link_submit,link_submit,0))return 0;
  if(master)link_keys=link_remote[input_device];
- if(link_host_device>0){if(!link_word(link_keys,0,&value))return 0;link_keys=value;}
+ if(link_host_device>0){
+  if(link_connected==2){if(authority)link_keys=lobby||owner?link_submit:link_remote[0];}
+  else{if(!link_word(link_keys,0,&value))return 0;link_keys=value;}
+ }
  link_packets++;link_last_packet=video_ticks;
  if(!event)return 1; /* Input/keepalive: no poses, text or snapshot hash. */
  link_events++;
@@ -499,16 +555,38 @@ static int link_frame(void){
   link_snapshot.sound=sound_command;link_snapshot.dictionary=prefs.dictionary;link_snapshot.plus=prefs.plus;link_snapshot.characters=prefs.characters;link_snapshot.ai_index=mp_ai_index;link_copy(link_snapshot.pool,opponent_pool,sizeof opponent_pool);
   link_copy(link_snapshot.records,record_names,sizeof record_names);link_copy(link_snapshot.scores,record_scores,sizeof record_scores);
   link_copy(&link_snapshot.game,&game,sizeof game);link_copy(&link_snapshot.scene,&scene,sizeof scene);link_snapshot.scene.now=event_at;
+  /* Exclude accumulated packet pauses from the wire timeline. Otherwise
+   * every pause changes all deadlines again in the following snapshot. */
+  link_rebase_state(&link_snapshot.scene,&link_snapshot.cash,0u-link_clock_offset);
   link_copy(link_snapshot.avatars,avatars,sizeof avatars);link_copy(link_snapshot.names,mp.names,sizeof mp.names);link_snapshot.eliminated=mp.eliminated;
   link_copy(link_snapshot.durations,host_durations,sizeof host_durations);
   link_snapshot.event=presentation_event;link_copy(link_snapshot.tokens,message_tokens,sizeof message_tokens);
  }
  link_stage=6;
- unsigned changed=0;
- if(authority)for(unsigned i=0;i<sizeof link_snapshot/2;i++)if(words[i]!=link_previous[i])changed++;
- if(!link_publish(changed,&value))return 0;
- if(value>sizeof link_snapshot/2)return 0;
+ unsigned changed=0,legacy=0,packed=0;
  if(authority){
+  for(unsigned i=0;i<sizeof link_snapshot/2;){
+   if(words[i]==link_previous[i]){i++;continue;}
+   unsigned run=1;while(i+run<sizeof link_snapshot/2&&words[i+run]!=link_previous[i+run])run++;
+   changed+=run;legacy+=run<3?run*2:run+2;i+=run;
+  }
+  packed=link_encode_delta();
+ }
+ unsigned encoded=authority&&(packed+1)/2<legacy?0x8000|packed:changed;
+ if(!link_publish(encoded,&value))return 0;
+ if(value&0x8000){
+  unsigned length=value&0x7fff;
+  if(!length||length>sizeof link_delta)return 0;
+  for(unsigned i=0;i<length;i+=2){
+   u16 pair=authority?link_delta[i]|(i+1<length?link_delta[i+1]<<8:0):0;
+   if(!link_publish(pair,&value))return 0;
+   if(i+1==length&&(value>>8))return 0;
+   if(!authority){link_delta[i]=value&255;if(i+1<length)link_delta[i+1]=value>>8;}
+  }
+  if(!authority&&!link_decode_delta(length))return 0;
+ }else{
+  if(value>sizeof link_snapshot/2)return 0;
+  if(authority){
   for(unsigned i=0;i<sizeof link_snapshot/2;){
    if(words[i]==link_previous[i]){i++;continue;}
    unsigned run=1;
@@ -522,7 +600,7 @@ static int link_frame(void){
     i+=run;
    }
   }
- }else{
+  }else{
   unsigned remaining=value,previous=0;
   while(remaining){
    u16 encoded;if(!link_publish(0,&encoded))return 0;
@@ -531,6 +609,7 @@ static int link_frame(void){
    if(index<previous||index>=sizeof link_snapshot/2||run>remaining||run>sizeof link_snapshot/2-index)return 0;
    for(unsigned j=0;j<run;j++){if(!link_publish(0,&value))return 0;words[index+j]=value;}
    previous=index+run;remaining-=run;
+  }
   }
  }
  link_stage=7;
@@ -561,7 +640,10 @@ commit_event:
   }
  }
  /* Delivery time does not consume the local animation's lifetime. */
- if(!lobby&&!navigation)link_rebase(video_ticks-(authority?event_at:link_snapshot.scene.now));
+ if(!lobby&&!navigation){
+  u32 elapsed=video_ticks-(authority?event_at:link_snapshot.scene.now);
+  link_rebase(elapsed);if(authority)link_clock_offset+=elapsed;
+ }
  link_event_key=authority?link_semantic_key():0;link_event_valid=1;link_last_packet=video_ticks;dirty=1;
  return 1;
 }

@@ -153,6 +153,45 @@ static void elect(void){
  capture("name-entry");
  printf("PASS: host port %d, offline settings/open lobby, profiles only after discovery\n",host);
 }
+static void measure_event(const char*label,int owner){
+ unsigned mode=rd(host,game_addr+12),revision=0,at=0,frames,wire=transfers;
+ c[owner]->setKeys(c[owner],1);
+ for(frames=1;frames<=900;frames++){
+  run(1);if(frames==2)c[owner]->setKeys(c[owner],0);
+  if(!at&&rd(host,game_addr+12)!=mode){at=frames;mode=rd(host,game_addr+12);revision=rd(host,address("ROLE_PRESENTATION_EVENT"));}
+  int ready=at!=0;
+  for(int i=0;i<count;i++){
+   assert(rd(i,game_addr+12)!=31);
+   if(rd(i,game_addr+12)!=mode||rd(i,address("ROLE_PRESENTATION_EVENT"))<revision)ready=0;
+  }
+  if(ready)break;
+ }
+ c[owner]->setKeys(c[owner],0);assert(at&&frames<=900);
+ printf("EVENT_LATENCY {\"event\":\"%s\",\"owner\":%d,\"mode\":%u,\"host_to_all_frames\":%u,\"press_to_all_frames\":%u,\"transfers\":%u}\n",label,owner,mode,frames-at,frames,(unsigned)transfers-wire);fflush(stdout);
+ if(count==2&&getenv("LINK_EVENT_COMPACT"))assert(frames-at<=32);
+ anim_messages();run(20);
+}
+static void event_turn(int owner,int choice){
+ wr(host,game_addr+12,1);wr(host,game_addr+20,(owner+2)%3);wr(host,game_addr+81*4,!choice);run(120);
+ press(owner,choice?16:32);
+ for(int t=0;t<600;t++){
+  int ready=1;for(int i=0;i<count;i++)if(rd(i,game_addr+12)!=1||rd(i,game_addr+20)!=(unsigned)(owner+2)%3||rd(i,game_addr+81*4)!=(unsigned)choice)ready=0;
+  if(ready)return;
+  /* Fixtures can be written during an older packet; wait for the new
+   * owner and a real navigation event before timing the next action. */
+  if(t&&t%120==0)press(owner,choice?16:32);
+  run(1);
+ }
+ assert(0);
+}
+static void event_latency(void){
+ for(int owner=0;owner<count;owner++){
+  event_turn(owner,0);measure_event("solve_prompt",owner);
+  event_turn(owner,1);measure_event("spin_start",owner);
+  assert(rd(host,game_addr+12)==2);measure_event("spin_result_message",owner);
+ }
+ disconnected=count-1;run(360);for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==31);
+}
 static void play(void){
  press(0,8);assert(rd(0,address("ROLE_NAME_EDIT"))==3);
  press(0,1);assert(rd(0,address("ROLE_NAME_EDIT"))==2&&!rd(0,address("ROLE_NAME_POS")));
@@ -177,10 +216,11 @@ static void play(void){
  press(host,8);run(240);
  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)!=30&&rd(i,game_addr+12)!=31&&rd(i,game_addr+24)==rd(host,game_addr+24));
  capture("game");
+ if(getenv("LINK_EVENT_LATENCY")){event_latency();return;}
  /* The elected host owns rules, but still cannot act for another player. */
  if(getenv("LINK_LATENCY")){
   for(int i=0;i<count;i++){
-   wr(host,game_addr+12,1);wr(host,game_addr+20,(i+2)%3);wr(host,game_addr+81*4,0);run(120);
+   event_turn(i,0);
    press(i,1);run(180);
    for(int j=0;j<count;j++)assert(rd(j,game_addr+12)==5);
    latency("keyboard",i,game_addr+70*4,1);

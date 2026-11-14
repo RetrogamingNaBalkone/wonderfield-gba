@@ -1,0 +1,973 @@
+{
+  "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+  "baseline_commit": "199c8194d5e34be9eeae7b04f25fc03f3d5886e4",
+  "emulator": "mGBA 0.10.5",
+  "build": "Zig 0.13.0; -Wall -Wextra -Werror; 1 MiB ROM",
+  "measurement": {
+    "frame_ms": 16.742706298828125,
+    "metric": "Host mode transition to all peers applying its mode and presentation revision",
+    "message_check": "Both decoded message lines match the host after every measured event",
+    "inputs": "Real A taps after synchronizing the controlled TURN fixture and owner",
+    "outcomes": "Normal game RNG; sector/message outcomes may differ between builds"
+  },
+  "summary": {
+    "parent": {
+      "solve_prompt": {
+        "before_max_frames": 27,
+        "after_max_frames": 19,
+        "before_max_ms": 452.1,
+        "after_max_ms": 318.1
+      },
+      "spin_start": {
+        "before_max_frames": 25,
+        "after_max_frames": 19,
+        "before_max_ms": 418.6,
+        "after_max_ms": 318.1
+      },
+      "spin_result_message": {
+        "before_max_frames": 35,
+        "after_max_frames": 27,
+        "before_max_ms": 586.0,
+        "after_max_ms": 452.1
+      }
+    },
+    "child": {
+      "solve_prompt": {
+        "before_max_frames": 46,
+        "after_max_frames": 18,
+        "before_max_ms": 770.2,
+        "after_max_ms": 301.4
+      },
+      "spin_start": {
+        "before_max_frames": 45,
+        "after_max_frames": 18,
+        "before_max_ms": 753.4,
+        "after_max_ms": 301.4
+      },
+      "spin_result_message": {
+        "before_max_frames": 53,
+        "after_max_frames": 24,
+        "before_max_ms": 887.4,
+        "after_max_ms": 401.8
+      }
+    }
+  },
+  "baseline": {
+    "parent": {
+      "rom_sha256": "b5d1f3f70e21033ec3fdfaad3e84af2840686614bc0568ed935f6cc83a1791e1",
+      "native": true,
+      "tests": [
+        {
+          "host_device": 0,
+          "count": 2,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":0,\"mode\":5,\"host_to_all_frames\":27,\"press_to_all_frames\":32,\"transfers\":558}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":0,\"mode\":2,\"host_to_all_frames\":25,\"press_to_all_frames\":27,\"transfers\":535}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":0,\"mode\":3,\"host_to_all_frames\":34,\"press_to_all_frames\":38,\"transfers\":598}\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":1,\"mode\":5,\"host_to_all_frames\":27,\"press_to_all_frames\":32,\"transfers\":549}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":1,\"mode\":2,\"host_to_all_frames\":25,\"press_to_all_frames\":30,\"transfers\":549}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":1,\"mode\":3,\"host_to_all_frames\":35,\"press_to_all_frames\":39,\"transfers\":614}\nPASS create/join count=2 host=0 scenario=0 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        }
+      ]
+    },
+    "child": {
+      "rom_sha256": "b5d1f3f70e21033ec3fdfaad3e84af2840686614bc0568ed935f6cc83a1791e1",
+      "native": true,
+      "tests": [
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":0,\"mode\":5,\"host_to_all_frames\":46,\"press_to_all_frames\":48,\"transfers\":1066}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":0,\"mode\":2,\"host_to_all_frames\":45,\"press_to_all_frames\":47,\"transfers\":1075}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":0,\"mode\":6,\"host_to_all_frames\":51,\"press_to_all_frames\":60,\"transfers\":1162}\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":1,\"mode\":5,\"host_to_all_frames\":45,\"press_to_all_frames\":47,\"transfers\":1033}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":1,\"mode\":2,\"host_to_all_frames\":43,\"press_to_all_frames\":47,\"transfers\":1034}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":1,\"mode\":3,\"host_to_all_frames\":53,\"press_to_all_frames\":62,\"transfers\":1181}\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        }
+      ]
+    }
+  },
+  "checks": {
+    "roles_native": {
+      "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+      "native": true,
+      "tests": [
+        {
+          "host_device": 0,
+          "count": 2,
+          "scenario": 0,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=0 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 2,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=0 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 1,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=1 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 2,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=2 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 2,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=2 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 3,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=3 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 2,
+          "scenario": 4,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=4 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 5,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=5 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 6,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=6 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 7,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: cancel during host settings returns to role menu; fresh election succeeds\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=7 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 8,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: existing child-port lobby wins; new creators explicitly accept before profile entry\nPASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=8 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 9,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: three decline/reopen attempts preserve the existing host and profile\nPASS: existing child-port lobby wins; new creators explicitly accept before profile entry\nPASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=9 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 3,
+          "scenario": 0,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=0 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 3,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=0 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 1,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=1 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 2,
+          "count": 3,
+          "scenario": 2,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 2, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=2 scenario=2 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 2,
+          "count": 3,
+          "scenario": 2,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 2, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=2 scenario=2 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 3,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=3 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 3,
+          "scenario": 4,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=4 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 5,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=5 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 6,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=6 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 7,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: cancel during host settings returns to role menu; fresh election succeeds\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=7 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 8,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: existing child-port lobby wins; new creators explicitly accept before profile entry\nPASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=8 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 9,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 host=1 scenario=9 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        }
+      ]
+    },
+    "roles_model": {
+      "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+      "native": false,
+      "tests": [
+        {
+          "host_device": 0,
+          "count": 2,
+          "scenario": 0,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=0 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 2,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=0 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 1,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=1 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 2,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=2 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 2,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=2 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 3,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=3 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 2,
+          "scenario": 4,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=0 scenario=4 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 5,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=5 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 6,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=6 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 7,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: cancel during host settings returns to role menu; fresh election succeeds\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=7 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 8,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: existing child-port lobby wins; new creators explicitly accept before profile entry\nPASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=8 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 9,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: three decline/reopen attempts preserve the existing host and profile\nPASS: existing child-port lobby wins; new creators explicitly accept before profile entry\nPASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=9 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 3,
+          "scenario": 0,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=0 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 3,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=0 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 1,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=1 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 2,
+          "count": 3,
+          "scenario": 2,
+          "graphics": 0,
+          "passed": true,
+          "output": "PASS: host port 2, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=2 scenario=2 graphics=0: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 2,
+          "count": 3,
+          "scenario": 2,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 2, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=2 scenario=2 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 3,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=3 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 0,
+          "count": 3,
+          "scenario": 4,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=0 scenario=4 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 5,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=5 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 6,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=6 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 7,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: cancel during host settings returns to role menu; fresh election succeeds\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=7 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 8,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: existing child-port lobby wins; new creators explicitly accept before profile entry\nPASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=8 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 9,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS create/join count=3 host=1 scenario=9 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        }
+      ]
+    },
+    "crc": {
+      "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+      "host_device": 1,
+      "tests": [
+        {
+          "count": 2,
+          "kind": 7,
+          "seed": 1,
+          "target": 1,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt snapshot",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 8.01,
+          "log": "build/qa/link-chaos-logs/events-crc/000.log",
+          "output": "PASS chaos kind=7 count=2 transfers=6035 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 14,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt build fingerprint",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 2.83,
+          "log": "build/qa/link-chaos-logs/events-crc/001.log",
+          "output": "PASS chaos kind=14 count=2 transfers=3977 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 20,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "persistent payload corruption",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 12.63,
+          "log": "build/qa/link-chaos-logs/events-crc/002.log",
+          "output": "PASS chaos kind=20 count=2 transfers=50085 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 18,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 1,
+          "name": "replay HEADER payload over START",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 4.64,
+          "log": "build/qa/link-chaos-logs/events-crc/003.log",
+          "output": "PASS chaos kind=18 count=2 transfers=3969 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 6.18,
+          "log": "build/qa/link-chaos-logs/events-crc/004.log",
+          "output": "PASS chaos kind=19 count=2 transfers=5188 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 2.31,
+          "log": "build/qa/link-chaos-logs/events-crc/005.log",
+          "output": "PASS chaos kind=19 count=2 transfers=3981 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 5.3,
+          "log": "build/qa/link-chaos-logs/events-crc/006.log",
+          "output": "PASS chaos kind=19 count=2 transfers=6050 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 7,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 7.76,
+          "log": "build/qa/link-chaos-logs/events-crc/007.log",
+          "output": "PASS chaos kind=19 count=2 transfers=6120 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 7,
+          "seed": 1,
+          "target": 1,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt snapshot",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 6.34,
+          "log": "build/qa/link-chaos-logs/events-crc/008.log",
+          "output": "PASS chaos kind=7 count=3 transfers=6667 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 14,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt build fingerprint",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 7.69,
+          "log": "build/qa/link-chaos-logs/events-crc/009.log",
+          "output": "PASS chaos kind=14 count=3 transfers=5241 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 20,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "persistent payload corruption",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 19.41,
+          "log": "build/qa/link-chaos-logs/events-crc/010.log",
+          "output": "PASS chaos kind=20 count=3 transfers=41619 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 18,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 1,
+          "name": "replay HEADER payload over START",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 7.74,
+          "log": "build/qa/link-chaos-logs/events-crc/011.log",
+          "output": "PASS chaos kind=18 count=3 transfers=5241 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 11.8,
+          "log": "build/qa/link-chaos-logs/events-crc/012.log",
+          "output": "PASS chaos kind=19 count=3 transfers=6590 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 5.99,
+          "log": "build/qa/link-chaos-logs/events-crc/013.log",
+          "output": "PASS chaos kind=19 count=3 transfers=5241 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 11.81,
+          "log": "build/qa/link-chaos-logs/events-crc/014.log",
+          "output": "PASS chaos kind=19 count=3 transfers=6667 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 1,
+          "phase": 7,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 6.79,
+          "log": "build/qa/link-chaos-logs/events-crc/015.log",
+          "output": "PASS chaos kind=19 count=3 transfers=6854 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 18,
+          "seed": 1,
+          "target": 2,
+          "phase": 2,
+          "amount": 1,
+          "name": "replay HEADER payload over START",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 4.79,
+          "log": "build/qa/link-chaos-logs/events-crc/016.log",
+          "output": "PASS chaos kind=18 count=3 transfers=5241 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 2,
+          "phase": 2,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 10.04,
+          "log": "build/qa/link-chaos-logs/events-crc/017.log",
+          "output": "PASS chaos kind=19 count=3 transfers=6590 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 2,
+          "phase": 3,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 4.65,
+          "log": "build/qa/link-chaos-logs/events-crc/018.log",
+          "output": "PASS chaos kind=19 count=3 transfers=5241 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 2,
+          "phase": 6,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 5.96,
+          "log": "build/qa/link-chaos-logs/events-crc/019.log",
+          "output": "PASS chaos kind=19 count=3 transfers=6667 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 19,
+          "seed": 1,
+          "target": 2,
+          "phase": 7,
+          "amount": 60,
+          "name": "corrupt child reply",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 12.02,
+          "log": "build/qa/link-chaos-logs/events-crc/020.log",
+          "output": "PASS chaos kind=19 count=3 transfers=6854 delayed=0 busy=0\n"
+        }
+      ]
+    },
+    "wrap": {
+      "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+      "host_device": 1,
+      "tests": [
+        {
+          "count": 2,
+          "kind": 13,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 60,
+          "name": "timer wrap",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 7.33,
+          "log": "build/qa/link-chaos-logs/events-wrap/000.log",
+          "output": "PASS chaos kind=13 count=2 transfers=5005 delayed=0 busy=0\n"
+        },
+        {
+          "count": 2,
+          "kind": 13,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 180,
+          "name": "timer wrap",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 12.9,
+          "log": "build/qa/link-chaos-logs/events-wrap/001.log",
+          "output": "PASS chaos kind=13 count=2 transfers=8009 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 13,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 60,
+          "name": "timer wrap",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 14.0,
+          "log": "build/qa/link-chaos-logs/events-wrap/002.log",
+          "output": "PASS chaos kind=13 count=3 transfers=6447 delayed=0 busy=0\n"
+        },
+        {
+          "count": 3,
+          "kind": 13,
+          "seed": 1,
+          "target": 1,
+          "phase": 2,
+          "amount": 180,
+          "name": "timer wrap",
+          "passed": true,
+          "exit_code": 0,
+          "seconds": 19.8,
+          "log": "build/qa/link-chaos-logs/events-wrap/003.log",
+          "output": "PASS chaos kind=13 count=3 transfers=11152 delayed=0 busy=0\n"
+        }
+      ]
+    },
+    "animations": {
+      "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+      "native": true,
+      "tests": [
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nANIMATION spin: 423 transfers over 84 VBlanks, zero pose events; spectator cannot skip\nPASS: local wheel animation reaches authoritative target on every console\nPASS: owner skip retains the previously announced wheel target\nANIMATION assistant reaction=0: 296 transfers over 60 VBlanks, zero pose events\nANIMATION assistant reaction=1: 304 transfers over 60 VBlanks, zero pose events\nPASS: helper moves/opens letters locally; score is committed only by the host\nPASS: credits clock and host mouth animate locally; round transition remains authoritative\nPASS: AI position announcement is formatted locally\nPASS: AI letter announcement is formatted locally\nPASS: all four prize offers are formatted locally\nANIMATION cash: 148 transfers over 60 VBlanks, zero note events\nPASS: cash seed/amount animates locally; skip converges to identical final state\nPASS: keepalive detects disconnect during local presentation\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        },
+        {
+          "host_device": 1,
+          "count": 3,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nANIMATION spin: 441 transfers over 84 VBlanks, zero pose events; spectator cannot skip\nPASS: local wheel animation reaches authoritative target on every console\nPASS: owner skip retains the previously announced wheel target\nANIMATION assistant reaction=0: 298 transfers over 60 VBlanks, zero pose events\nANIMATION assistant reaction=1: 306 transfers over 60 VBlanks, zero pose events\nPASS: helper moves/opens letters locally; score is committed only by the host\nPASS: credits clock and host mouth animate locally; round transition remains authoritative\nPASS: all four prize offers are formatted locally\nANIMATION cash: 123 transfers over 60 VBlanks, zero note events\nPASS: cash seed/amount animates locally; skip converges to identical final state\nPASS: keepalive detects disconnect during local presentation\nPASS create/join count=3 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        }
+      ]
+    },
+    "events_parent": {
+      "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+      "native": true,
+      "tests": [
+        {
+          "host_device": 0,
+          "count": 2,
+          "scenario": 0,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 0, offline settings/open lobby, profiles only after discovery\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":0,\"mode\":5,\"host_to_all_frames\":19,\"press_to_all_frames\":24,\"transfers\":351}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":0,\"mode\":2,\"host_to_all_frames\":19,\"press_to_all_frames\":23,\"transfers\":366}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":0,\"mode\":3,\"host_to_all_frames\":26,\"press_to_all_frames\":30,\"transfers\":367}\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":1,\"mode\":5,\"host_to_all_frames\":19,\"press_to_all_frames\":24,\"transfers\":341}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":1,\"mode\":2,\"host_to_all_frames\":19,\"press_to_all_frames\":24,\"transfers\":365}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":1,\"mode\":3,\"host_to_all_frames\":27,\"press_to_all_frames\":34,\"transfers\":382}\nPASS create/join count=2 host=0 scenario=0 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        }
+      ]
+    },
+    "events_child": {
+      "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+      "native": true,
+      "tests": [
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":0,\"mode\":5,\"host_to_all_frames\":18,\"press_to_all_frames\":22,\"transfers\":352}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":0,\"mode\":2,\"host_to_all_frames\":18,\"press_to_all_frames\":19,\"transfers\":359}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":0,\"mode\":3,\"host_to_all_frames\":22,\"press_to_all_frames\":26,\"transfers\":368}\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":1,\"mode\":5,\"host_to_all_frames\":18,\"press_to_all_frames\":20,\"transfers\":345}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":1,\"mode\":2,\"host_to_all_frames\":18,\"press_to_all_frames\":21,\"transfers\":364}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":1,\"mode\":3,\"host_to_all_frames\":24,\"press_to_all_frames\":28,\"transfers\":407}\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        }
+      ]
+    },
+    "events_three": {
+      "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+      "native": true,
+      "tests": [
+        {
+          "host_device": 2,
+          "count": 3,
+          "scenario": 2,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 2, offline settings/open lobby, profiles only after discovery\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":0,\"mode\":5,\"host_to_all_frames\":33,\"press_to_all_frames\":39,\"transfers\":593}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":0,\"mode\":2,\"host_to_all_frames\":36,\"press_to_all_frames\":39,\"transfers\":672}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":0,\"mode\":3,\"host_to_all_frames\":40,\"press_to_all_frames\":49,\"transfers\":672}\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":1,\"mode\":5,\"host_to_all_frames\":33,\"press_to_all_frames\":40,\"transfers\":629}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":1,\"mode\":2,\"host_to_all_frames\":35,\"press_to_all_frames\":41,\"transfers\":665}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":1,\"mode\":7,\"host_to_all_frames\":42,\"press_to_all_frames\":51,\"transfers\":745}\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":2,\"mode\":5,\"host_to_all_frames\":33,\"press_to_all_frames\":38,\"transfers\":590}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":2,\"mode\":2,\"host_to_all_frames\":35,\"press_to_all_frames\":39,\"transfers\":647}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":2,\"mode\":6,\"host_to_all_frames\":42,\"press_to_all_frames\":51,\"transfers\":729}\nPASS create/join count=3 host=2 scenario=2 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        }
+      ]
+    },
+    "input_regression": {
+      "rom_sha256": "234e8893c1eb93bb7749ed5bbf7911ea48f311c944b3b5348afbf2c7b07cc19a",
+      "native": true,
+      "tests": [
+        {
+          "host_device": 1,
+          "count": 2,
+          "scenario": 1,
+          "graphics": 1,
+          "passed": true,
+          "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nLATENCY {\"profile\":\"name\",\"node\":0,\"owner_frames\":3,\"visible_frames\":4,\"host_frames\":3,\"all_frames\":3}\nPASS: incremental name keyboard matches a full redraw (node 0)\nLATENCY {\"profile\":\"name\",\"node\":1,\"owner_frames\":2,\"visible_frames\":3,\"host_frames\":2,\"all_frames\":2}\nPASS: incremental name keyboard matches a full redraw (node 1)\nLATENCY {\"profile\":\"keyboard\",\"node\":0,\"owner_frames\":3,\"visible_frames\":4,\"host_frames\":4,\"all_frames\":8}\nPASS: incremental game keyboard matches a full redraw (node 0)\nPASS: queued direction then A selects the authoritative letter once (owner 0)\nLATENCY {\"profile\":\"keyboard\",\"node\":1,\"owner_frames\":5,\"visible_frames\":6,\"host_frames\":5,\"all_frames\":9}\nPASS: incremental game keyboard matches a full redraw (node 1)\nPASS: queued direction then A selects the authoritative letter once (owner 1)\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+        }
+      ]
+    }
+  },
+  "codec": {
+    "source": "Production functions extracted verbatim from src/link.inc",
+    "sizes": [
+      16,
+      256,
+      1024,
+      4096
+    ],
+    "round_trips": 8000,
+    "malformed_streams": 80000,
+    "additional_checks": "Truncated prefixes, guard bytes, ASan, UBSan",
+    "output": "PASS: round trips, truncated packets, malformed runs, bounds and guards\nPASS snapshot size 16\nPASS: round trips, truncated packets, malformed runs, bounds and guards\nPASS snapshot size 256\nPASS: round trips, truncated packets, malformed runs, bounds and guards\nPASS snapshot size 1024\nPASS: round trips, truncated packets, malformed runs, bounds and guards\nPASS snapshot size 4096\n"
+  },
+  "limitations": [
+    "Measured application of events, not frontend display buffering or external emulator network latency.",
+    "Small sample of prompts, spin starts and spin-result messages; not a bound for every possible game event.",
+    "Packet delivery remains synchronous and still has noticeable delay. No physical GBA hardware was tested."
+  ]
+}

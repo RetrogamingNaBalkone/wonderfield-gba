@@ -42,7 +42,9 @@ per-frame formatted text is sent.
 Between events the SIO parent exchanges a compact input/keepalive packet roughly once
 per two VBlanks. It contains HEADER, START flags and input: three logical words,
 normally 24 hardware transfers under the existing acknowledged CRC transport.
-When a child hosts, one additional word relays the selected player's input.
+With three consoles and a child hosting, one additional word relays the selected
+player's input. With two consoles the authority already has its own input and the
+checked parent's input, so this relay is omitted.
 The host announces the input owner in its request, so the cable parent never
 selects input using an older copy of the turn state.
 The client notices the next low-byte request in the serial IRQ state and otherwise
@@ -75,9 +77,12 @@ in order on the host. Spectators cannot preview another player's navigation.
 The build fingerprint is checked when establishing a session. The first accepted
 creation request elects the application host independently of the cable parent;
 simultaneous requests tie by port and later requests cannot replace that host.
-With a child hosting, each published event word is first collected by the parent
-and then relayed to all peers. Both legs retain CRC/commit checks. Lobby metadata
-is likewise collected and delivered to the elected authority. No per-pose events
+With a child hosting, each published event word is collected by the parent using
+CRC/commit checks. With two consoles that completes delivery: the parent has the
+checked word and the authority owns its source. With three consoles the parent
+also relays it to the remaining peer, retaining CRC/commit on both legs. Lobby
+metadata uses the same distinction: two peers already have the parent's checked
+value and their own value; three peers need the collection relay. No per-pose events
 are added by relaying. Lobby snapshots are requested only when rules, membership,
 names, avatars or editing flags change; local keyboard cursor movement does not
 request one. Names are sent on change; avatar/edit flags share one word. Unchanged
@@ -91,8 +96,20 @@ An existing lobby child also abandons its old alternating phase when a returning
 parent sends the bootstrap word, then establishes a fresh checked transport while
 keeping its profile and lobby role.
 
-Contiguous event delta runs share an index/length. Sparse changes retain the
-previous index/value encoding, with monotonic-index and bounds checks on receive.
+Snapshots choose the smaller of the existing word/index encoding and a byte XOR
+delta against the verified wire baseline. The latter combines a zero skip and a
+literal run in one byte (four bits each); counts of 15 or more use 255-byte
+extensions. Header bit 15 selects byte encoding and the remaining bits give its
+byte length. Padding must be zero, skips/literals must remain within the snapshot,
+and decoding must consume exactly that snapshot. The full-state FNV check still
+precedes applying Game, messages or rules. The legacy fallback retains its
+monotonic-index and run-length checks.
+
+The wire scene/cash clock excludes accumulated packet pauses. Both deadlines and
+the event clock subtract the same offset before serialization; the receiver adds
+its local clock offset when applying the event. This preserves presentation ages
+and wraparound while preventing each packet pause from changing every deadline in
+the following delta.
 
 ## Limits and verification
 
@@ -132,3 +149,13 @@ VRAM page. Neither metric includes an emulator frontend's display buffering or
 network transport outside mGBA's emulated cable. The latency test also forces a
 full redraw and compares the entire displayed page byte for byte against each
 incrementally rendered name/game keyboard.
+
+Event delivery measurements are in
+[`verification/link-event-delivery-tests.json`](verification/link-event-delivery-tests.json).
+`test-link-roles.py --native --scenario 1 --consoles 2 --graphics 1 --event-latency`
+times real A-button transitions into SOLVE, SPIN and the spin-result message.
+It measures from the host mode change until all consoles have applied its mode and
+presentation revision, then checks both decoded message lines against the host.
+These are event application timings, before any additional frontend display delay.
+`test-link-codec.py` tests the production codec extracted from `link.inc`, with
+round trips, truncated/malformed streams, guard bytes, ASan and UBSan.
