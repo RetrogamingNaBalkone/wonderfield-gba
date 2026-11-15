@@ -205,7 +205,7 @@ static int link_due(void){
  if(link_master)return (game.mode==MP_LOBBY&&link_lobby_changed())||(link_is_host()&&(!link_event_valid||link_semantic_key()!=link_event_key))||video_ticks-link_last_packet>=2;
  /* A new low-byte phase is the host's request. The final commit ACK from
   * the preceding packet is not a request. Keep rendering until it arrives. */
- return (link_received[0]&0xff00)==(0xa000|(link_phase&0x200))||video_ticks-link_last_packet>=120;
+ return (link_received[0]&0xff00)==(0xa000|(link_phase&0x200))||video_ticks-link_last_packet>=(game.mode==MP_LOBBY?30u:120u);
 }
 static unsigned link_crc(u16 word){
  unsigned crc=0;
@@ -308,6 +308,11 @@ static int link_cancel_requested(void){
  return link_cancelled;
 }
 static int link_timed_out(u32 start){
+ /* Once a lobby has synchronized, inactivity means a departing peer, not
+  * someone still booting. Measure silence rather than total packet time so
+  * large initial/recovery snapshots keep their existing progress budget. */
+ u32 last_completion=link_completed_at;
+ if(game.mode==MP_LOBBY&&link_session&&input_clock()-last_completion>16777216u)return 1;
  /* A player may still be booting the other cartridge or entering a name.
   * Keep waiting until a peer transmits; malformed handshakes still time out. */
  if(game.mode==MP_LOBBY&&!link_started)return 0;

@@ -1,0 +1,76 @@
+{
+  "rom_sha256": "046b0f070b04236d3d660f285b96fd9195a0faca340068990965bc530bb394bf",
+  "host_device": 1,
+  "tests": [
+    {
+      "count": 2,
+      "kind": 22,
+      "seed": 1,
+      "target": 0,
+      "phase": 2,
+      "amount": 60,
+      "name": "lobby departure deadline",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 2.55,
+      "log": "build/qa/link-chaos-logs/link-lobby-departure-host1/000.log",
+      "output": "PASS chaos kind=22 count=2 transfers=4619 delayed=0 busy=0\n"
+    },
+    {
+      "count": 2,
+      "kind": 22,
+      "seed": 1,
+      "target": 1,
+      "phase": 2,
+      "amount": 60,
+      "name": "lobby departure deadline",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 4.2,
+      "log": "build/qa/link-chaos-logs/link-lobby-departure-host1/001.log",
+      "output": "PASS chaos kind=22 count=2 transfers=4620 delayed=0 busy=0\n"
+    },
+    {
+      "count": 3,
+      "kind": 22,
+      "seed": 1,
+      "target": 0,
+      "phase": 2,
+      "amount": 60,
+      "name": "lobby departure deadline",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 5.01,
+      "log": "build/qa/link-chaos-logs/link-lobby-departure-host1/002.log",
+      "output": "PASS chaos kind=22 count=3 transfers=6236 delayed=0 busy=0\n"
+    },
+    {
+      "count": 3,
+      "kind": 22,
+      "seed": 1,
+      "target": 1,
+      "phase": 2,
+      "amount": 60,
+      "name": "lobby departure deadline",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 4.79,
+      "log": "build/qa/link-chaos-logs/link-lobby-departure-host1/003.log",
+      "output": "PASS chaos kind=22 count=3 transfers=6237 delayed=0 busy=0\n"
+    },
+    {
+      "count": 3,
+      "kind": 22,
+      "seed": 1,
+      "target": 2,
+      "phase": 2,
+      "amount": 60,
+      "name": "lobby departure deadline",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 4.9,
+      "log": "build/qa/link-chaos-logs/link-lobby-departure-host1/004.log",
+      "output": "PASS chaos kind=22 count=3 transfers=6220 delayed=0 busy=0\n"
+    }
+  ]
+}

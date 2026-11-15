@@ -183,7 +183,10 @@ int main(int argc,char**argv){
    c[i]->busWrite16(c[i],0x0400010c,0);
   }
   join_all();
-  if(kind==2){keys(target,2,12);assert(rd(target,game_addr+12)==26);errors(target,2000);retry();}
+  if(kind==2||kind==22){
+   keys(target,2,12);assert(rd(target,game_addr+12)==26);
+   errors(target,kind==22?96:2000);retry();
+  }
   else{
    start();
    if(kind==10){uint64_t before=cable_clock(target);c[target]->reset(c[target]);clock_offset[target]=before-mTimingGlobalTime(&g[target]->timing);irq_due[target]=0;errors(target,400);run(100);assert(rd(target,game_addr+12)==0);retry();}

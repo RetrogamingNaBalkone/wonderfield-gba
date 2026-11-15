@@ -2,7 +2,7 @@
 import argparse, concurrent.futures, hashlib, json, os, shlex, subprocess, time
 from pathlib import Path
 from emulator import ROOT, symbols
-CASE_NAMES={0:'startup order',1:'cancel waiting and retry',2:'cancel lobby and retry',3:'break cable chain',4:'pause SD-ready',5:'pause serial IRQ',6:'completed-transfer hardware error',7:'corrupt snapshot',8:'suppress first IRQ',9:'unplug/replug',10:'reset console',11:'hot-add third console',12:'random buttons and IRQ jitter',13:'timer wrap',14:'corrupt build fingerprint',15:'cancel initial packet',16:'ambiguous initial SI',17:'repeated mixed failures',18:'replay HEADER payload over START',19:'corrupt child reply',20:'persistent payload corruption',21:'snapshot baseline recovery'}
+CASE_NAMES={0:'startup order',1:'cancel waiting and retry',2:'cancel lobby and retry',3:'break cable chain',4:'pause SD-ready',5:'pause serial IRQ',6:'completed-transfer hardware error',7:'corrupt snapshot',8:'suppress first IRQ',9:'unplug/replug',10:'reset console',11:'hot-add third console',12:'random buttons and IRQ jitter',13:'timer wrap',14:'corrupt build fingerprint',15:'cancel initial packet',16:'ambiguous initial SI',17:'repeated mixed failures',18:'replay HEADER payload over START',19:'corrupt child reply',20:'persistent payload corruption',21:'snapshot baseline recovery',22:'lobby departure deadline'}
 p=argparse.ArgumentParser(description=__doc__,epilog='Cases: '+', '.join(f'{k}={v}' for k,v in CASE_NAMES.items()))
 p.add_argument('--host',type=int,choices=(0,1,2),default=0)
 p.add_argument('--jobs',type=int,default=3)
@@ -15,7 +15,7 @@ p.add_argument('--amount',type=int,default=60)
 p.add_argument('--rom',type=Path,default=ROOT/'build/gba/pole.gba')
 p.add_argument('--elf',type=Path,default=ROOT/'build/gba/pole.elf')
 p.add_argument('--report',type=Path,default=ROOT/'build/qa/link-chaos.json')
-p.add_argument('--matrix', choices=('full','startup','wrap','stateful','bootstrap','crc','recovery'), default='full')
+p.add_argument('--matrix', choices=('full','startup','wrap','stateful','bootstrap','crc','recovery','departure'), default='full')
 a=p.parse_args()
 os.environ['LINK_AUTHORITY']=str(a.host)
 if a.case is not None and a.host>=a.count:p.error('host port must exist in the requested console count')
@@ -71,6 +71,10 @@ if a.case is None and a.matrix=='recovery':
  for n in (2,3):
   for node in range(n):
    if node!=a.host:add(n,21,target=node,phase=6)
+if a.case is None and a.matrix=='departure':
+ cases=[]
+ for n in (2,3):
+  for node in range(n):add(n,22,target=node)
 cases=[c for c in cases if c['count']>a.host and not (c['kind']==11 and a.host==2)]
 logs=ROOT/'build/qa/link-chaos-logs'/a.report.stem;logs.mkdir(parents=True,exist_ok=True)
 def run(item):
