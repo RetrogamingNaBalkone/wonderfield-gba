@@ -39,24 +39,34 @@ per-frame formatted text is sent.
 
 ## Steady traffic and input
 
-Between events the SIO parent exchanges a compact input/keepalive packet roughly once
-per two VBlanks. It contains HEADER, START flags and input: three logical words,
-normally 24 hardware transfers under the existing acknowledged CRC transport.
-With three consoles and a child hosting, one additional word relays the selected
-player's input. With two consoles the authority already has its own input and the
-checked parent's input, so this relay is omitted.
+Between events the SIO parent exchanges a compact input/keepalive packet. It may
+start two VBlanks after the previous one, but each guest notices a request only
+between its own frames, so the measured period during a human turn is about
+eight VBlanks (`human_turn` benchmark: ~31 hardware transfers per packet). It
+contains HEADER, START flags and input: three logical words, at least 24 hardware
+transfers under the existing acknowledged CRC transport.
+Only the authority consumes input. It already has its own word and the checked
+parent's word, so a fourth word relays input only with three consoles, a child
+hosting and the third console owning the input. The control word's bit 3
+announces that relay to every peer.
 The host announces the input owner in its request, so the cable parent never
 selects input using an older copy of the turn state.
 The client notices the next low-byte request in the serial IRQ state and otherwise
 continues its local presentation. The snapshot and its hash are omitted from a
 keepalive. Clients redraw only for local visual changes or a received event.
 
-A/B/SELECT/START edge bits accompany held keys so a second press is distinguishable
-when release happened between polls. The host still accepts gameplay input only
-from the current player's console. VBlank captures presses in a separate ordered
-queue; the input word samples that queue immediately before transmission, including
-taps received while waiting for earlier words. A held button whose edge is still
-queued cannot overtake an earlier direction or execute twice.
+Presses are logical events produced on the owner's console. Its VBlank applies the
+same autorepeat timing as local play (18 VBlanks, then every 5) and queues one key
+per event; simultaneous presses queue directions before buttons. Consecutive
+repeats of one direction coalesce up to four per event. The input word carries
+held keys in bits 0-8, the event key index+1 in bits 10-13 and its count-1 in
+bits 14-15. The authority queues received presses and applies one per main-loop
+iteration; it never derives presses or autorepeat from held keys, which are only
+sampled once per packet. Queued presses are dropped when the current player
+changes. Held keys only gate START arming and cancellation. The host still accepts
+gameplay input only from the current player's console.
+`scripts/test-link-input.py` runs the production functions against local play for
+taps, holds and every packet period/phase from 2 to 12 VBlanks.
 Repeated phases back off while a peer is
 rendering; the minimum 4096-cycle turnaround remains in place.
 
@@ -73,6 +83,10 @@ The preview changes only the rendered cursor/choice; it never selects a letter,
 changes the synchronized Game or executes rules. The next authoritative navigation,
 mode or player change clears it. A direction followed quickly by A still executes
 in order on the host. Spectators cannot preview another player's navigation.
+
+A transfer whose SIOCNT ERROR flag is set is treated as lost. The parent repeats
+the same tagged phase, which peers already handle as a duplicate; a guest ignores
+that sample. Sixteen consecutive ERROR samples end the session.
 
 The build fingerprint is checked when establishing a session. The first accepted
 creation request elects the application host independently of the cable parent;
@@ -104,6 +118,10 @@ byte length. Padding must be zero, skips/literals must remain within the snapsho
 and decoding must consume exactly that snapshot. The full-state FNV check still
 precedes applying Game, messages or rules. The legacy fallback retains its
 monotonic-index and run-length checks.
+
+The snapshot zeroes `game.frame` and `scene.last_redraw`: guests never read these
+per-iteration counters, so they no longer enter every delta. `game.rng` stays
+because guests use it for local wheel timing.
 
 The wire scene/cash clock excludes accumulated packet pauses. Both deadlines and
 the event clock subtract the same offset before serialization; the receiver adds

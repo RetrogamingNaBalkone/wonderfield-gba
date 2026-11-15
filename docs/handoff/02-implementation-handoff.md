@@ -2,7 +2,8 @@
 
 Дата: 10 ноября 2026. Читать вместе с `01-rules-and-ui.md`.
 
-Обновление: описанный ниже исходный план реализован в ветке `multiplayer`.
+Обновление: описанный ниже исходный план реализован в ветке `multiplayer`; позже она
+полностью вошла в `main`. Рабочая ветка проекта теперь `main`, ветка `multiplayer` не используется.
 Актуальное поведение — в `../multiplayer.md`, проверки — в
 `../verification/multiplayer-rules-suite.json` и `../verification/match-rules-tests.json`.
 Остальной текст сохранён как описание базы перед реализацией.
@@ -11,7 +12,7 @@
 
 - Проект: «Поле чудес» для Game Boy Advance, версия 2.0 в разработке.
 - GitHub: https://github.com/RetrogamingNaBalkone/wonderfield-gba
-- Рабочая ветка: **multiplayer**. Это закреплено в `AGENTS.md` по прямому указанию пользователя.
+- Рабочая ветка на момент handoff: **multiplayer** (историческое состояние). Сейчас вся работа ведётся в `main`, см. `AGENTS.md`.
 - В текущей среде: `/workspace/wonderfield-gba`.
 - Проверенная база игрового кода до сохранения этого handoff: **5b0603936b9524aabe7682ceb792c0138ee55f58** — `Clear chest overlay when dismissing its result`.
 - Перед сохранением документов рабочее дерево было чистым; сам handoff добавляется отдельным коммитом без изменения игрового кода и ROM.

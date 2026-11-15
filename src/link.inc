@@ -16,8 +16,7 @@ static int link_active,link_connected,link_start_armed,link_cancelled;
 static u16 link_avatar;
 static int link_name_edit,link_name_cursor,link_name_pos;
 static char link_name_answer[21];
-static u16 link_keys,link_oldkeys,link_submit;
-static u32 link_repeat_at;
+static u16 link_keys,link_submit;
 static volatile u32 link_serial;
 static u32 link_boot_serial;
 static volatile u32 link_completed_at;
@@ -25,25 +24,63 @@ static int link_session;
 static u32 link_last_packet,link_event_key,link_packets,link_events;
 static u32 link_clock_offset;
 static int link_event_valid;
-static volatile u16 link_tap_queue[32];
+/* Logical input events: one key each, directions carry an owner-side
+ * autorepeat count. VBlank produces them from the owner's exact key timing,
+ * so the authority never derives presses or autorepeat from held keys that
+ * are sampled only once per packet. */
+enum{LINK_TAP_SIZE=32,LINK_TAP_MAX=4,LINK_REMOTE_SIZE=16};
+static volatile u16 link_tap_queue[LINK_TAP_SIZE];
 static volatile u8 link_tap_read,link_tap_write;
-static void link_capture_input(u16 pressed){
- pressed&=~L;
- if(link_active&&!link_name_edit&&!link_avatar_edit&&pressed){
-  unsigned next=(link_tap_write+1)&31;
-  if(next!=link_tap_read){link_tap_queue[link_tap_write]=pressed;link_tap_write=next;}
- }
+static u16 link_tap_oldkeys;static u32 link_tap_repeat_at;
+static u16 link_remote_queue[LINK_REMOTE_SIZE];static u8 link_remote_read,link_remote_write;
+static int link_remote_player;
+static void link_tap_push(unsigned index,int coalesce){
+ unsigned tail=(link_tap_write+LINK_TAP_SIZE-1)%LINK_TAP_SIZE;
+ if(coalesce&&link_tap_read!=link_tap_write&&(link_tap_queue[tail]&15)==index&&(link_tap_queue[tail]>>4)<LINK_TAP_MAX-1){link_tap_queue[tail]+=16;return;}
+ unsigned next=(link_tap_write+1)%LINK_TAP_SIZE;
+ if(next!=link_tap_read){link_tap_queue[link_tap_write]=index;link_tap_write=next;}
 }
+static void link_capture_input(u16 pressed){
+ u16 keys=input_keys&~L,directions=keys&(UP|DOWN|LEFT|RIGHT),events=pressed&~L;
+ if(!link_active||link_name_edit||link_avatar_edit){link_tap_oldkeys=keys;link_tap_repeat_at=video_ticks+18;return;}
+ /* Same timing as local play: 18 VBlanks before the first repeat, then 5. */
+ if(keys!=link_tap_oldkeys||(events&(UP|DOWN|LEFT|RIGHT)))link_tap_repeat_at=video_ticks+18;
+ else if(directions&&(int)(video_ticks-link_tap_repeat_at)>=0){events|=directions;link_tap_repeat_at=video_ticks+5;}
+ link_tap_oldkeys=keys;
+ /* Simultaneous presses keep local order: directions before buttons. */
+ for(unsigned bit=4;bit<8;bit++)if(events&(1u<<bit))link_tap_push(bit+1,1);
+ for(unsigned bit=0;bit<4;bit++)if(events&(1u<<bit))link_tap_push(bit+1,0);
+ if(events&R)link_tap_push(9,0);
+}
+/* Input word: held keys in bits 0-8, event key index+1 in bits 10-13 and
+ * its count-1 in bits 14-15. Held keys never generate presses remotely. */
 static void link_sample_input(void){
  u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
- u16 taps=0;
+ u16 event=0;
  if(link_name_edit||link_avatar_edit)link_tap_read=link_tap_write;
- else if(link_tap_read!=link_tap_write){taps=link_tap_queue[link_tap_read];link_tap_read=(link_tap_read+1)&31;}
- /* A held button whose press is still queued must not overtake an earlier
-  * direction and then execute again when its own edge reaches the head. */
- u16 pending=0;for(unsigned i=link_tap_read;i!=link_tap_write;i=(i+1)&31)pending|=link_tap_queue[i];
- link_submit=(link_name_edit||link_avatar_edit)?0:(((input_keys&~pending)|taps)&~L)|((taps&15)<<10);
+ else if(link_tap_read!=link_tap_write){event=link_tap_queue[link_tap_read];link_tap_read=(link_tap_read+1)%LINK_TAP_SIZE;}
+ u16 key=event&15?1u<<((event&15)-1):0;
+ link_submit=(link_name_edit||link_avatar_edit)?0:((input_keys|key)&~L)|((event&15)<<10)|((event>>4)<<14);
  REG16(0x04000208)=ime;
+}
+/* The authority applies one received press per main-loop iteration. Presses
+ * still queued when the turn changes belong to the previous owner. */
+static void link_queue_remote(u16 word,int player){
+ unsigned index=(word>>10)&15,count=(word>>14)+1;
+ if(player!=link_remote_player)link_remote_read=link_remote_write;
+ link_remote_player=player;
+ if(!index||index>9)return;
+ while(count--){
+  unsigned next=(link_remote_write+1)%LINK_REMOTE_SIZE;
+  if(next==link_remote_read)break;
+  link_remote_queue[link_remote_write]=1u<<(index-1);link_remote_write=next;
+ }
+}
+static u16 link_next_remote(int player){
+ if(player!=link_remote_player){link_remote_read=link_remote_write;link_remote_player=player;}
+ if(link_remote_read==link_remote_write)return 0;
+ u16 key=link_remote_queue[link_remote_read];link_remote_read=(link_remote_read+1)%LINK_REMOTE_SIZE;
+ return key;
 }
 /* Compare rule state, not the clock, RNG cursor or intermediate poses. This
  * also catches input changes within a mode (cursor, choice, typed answer). */
@@ -61,7 +98,10 @@ static volatile u16 link_received[4],link_status;
 /* Stop-and-wait: low byte, high byte, CRC, commit. Tags alone do not
  * validate the payload. Neither CPU may consume an unchecked word. */
 static volatile u16 link_reply,link_decoded,link_low,link_ack;
-static volatile unsigned link_pending,link_phase,link_done,link_fault,link_retries;
+static volatile unsigned link_pending,link_phase,link_done,link_fault,link_retries,link_errors;
+/* A hardware ERROR sample is treated as a lost transfer: the repeated phase
+ * recovers it. Only a persistent run of errors ends the session. */
+enum{LINK_ERROR_LIMIT=16};
 static volatile u16 link_wire_word;
 static unsigned link_sequence;
 static int link_stage,link_error_stage;
@@ -186,8 +226,8 @@ static void link_irq(void){
  if(game.mode==LINK_TEST){link_test_irq();link_serial++;return;}
  if(link_master==0&&link_received[0]!=0xffff)link_started=1;
  if(link_master==1)for(int i=1;i<4;i++)if(link_received[i]!=0xffff)link_started=1;
- if(link_status&64)link_fault=1;
- if(link_master==0&&!link_fault){
+ if(link_status&64){if(++link_errors>=LINK_ERROR_LIMIT)link_fault=1;}else link_errors=0;
+ if(link_master==0&&!link_fault&&!(link_status&64)){
   u16 word=link_received[0],tag=word&0xff00;link_wire_word=word;
   /* A parent re-entering from the role menu starts a fresh transport.
    * Abort the old wait; its alternating phase cannot be reused safely. */
@@ -228,17 +268,17 @@ static void link_open(void){
  link_preview_valid=0;
  link_profile_render_key=~0u;
  link_profile_cursor=-1;link_keyboard_valid=0;
- link_last_packet=video_ticks;link_event_valid=0;link_tap_read=link_tap_write=0;link_packets=link_events=0;
+ link_last_packet=video_ticks;link_event_valid=0;link_tap_read=link_tap_write=0;link_remote_read=link_remote_write=0;link_remote_player=-1;link_tap_oldkeys=0;link_packets=link_events=0;
  link_clock_offset=0;
  link_session=0;for(int i=0;i<11;i++)link_sent_name[i]=0;
  link_sent_status=~0u;
  link_avatar_edit=!link_create;link_avatar_armed=0;
  link_connected=1;link_start_armed=link_cancelled=link_name_edit=0;link_name_cursor=game.cursor;
  link_copy(link_saved_names,record_names,sizeof record_names);link_copy(link_saved_scores,record_scores,sizeof record_scores);
- link_text(link_name,mp.names[2],11);link_avatar=avatars[2];link_oldkeys=link_submit=0;
+ link_text(link_name,mp.names[2],11);link_avatar=avatars[2];link_submit=0;
  for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
  for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
- link_pending=link_phase=link_done=link_fault=link_sequence=0;link_ack=link_wire_word=0;link_retries=0;
+ link_pending=link_phase=link_done=link_fault=link_sequence=0;link_ack=link_wire_word=0;link_retries=link_errors=0;
  link_master=-1;link_started=link_stage=link_error_stage=0;link_status=link_error_status=0;
  link_restart=0;
  link_error_received=link_error_expected=0;
@@ -275,7 +315,9 @@ static int link_timed_out(u32 start){
 }
 static int link_wire_exchange(u16 value,u32 exchange_start){
  if(link_cancel_requested())return 0;
- u32 serial=link_serial;int master=link_master;
+ u32 serial;int master=link_master;
+ for(unsigned errors=0;;errors++){
+ serial=link_serial;
  link_wire_word=value;REG16(0x0400012a)=value;
  if(master){
   /* Preserve the 4096-cycle turnaround, counting work already done since
@@ -288,7 +330,10 @@ static int link_wire_exchange(u16 value,u32 exchange_start){
   * word. Initial lobby waiting must not disable this hardware deadline. */
  u32 wire_start=input_clock();
  while(link_serial==serial){if(link_cancel_requested()||link_timed_out(exchange_start)||input_clock()-wire_start>(game.mode==MP_LOBBY?503316480u:33554432u))return 0;}
- if(link_status&64)return 0;
+ if(!(link_status&64))break;
+ /* The parent repeats the same tagged phase; peers treat it as a duplicate. */
+ if(!master||errors+1>=LINK_ERROR_LIMIT)return 0;
+ }
  for(int i=0;i<4;i++)link_remote[i]=link_received[i];
  mp.local=((link_status>>4&3)+2)%3;
  return 1;
@@ -405,7 +450,7 @@ static int link_frame(void){
   if(!id)for(int i=1;i<4;i++)if(link_received[i]!=0xffff)link_started=1;
  }
  int master=link_master,full=!link_session,lobby=game.mode==MP_LOBBY;
- int input_device=0,expected_members=mp.humans;
+ int input_device=0,expected_members=mp.humans,relay_input=0;
  u32 event_key=link_is_host()?link_semantic_key():0;
  int event=!link_event_valid||event_key!=link_event_key||(lobby&&link_lobby_changed());
  int was_ready=link_host_ready;
@@ -455,15 +500,19 @@ static int link_frame(void){
    if(link_timed_out(start))return 0;
   }
   unsigned host=link_host_device<0?3:link_host_device;
-  if(!link_exchange(0xb178|(full?2:0)|(lobby?4:0)|(!event?1:0)|(host<<9)|(link_host_ready?128:0)))return 0;
+  /* Only the authority consumes input. It already has the parent's word and
+   * its own, so relay only when the third console owns the input. */
+  relay_input=link_host_device>0&&link_connected==3&&input_device!=0&&input_device!=link_host_device;
+  if(!link_exchange(0xb170|(relay_input?8:0)|(full?2:0)|(lobby?4:0)|(!event?1:0)|(host<<9)|(link_host_ready?128:0)))return 0;
  }else{
   for(;;){
    if(!link_exchange(request))return 0;
-   if((link_remote[0]&0xf978)==0xb178){
+   if((link_remote[0]&0xf970)==0xb170){
+    relay_input=(link_remote[0]&8)!=0;
     event=!(link_remote[0]&1);full=(link_remote[0]&2)!=0;lobby=(link_remote[0]&4)!=0;
     unsigned host=(link_remote[0]>>9)&3;link_host_device=host==3?-1:(int)host;
     link_host_ready=(link_remote[0]&128)!=0;
-    if(!link_session&&!full)return link_mismatch(link_remote[0],0xb17e);
+    if(!link_session&&!full)return link_mismatch(link_remote[0],0xb176);
     link_connected=1;for(int i=1;i<4;i++)if(link_received[i]!=0xffff)link_connected++;
     if(link_connected>3||link_host_device>=link_connected)return 0;
     mp.humans=link_connected;break;
@@ -492,10 +541,8 @@ static int link_frame(void){
  link_sample_input();
  if(!link_word(link_submit,link_submit,0))return 0;
  if(master)link_keys=link_remote[input_device];
- if(link_host_device>0){
-  if(link_connected==2){if(authority)link_keys=lobby||owner?link_submit:link_remote[0];}
-  else{if(!link_word(link_keys,0,&value))return 0;link_keys=value;}
- }
+ if(relay_input){if(!link_word(link_keys,0,&value))return 0;link_keys=value;}
+ else if(link_host_device>0&&authority)link_keys=lobby||owner?link_submit:link_remote[0];
  link_packets++;link_last_packet=video_ticks;
  if(!event)return 1; /* Input/keepalive: no poses, text or snapshot hash. */
  link_events++;
@@ -555,6 +602,8 @@ static int link_frame(void){
   link_snapshot.sound=sound_command;link_snapshot.dictionary=prefs.dictionary;link_snapshot.plus=prefs.plus;link_snapshot.characters=prefs.characters;link_snapshot.ai_index=mp_ai_index;link_copy(link_snapshot.pool,opponent_pool,sizeof opponent_pool);
   link_copy(link_snapshot.records,record_names,sizeof record_names);link_copy(link_snapshot.scores,record_scores,sizeof record_scores);
   link_copy(&link_snapshot.game,&game,sizeof game);link_copy(&link_snapshot.scene,&scene,sizeof scene);link_snapshot.scene.now=event_at;
+  /* Per-iteration counters the guests never read; keep them out of deltas. */
+  link_snapshot.game.frame=0;link_snapshot.scene.last_redraw=0;
   /* Exclude accumulated packet pauses from the wire timeline. Otherwise
    * every pause changes all deadlines again in the following snapshot. */
   link_rebase_state(&link_snapshot.scene,&link_snapshot.cash,0u-link_clock_offset);

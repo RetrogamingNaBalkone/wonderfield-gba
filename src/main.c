@@ -905,7 +905,7 @@ void gba_main(void){
    if(!success&&link_restart){
     /* Keep the lobby/profile, but join the parent's new CRC/commit stream. */
     ime=REG16(0x04000208);REG16(0x04000208)=0;
-    link_pending=link_phase=link_done=link_fault=link_sequence=0;link_ack=0;
+    link_pending=link_phase=link_done=link_fault=link_errors=link_sequence=0;link_ack=0;
     link_session=0;link_event_valid=0;link_sent_status=~0u;link_restart=0;
     REG16(0x04000208)=ime;success=1;exchanged=0;
    }
@@ -961,10 +961,12 @@ void gba_main(void){
     if(dirty)link_render_game();else vblank();
     continue;
    }
-   if(link_active){mp.viewer=mp.local;keys=link_keys&1023;pressed=(keys&~link_oldkeys)|(exchanged?((link_keys>>10)&15):0);repeat=pressed;
-    if(keys!=link_oldkeys)link_repeat_at=video_ticks+18;
-    else if((keys&(UP|DOWN|LEFT|RIGHT))&&(int)(video_ticks-link_repeat_at)>=0){repeat|=keys&(UP|DOWN|LEFT|RIGHT);link_repeat_at=video_ticks+5;}
-    link_oldkeys=keys;
+   if(link_active){mp.viewer=mp.local;keys=link_keys&511;
+    /* Presses and autorepeat were produced by the owner's VBlank. Held keys
+     * only gate START; they never create a press on the authority. */
+    int owner_player=game.mode==MP_LOBBY?-1:game.player;
+    if(exchanged)link_queue_remote(link_keys,owner_player);
+    pressed=repeat=link_next_remote(owner_player);
     if(game.mode==MP_LOBBY){
      dirty=1;
      if(!(keys&START)&&!(oldkeys&START))link_start_armed=1;
