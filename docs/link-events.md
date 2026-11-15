@@ -193,5 +193,8 @@ The November 15 audit is in `verification/link-roadmap-audit.json`; role, CRC,
 recovery and latency reports share the rebuilt ROM hash. Event application takes
 17–23 frames with two consoles and 32–41 with three (child host). These measurements
 do not meet the roadmap's two-frame target. The asynchronous transport is still
-pending. Three-console animation fixtures fail on both the original and rebuilt
-ROM; this is an unresolved check, not a passing validation.
+pending. The three-console animation fixture failure was traced to direct debugger writes
+to choice during temporary render/navigation state restoration. The fixture now
+uses actual LEFT input. Native two/three-console animation runs pass with hosts
+on ports 0 and 1; see `verification/link-animation-fixture-audit.json` and
+`verification/link-animation-fixtures-fixed.json`.

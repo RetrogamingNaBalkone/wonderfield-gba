@@ -25,6 +25,7 @@ static void anim_messages(void){
 }
 static void anim_mode(unsigned mode){
  for(int t=0;t<300;t++){int ready=1;for(int i=0;i<count;i++){assert(rd(i,game_addr+12)!=31);if(rd(i,game_addr+12)!=mode)ready=0;}if(ready){run(8);anim_messages();return;}run(1);}
+ for(int i=0;i<count;i++)fprintf(stderr,"ANIM target=%u node=%d mode=%u choice=%u offer=%u cash=%u\n",mode,i,rd(i,game_addr+12),rd(i,game_addr+81*4),rd(i,game_addr+82*4),rd(i,anim_address("LINK_CASH_ADDR")));
  assert(0);
 }
 static void anim_tap(int node){c[node]->setKeys(c[node],1);run(12);c[node]->setKeys(c[node],0);run(12);}
@@ -85,12 +86,17 @@ static void animation_tests(void){
   run(60);anim_mode(18);anim_messages();printf("PASS: AI letter announcement is formatted locally\n");
  }
  wr(authority,game_addr+12,7);wr(authority,game_addr+20,2);wr(authority,game_addr+81*4,0);wr(authority,game_addr+82*4,0);run(60);
+ c[0]->setKeys(c[0],1u<<5);run(12);c[0]->setKeys(c[0],0);run(60);
  for(int offer=1;offer<=4;offer++){
   anim_tap(0);run(60);anim_messages();
   for(int i=0;i<count;i++){assert(rd(i,game_addr+12)==7);assert(rd(i,game_addr+82*4)==(unsigned)offer);}
  }
  printf("PASS: all four prize offers are formatted locally\n");
  wr(authority,game_addr+12,7);wr(authority,game_addr+20,2);wr(authority,game_addr+81*4,0);wr(authority,game_addr+82*4,3);wr(authority,game_addr+83*4,100000);run(60);anim_messages();
+ /* Select acceptance through production input: a debugger write to choice
+  * can be overwritten by an in-flight temporary render/navigation restore. */
+ c[0]->setKeys(c[0],1u<<5);run(12);c[0]->setKeys(c[0],0);run(60);
+ assert(rd(authority,game_addr+81*4)==0);
  anim_tap(0);anim_mode(21);run(150);
  for(int i=0;i<count;i++){before[i]=rd(i,events);poses[i]=rd(i,cash);}
  sent_before=transfers;run(60);

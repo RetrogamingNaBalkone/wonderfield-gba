@@ -1,0 +1,22 @@
+{
+  "rom_sha256": "12f0b55a6d25a2aefbd0e267c13ed1de6f43a6f3a218cfd5adb38a0b957c83a4",
+  "native": true,
+  "tests": [
+    {
+      "host_device": 1,
+      "count": 2,
+      "scenario": 1,
+      "graphics": 1,
+      "passed": true,
+      "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nANIMATION spin: 427 transfers over 84 VBlanks, zero pose events; spectator cannot skip\nPASS: local wheel animation reaches authoritative target on every console\nPASS: owner skip retains the previously announced wheel target\nANIMATION assistant reaction=0: 301 transfers over 60 VBlanks, zero pose events\nANIMATION assistant reaction=1: 304 transfers over 60 VBlanks, zero pose events\nPASS: helper moves/opens letters locally; score is committed only by the host\nPASS: credits clock and host mouth animate locally; round transition remains authoritative\nPASS: AI position announcement is formatted locally\nPASS: AI letter announcement is formatted locally\nPASS: all four prize offers are formatted locally\nANIMATION cash: 142 transfers over 60 VBlanks, zero note events\nPASS: cash seed/amount animates locally; skip converges to identical final state\nPASS: keepalive detects disconnect during local presentation\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+    },
+    {
+      "host_device": 1,
+      "count": 3,
+      "scenario": 1,
+      "graphics": 1,
+      "passed": true,
+      "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nPASS: elected host publishes events; owner input, local animation and target agree\nANIMATION spin: 406 transfers over 84 VBlanks, zero pose events; spectator cannot skip\nPASS: local wheel animation reaches authoritative target on every console\nPASS: owner skip retains the previously announced wheel target\nANIMATION assistant reaction=0: 287 transfers over 60 VBlanks, zero pose events\nANIMATION assistant reaction=1: 273 transfers over 60 VBlanks, zero pose events\nPASS: helper moves/opens letters locally; score is committed only by the host\nPASS: credits clock and host mouth animate locally; round transition remains authoritative\nPASS: all four prize offers are formatted locally\nANIMATION cash: 138 transfers over 60 VBlanks, zero note events\nPASS: cash seed/amount animates locally; skip converges to identical final state\nPASS: keepalive detects disconnect during local presentation\nPASS create/join count=3 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+    }
+  ]
+}
