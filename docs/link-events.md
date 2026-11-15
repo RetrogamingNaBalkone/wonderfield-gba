@@ -177,3 +177,5 @@ presentation revision, then checks both decoded message lines against the host.
 These are event application timings, before any additional frontend display delay.
 `test-link-codec.py` tests the production codec extracted from `link.inc`, with
 round trips, truncated/malformed streams, guard bytes, ASan and UBSan.
+
+Состояние работ и план: [`link-roadmap.md`](link-roadmap.md).
