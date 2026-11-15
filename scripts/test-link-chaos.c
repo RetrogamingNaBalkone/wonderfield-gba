@@ -67,6 +67,14 @@ static void trigger(void){
 }
 static void corrupt(int i){
  if((unsigned)i!=target||rd(0,stage_addr)!=phase)return;
+ if(kind==21){
+  if(!fired){
+   uint32_t address=strtoul(getenv("LINK_SNAPSHOT_ADDR"),0,16);
+   c[i]->busWrite8(c[i],address,c[i]->busRead8(c[i],address)^1);
+   fired=1;
+  }
+  return;
+ }
  if(kind==6){if(!fired){g[i]->sio.siocnt|=64;fired=1;}return;}
  unsigned word=g[i]->memory.io[REG_SIOMULTI0/2];
  if(kind==20){if((word&0xfd00)==0xa000){g[i]->memory.io[REG_SIOMULTI0/2]^=1;fired++;}return;}
@@ -80,7 +88,7 @@ static void corrupt(int i){
 static void replay_start(int i){
  if((unsigned)i!=target||fired==3)return;
  unsigned word=g[i]->memory.io[REG_SIOMULTI0/2],tag=word&0xff00;
- if(!fired&&rd(0,stage_addr)==2&&(word&0xfd7f)==0xa07e){selected_word=tag;fired=1;}
+ if(!fired&&rd(0,stage_addr)==2&&(word&0xfd77)==0xa076){selected_word=tag;fired=1;}
  if(fired==1&&tag==selected_word)g[i]->memory.io[REG_SIOMULTI0/2]=tag|0x10;
  else if(fired&&tag==(selected_word|0x100)){fired=2;g[i]->memory.io[REG_SIOMULTI0/2]=tag|0xa7;}
  else if(fired==2)fired=3;
@@ -96,7 +104,7 @@ static void corrupt_reply(int i){
 }
 static void arm(void){
  fired=0;
- if(kind==19)receive_hook=corrupt_reply;else if(kind==6||kind==7||kind==14)receive_hook=corrupt;else transfer_hook=trigger;
+ if(kind==19)receive_hook=corrupt_reply;else if(kind==6||kind==7||kind==14||kind==21)receive_hook=corrupt;else transfer_hook=trigger;
  for(int t=0;t<600&&!fired;t++)run(1);
  assert(fired);
 }
@@ -202,7 +210,14 @@ int main(int argc,char**argv){
    }else{
     if(kind==13)for(int i=0;i<count;i++)assert(c[i]->busRead16(c[i],0x0400010c)<0xff00);
     arm();
-    if(kind==7||kind==19){run(180);no_errors();assert(rd(0,active_addr));}
+    if(kind==7||kind==19||kind==21){
+     run(300);no_errors();
+     for(int i=0;i<count;i++)assert(rd(i,active_addr));
+     if(kind==21){
+      uint32_t address=strtoul(getenv("LINK_SNAPSHOT_ADDR"),0,16);
+      for(int i=0;i<count;i++)assert(rd(i,address)==rd(authority,address));
+     }
+    }
     else if(kind==4||kind==5||kind==9||kind==13){
      run(amount);ready_block=0;if(kind==5)release_irq();if(kind==9)disconnected=-1;
      if(amount<100&&kind!=9){run(160);no_errors();assert(rd(0,active_addr));}

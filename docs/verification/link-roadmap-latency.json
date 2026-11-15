@@ -1,0 +1,22 @@
+{
+  "rom_sha256": "12f0b55a6d25a2aefbd0e267c13ed1de6f43a6f3a218cfd5adb38a0b957c83a4",
+  "native": true,
+  "tests": [
+    {
+      "host_device": 1,
+      "count": 2,
+      "scenario": 1,
+      "graphics": 1,
+      "passed": true,
+      "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nLATENCY {\"profile\":\"name\",\"node\":0,\"owner_frames\":3,\"visible_frames\":4,\"host_frames\":3,\"all_frames\":3}\nPASS: incremental name keyboard matches a full redraw (node 0)\nLATENCY {\"profile\":\"name\",\"node\":1,\"owner_frames\":2,\"visible_frames\":3,\"host_frames\":2,\"all_frames\":2}\nPASS: incremental name keyboard matches a full redraw (node 1)\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":0,\"mode\":5,\"host_to_all_frames\":18,\"press_to_all_frames\":22,\"transfers\":344}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":0,\"mode\":2,\"host_to_all_frames\":17,\"press_to_all_frames\":21,\"transfers\":348}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":0,\"mode\":3,\"host_to_all_frames\":23,\"press_to_all_frames\":27,\"transfers\":376}\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":1,\"mode\":5,\"host_to_all_frames\":18,\"press_to_all_frames\":22,\"transfers\":344}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":1,\"mode\":2,\"host_to_all_frames\":17,\"press_to_all_frames\":19,\"transfers\":340}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":1,\"mode\":7,\"host_to_all_frames\":22,\"press_to_all_frames\":26,\"transfers\":409}\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+    },
+    {
+      "host_device": 1,
+      "count": 3,
+      "scenario": 1,
+      "graphics": 1,
+      "passed": true,
+      "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nLATENCY {\"profile\":\"name\",\"node\":0,\"owner_frames\":3,\"visible_frames\":5,\"host_frames\":3,\"all_frames\":3}\nPASS: incremental name keyboard matches a full redraw (node 0)\nLATENCY {\"profile\":\"name\",\"node\":1,\"owner_frames\":3,\"visible_frames\":4,\"host_frames\":3,\"all_frames\":3}\nPASS: incremental name keyboard matches a full redraw (node 1)\nLATENCY {\"profile\":\"name\",\"node\":2,\"owner_frames\":2,\"visible_frames\":4,\"host_frames\":2,\"all_frames\":2}\nPASS: incremental name keyboard matches a full redraw (node 2)\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":0,\"mode\":5,\"host_to_all_frames\":32,\"press_to_all_frames\":33,\"transfers\":553}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":0,\"mode\":2,\"host_to_all_frames\":33,\"press_to_all_frames\":35,\"transfers\":619}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":0,\"mode\":3,\"host_to_all_frames\":41,\"press_to_all_frames\":46,\"transfers\":682}\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":1,\"mode\":5,\"host_to_all_frames\":32,\"press_to_all_frames\":33,\"transfers\":552}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":1,\"mode\":2,\"host_to_all_frames\":34,\"press_to_all_frames\":38,\"transfers\":642}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":1,\"mode\":3,\"host_to_all_frames\":39,\"press_to_all_frames\":48,\"transfers\":661}\nEVENT_LATENCY {\"event\":\"solve_prompt\",\"owner\":2,\"mode\":5,\"host_to_all_frames\":32,\"press_to_all_frames\":38,\"transfers\":587}\nEVENT_LATENCY {\"event\":\"spin_start\",\"owner\":2,\"mode\":2,\"host_to_all_frames\":33,\"press_to_all_frames\":38,\"transfers\":623}\nEVENT_LATENCY {\"event\":\"spin_result_message\",\"owner\":2,\"mode\":3,\"host_to_all_frames\":40,\"press_to_all_frames\":50,\"transfers\":664}\nPASS create/join count=3 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+    }
+  ]
+}

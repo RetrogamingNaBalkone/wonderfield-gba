@@ -1,0 +1,20 @@
+{
+  "rom_sha256": "12f0b55a6d25a2aefbd0e267c13ed1de6f43a6f3a218cfd5adb38a0b957c83a4",
+  "host_device": 1,
+  "tests": [
+    {
+      "count": 3,
+      "kind": 21,
+      "seed": 1,
+      "target": 2,
+      "phase": 6,
+      "amount": 60,
+      "name": "snapshot baseline recovery",
+      "passed": true,
+      "exit_code": 0,
+      "seconds": 4.39,
+      "log": "build/qa/link-chaos-logs/link-roadmap-resync/000.log",
+      "output": "PASS chaos kind=21 count=3 transfers=8501 delayed=0 busy=0\n"
+    }
+  ]
+}

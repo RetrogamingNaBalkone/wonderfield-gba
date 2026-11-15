@@ -96,7 +96,7 @@ CRC/commit checks. With two consoles that completes delivery: the parent has the
 checked word and the authority owns its source. With three consoles the parent
 also relays it to the remaining peer, retaining CRC/commit on both legs. Lobby
 metadata uses the same distinction: two peers already have the parent's checked
-value and their own value; three peers need the collection relay. No per-pose events
+value and their own value; three peers relay only the other child’s value to the elected host. No per-pose events
 are added by relaying. Lobby snapshots are requested only when rules, membership,
 names, avatars or editing flags change; local keyboard cursor movement does not
 request one. Names are sent on change; avatar/edit flags share one word. Unchanged
@@ -179,3 +179,19 @@ These are event application timings, before any additional frontend display dela
 round trips, truncated/malformed streams, guard bytes, ASan and UBSan.
 
 Состояние работ и план: [`link-roadmap.md`](link-roadmap.md).
+
+## Snapshot recovery and current measurements
+
+Request bit 7 asks for a full baseline without reopening the session. Both hash
+halves are always exchanged; the cable parent then broadcasts a mismatch verdict.
+A rejected working snapshot is rolled back to the last committed wire baseline,
+without applying it to Game. Every peer requests a full snapshot in the next
+packet. Full recovery disables the compact navigation path. Build mismatch and
+malformed framing still fail closed.
+
+The November 15 audit is in `verification/link-roadmap-audit.json`; role, CRC,
+recovery and latency reports share the rebuilt ROM hash. Event application takes
+17–23 frames with two consoles and 32–41 with three (child host). These measurements
+do not meet the roadmap's two-frame target. The asynchronous transport is still
+pending. Three-console animation fixtures fail on both the original and rebuilt
+ROM; this is an unresolved check, not a passing validation.

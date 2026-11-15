@@ -1,0 +1,22 @@
+{
+  "rom_sha256": "12f0b55a6d25a2aefbd0e267c13ed1de6f43a6f3a218cfd5adb38a0b957c83a4",
+  "native": true,
+  "tests": [
+    {
+      "host_device": 1,
+      "count": 2,
+      "scenario": 1,
+      "graphics": 1,
+      "passed": true,
+      "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nLATENCY {\"profile\":\"name\",\"node\":0,\"owner_frames\":3,\"visible_frames\":4,\"host_frames\":3,\"all_frames\":3}\nPASS: incremental name keyboard matches a full redraw (node 0)\nLATENCY {\"profile\":\"name\",\"node\":1,\"owner_frames\":2,\"visible_frames\":3,\"host_frames\":2,\"all_frames\":2}\nPASS: incremental name keyboard matches a full redraw (node 1)\nLATENCY {\"profile\":\"keyboard\",\"node\":0,\"owner_frames\":3,\"visible_frames\":4,\"host_frames\":4,\"all_frames\":8}\nPASS: incremental game keyboard matches a full redraw (node 0)\nPASS: queued direction then A selects the authoritative letter once (owner 0)\nLATENCY {\"profile\":\"keyboard\",\"node\":1,\"owner_frames\":5,\"visible_frames\":6,\"host_frames\":5,\"all_frames\":9}\nPASS: incremental game keyboard matches a full redraw (node 1)\nPASS: queued direction then A selects the authoritative letter once (owner 1)\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=2 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+    },
+    {
+      "host_device": 1,
+      "count": 3,
+      "scenario": 1,
+      "graphics": 1,
+      "passed": true,
+      "output": "PASS: host port 1, offline settings/open lobby, profiles only after discovery\nLATENCY {\"profile\":\"name\",\"node\":0,\"owner_frames\":3,\"visible_frames\":5,\"host_frames\":3,\"all_frames\":3}\nPASS: incremental name keyboard matches a full redraw (node 0)\nLATENCY {\"profile\":\"name\",\"node\":1,\"owner_frames\":3,\"visible_frames\":4,\"host_frames\":3,\"all_frames\":3}\nPASS: incremental name keyboard matches a full redraw (node 1)\nLATENCY {\"profile\":\"name\",\"node\":2,\"owner_frames\":2,\"visible_frames\":4,\"host_frames\":2,\"all_frames\":2}\nPASS: incremental name keyboard matches a full redraw (node 2)\nLATENCY {\"profile\":\"keyboard\",\"node\":0,\"owner_frames\":3,\"visible_frames\":4,\"host_frames\":4,\"all_frames\":9}\nPASS: incremental game keyboard matches a full redraw (node 0)\nPASS: queued direction then A selects the authoritative letter once (owner 0)\nLATENCY {\"profile\":\"keyboard\",\"node\":1,\"owner_frames\":4,\"visible_frames\":6,\"host_frames\":4,\"all_frames\":9}\nPASS: incremental game keyboard matches a full redraw (node 1)\nPASS: queued direction then A selects the authoritative letter once (owner 1)\nLATENCY {\"profile\":\"keyboard\",\"node\":2,\"owner_frames\":2,\"visible_frames\":3,\"host_frames\":6,\"all_frames\":11}\nPASS: incremental game keyboard matches a full redraw (node 2)\nPASS: queued direction then A selects the authoritative letter once (owner 2)\nPASS: elected host publishes events; owner input, local animation and target agree\nPASS create/join count=3 host=1 scenario=1 graphics=1: election, profiles, settings, input, disconnect, SRAM\n"
+    }
+  ]
+}

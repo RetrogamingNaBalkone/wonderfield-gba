@@ -23,7 +23,7 @@ static volatile u32 link_completed_at;
 static int link_session;
 static u32 link_last_packet,link_event_key,link_packets,link_events;
 static u32 link_clock_offset;
-static int link_event_valid;
+static int link_event_valid,link_resync;
 /* Logical input events: one key each, directions carry an owner-side
  * autorepeat count. VBlank produces them from the owner's exact key timing,
  * so the authority never derives presses or autorepeat from held keys that
@@ -269,7 +269,7 @@ static void link_open(void){
  link_profile_render_key=~0u;
  link_profile_cursor=-1;link_keyboard_valid=0;
  link_last_packet=video_ticks;link_event_valid=0;link_tap_read=link_tap_write=0;link_remote_read=link_remote_write=0;link_remote_player=-1;link_tap_oldkeys=0;link_packets=link_events=0;
- link_clock_offset=0;
+ link_clock_offset=0;link_resync=0;
  link_session=0;for(int i=0;i<11;i++)link_sent_name[i]=0;
  link_sent_status=~0u;
  link_avatar_edit=!link_create;link_avatar_armed=0;
@@ -423,11 +423,16 @@ static int link_collect(u16 value){
  if(!link_word(value,value,0))return 0;
  if(link_host_device==0)return 1;
  if(link_connected==2){if(!link_master)link_remote[1]=value;return 1;}
- u16 collected[3];for(int i=0;i<link_connected;i++)collected[i]=link_remote[i];
- for(int i=0;i<link_connected;i++){
-  u16 item;if(!link_word(collected[i],0,&item))return 0;collected[i]=item;
+ /* The host already owns its reply and the checked parent word. Only
+  * the other child's value is missing; spectators do not consume metadata. */
+ int other=3-link_host_device;
+ u16 parent=link_remote[0],own=value,item;
+ u16 missing=link_master?link_remote[other]:0;
+ if(!link_word(missing,0,&item))return 0;
+ if(link_is_host()){
+  link_remote[0]=parent;link_remote[link_host_device]=own;
+  link_remote[other]=item;
  }
- for(int i=0;i<link_connected;i++)link_remote[i]=collected[i];
  return 1;
 }
 static int link_frame(void){
@@ -458,7 +463,7 @@ static int link_frame(void){
   * configured lobby, lobby/game. The first accepted create request wins;
   * requests in the same exchange tie deterministically by physical port. */
  unsigned owner=human(game.player)?(game.player+1)%3:(mp.local+1)%3;
- u16 request=(owner<<5)|0xa700|(!link_session?1:0)|(event?2:0)|(link_create?4:0)|(link_setup_ready?8:0)|(lobby?16:0);
+ u16 request=(link_resync?128:0)|(owner<<5)|0xa700|(!link_session?1:0)|(event?2:0)|(link_create?4:0)|(link_setup_ready?8:0)|(lobby?16:0);
  u32 start=input_clock();link_stage=2;
  if(master){
   for(;;){
@@ -469,7 +474,7 @@ static int link_frame(void){
    for(int i=1;i<4;i++)if(link_remote[i]!=0xffff){
     if(i!=connected||i==3)return 0;
     connected++;
-    if((link_remote[i]&0xff80)!=0xa700)ready=0;
+    if((link_remote[i]&0xff00)!=0xa700)ready=0;
     else if(link_remote[i]&1)full=1;
    }
    if(!lobby&&(connected!=mp.humans||full))return 0;
@@ -495,6 +500,7 @@ static int link_frame(void){
       for(int i=0;i<connected;i++)if(link_remote[i]&2)event=1;
      }
     }else{lobby=1;link_host_ready=0;event=0;}
+    for(int i=0;i<connected;i++)if(link_remote[i]&128){full=1;event=1;}
     break;
    }
    if(link_timed_out(start))return 0;
@@ -517,7 +523,7 @@ static int link_frame(void){
     if(link_connected>3||link_host_device>=link_connected)return 0;
     mp.humans=link_connected;break;
    }
-   if((link_remote[0]&0xff80)!=0xa700)return link_mismatch(link_remote[0],0xa710);
+   if((link_remote[0]&0xff00)!=0xa700)return link_mismatch(link_remote[0],0xa710);
    if(link_timed_out(start))return 0;
   }
  }
@@ -663,13 +669,24 @@ static int link_frame(void){
  }
  link_stage=7;
  u32 hash=link_hash(&link_snapshot,sizeof link_snapshot),remote_hash;
+ int mismatch=0;
  if(!link_word(hash&65535,hash&65535,&value))return 0;remote_hash=value;
- if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;
+ if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)mismatch=1;
  if(!link_word(hash>>16,hash>>16,&value))return 0;remote_hash|=(u32)value<<16;
- if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return 0;
- if(hash!=remote_hash)return 0;
+ if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)mismatch=1;
+ if(hash!=remote_hash)mismatch=1;
+ /* Complete both hash words before broadcasting the parent's verdict.
+  * Every peer retries together, including the authority on a child port. */
+ if(!link_word(mismatch?1:0,0,&value))return 0;
+ if(value>1)return 0;
+ if(value){
+  link_copy(&link_snapshot,link_previous,sizeof link_snapshot);
+  link_resync=1;link_event_valid=0;
+  return 1;
+ }
 commit_event:
- if(authority)for(unsigned i=0;i<sizeof link_snapshot/2;i++)link_previous[i]=words[i];
+ link_resync=0;
+ for(unsigned i=0;i<sizeof link_snapshot/2;i++)link_previous[i]=words[i];
  if(!authority&&navigation){game.cursor=link_snapshot.game.cursor;game.choice=link_snapshot.game.choice;}
  else if(!authority){
   if(link_snapshot.humans<2||link_snapshot.humans>3)return 0;
