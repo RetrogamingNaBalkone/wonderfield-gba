@@ -28,7 +28,12 @@ static void enter(int i,int creator){
  if(rd(i,game_addr+81*4)!=(unsigned)!creator)press(i,128);
  press(i,1);assert(rd(i,create_addr)==(unsigned)creator);
  if(creator)assert(rd(i,game_addr+12)==32||rd(i,game_addr+12)==30);
- else assert(rd(i,address("ROLE_PROFILE_PENDING"))==1);
+ else if(!rd(i,address("ROLE_PROFILE_PENDING"))){
+  /* An already opened lobby may be discovered within the press itself.
+   * The profile still starts only after the host and its settings are known. */
+  assert(rd(i,host_addr)==(unsigned)host&&rd(i,address("ROLE_HOST_READY"))&&rd(i,address("ROLE_NAME_EDIT"))==2);
+  return;
+ }
  assert(!rd(i,address("ROLE_NAME_EDIT")));
 }
 static void configure(int i){

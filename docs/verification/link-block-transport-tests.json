@@ -1,0 +1,796 @@
+{
+ "rom_sha256": "0236439eee95f2da8296e43b164fe9277683c5afeb27102b5259e5446ff55248",
+ "baseline_rom_sha256": "bcce544094ac30d6ecd48cd5a473c5d9100e055efe483d6b5075f07845c8b232",
+ "baseline_note": "Baseline: main at 6b72b8c (code of the published 046b0f07… ROM) on the same stand; its test build differs from the published ROM only in one placeholder message string. The stand rebuilds the published ROM byte-identically.",
+ "emulator": "mGBA 0.10.5 (commit 26b7884b), native SIO driver unless noted",
+ "build": "Zig 0.13.0; -Wall -Wextra -Werror; 1 MiB ROM",
+ "event_latency": {
+  "two_consoles_host_port1": {
+   "before": {
+    "frames": [
+     17,
+     24
+    ],
+    "transfers": [
+     341,
+     393
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 18,
+      "press_to_all_frames": 22,
+      "transfers": 345
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 17,
+      "press_to_all_frames": 21,
+      "transfers": 341
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 4,
+      "host_to_all_frames": 21,
+      "press_to_all_frames": 25,
+      "transfers": 370
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 18,
+      "press_to_all_frames": 22,
+      "transfers": 345
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 17,
+      "press_to_all_frames": 21,
+      "transfers": 341
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 3,
+      "host_to_all_frames": 24,
+      "press_to_all_frames": 28,
+      "transfers": 393
+     }
+    ]
+   },
+   "after": {
+    "frames": [
+     10,
+     14
+    ],
+    "transfers": [
+     121,
+     146
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 10,
+      "press_to_all_frames": 13,
+      "transfers": 121
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 12,
+      "press_to_all_frames": 14,
+      "transfers": 133
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 14,
+      "press_to_all_frames": 19,
+      "transfers": 143
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 10,
+      "press_to_all_frames": 14,
+      "transfers": 137
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 12,
+      "press_to_all_frames": 16,
+      "transfers": 146
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 3,
+      "host_to_all_frames": 14,
+      "press_to_all_frames": 20,
+      "transfers": 140
+     }
+    ]
+   }
+  },
+  "two_consoles_host_port0": {
+   "after": {
+    "frames": [
+     8,
+     12
+    ],
+    "transfers": [
+     83,
+     99
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 10,
+      "press_to_all_frames": 11,
+      "transfers": 83
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 10,
+      "transfers": 86
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 7,
+      "host_to_all_frames": 12,
+      "press_to_all_frames": 16,
+      "transfers": 99
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 10,
+      "press_to_all_frames": 11,
+      "transfers": 85
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 9,
+      "transfers": 87
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 6,
+      "host_to_all_frames": 12,
+      "press_to_all_frames": 16,
+      "transfers": 91
+     }
+    ]
+   }
+  },
+  "three_consoles_host_port1": {
+   "before": {
+    "frames": [
+     31,
+     41
+    ],
+    "transfers": [
+     555,
+     695
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 32,
+      "press_to_all_frames": 36,
+      "transfers": 555
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 34,
+      "press_to_all_frames": 38,
+      "transfers": 627
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 40,
+      "press_to_all_frames": 47,
+      "transfers": 681
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 34,
+      "press_to_all_frames": 37,
+      "transfers": 603
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 33,
+      "press_to_all_frames": 37,
+      "transfers": 611
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 3,
+      "host_to_all_frames": 40,
+      "press_to_all_frames": 44,
+      "transfers": 670
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 2,
+      "mode": 5,
+      "host_to_all_frames": 31,
+      "press_to_all_frames": 37,
+      "transfers": 568
+     },
+     {
+      "event": "spin_start",
+      "owner": 2,
+      "mode": 2,
+      "host_to_all_frames": 33,
+      "press_to_all_frames": 39,
+      "transfers": 640
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 2,
+      "mode": 3,
+      "host_to_all_frames": 41,
+      "press_to_all_frames": 51,
+      "transfers": 695
+     }
+    ]
+   },
+   "after": {
+    "frames": [
+     12,
+     19
+    ],
+    "transfers": [
+     163,
+     180
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 12,
+      "press_to_all_frames": 15,
+      "transfers": 165
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 13,
+      "press_to_all_frames": 17,
+      "transfers": 171
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 19,
+      "press_to_all_frames": 25,
+      "transfers": 180
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 12,
+      "press_to_all_frames": 15,
+      "transfers": 163
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 14,
+      "press_to_all_frames": 18,
+      "transfers": 176
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 6,
+      "host_to_all_frames": 14,
+      "press_to_all_frames": 19,
+      "transfers": 171
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 2,
+      "mode": 5,
+      "host_to_all_frames": 12,
+      "press_to_all_frames": 16,
+      "transfers": 163
+     },
+     {
+      "event": "spin_start",
+      "owner": 2,
+      "mode": 2,
+      "host_to_all_frames": 13,
+      "press_to_all_frames": 17,
+      "transfers": 174
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 2,
+      "mode": 6,
+      "host_to_all_frames": 14,
+      "press_to_all_frames": 20,
+      "transfers": 163
+     }
+    ]
+   }
+  },
+  "three_consoles_host_port2": {
+   "after": {
+    "frames": [
+     14,
+     20
+    ],
+    "transfers": [
+     152,
+     176
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 14,
+      "press_to_all_frames": 17,
+      "transfers": 163
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 15,
+      "press_to_all_frames": 18,
+      "transfers": 169
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 20,
+      "press_to_all_frames": 25,
+      "transfers": 176
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 14,
+      "press_to_all_frames": 17,
+      "transfers": 161
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 15,
+      "press_to_all_frames": 18,
+      "transfers": 176
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 3,
+      "host_to_all_frames": 20,
+      "press_to_all_frames": 25,
+      "transfers": 170
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 2,
+      "mode": 5,
+      "host_to_all_frames": 14,
+      "press_to_all_frames": 17,
+      "transfers": 163
+     },
+     {
+      "event": "spin_start",
+      "owner": 2,
+      "mode": 2,
+      "host_to_all_frames": 15,
+      "press_to_all_frames": 18,
+      "transfers": 173
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 2,
+      "mode": 4,
+      "host_to_all_frames": 16,
+      "press_to_all_frames": 21,
+      "transfers": 152
+     }
+    ]
+   }
+  }
+ },
+ "benchmark": {
+  "before": [
+   {
+    "profile": "elected_host_human_turn",
+    "consoles": 2,
+    "updates": 450,
+    "transfers": 4800,
+    "cycles": 168537687,
+    "by_stage": [
+     0,
+     0,
+     3600,
+     0,
+     1200,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ],
+  "after": [
+   {
+    "profile": "elected_host_human_turn",
+    "consoles": 2,
+    "updates": 600,
+    "transfers": 4200,
+    "cycles": 168537987,
+    "by_stage": [
+     0,
+     0,
+     4200,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ],
+  "link_after": [
+   {
+    "profile": "lobby",
+    "consoles": 2,
+    "updates": 150,
+    "transfers": 2100,
+    "cycles": 168538001,
+    "by_stage": [
+     0,
+     0,
+     2100,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "profile": "human_turn",
+    "consoles": 2,
+    "updates": 600,
+    "transfers": 4200,
+    "cycles": 168537810,
+    "by_stage": [
+     0,
+     0,
+     4200,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "profile": "lobby",
+    "consoles": 3,
+    "updates": 150,
+    "transfers": 2100,
+    "cycles": 168537685,
+    "by_stage": [
+     0,
+     0,
+     2100,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   {
+    "profile": "human_turn",
+    "consoles": 3,
+    "updates": 600,
+    "transfers": 4200,
+    "cycles": 168537772,
+    "by_stage": [
+     0,
+     0,
+     4200,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ "input_latency": {
+  "host_port1": [
+   {
+    "profile": "name",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 3,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "name",
+    "node": 1,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "keyboard",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 3,
+    "all_frames": 7
+   },
+   {
+    "profile": "keyboard",
+    "node": 1,
+    "owner_frames": 4,
+    "visible_frames": 5,
+    "host_frames": 4,
+    "all_frames": 8
+   },
+   {
+    "profile": "name",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 3,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "name",
+    "node": 1,
+    "owner_frames": 2,
+    "visible_frames": 2,
+    "host_frames": 2,
+    "all_frames": 2
+   },
+   {
+    "profile": "name",
+    "node": 2,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "keyboard",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 4,
+    "all_frames": 6
+   },
+   {
+    "profile": "keyboard",
+    "node": 1,
+    "owner_frames": 4,
+    "visible_frames": 4,
+    "host_frames": 4,
+    "all_frames": 6
+   },
+   {
+    "profile": "keyboard",
+    "node": 2,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 5,
+    "all_frames": 7
+   }
+  ],
+  "host_port0": [
+   {
+    "profile": "name",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 3,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "name",
+    "node": 1,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "keyboard",
+    "node": 0,
+    "owner_frames": 2,
+    "visible_frames": 4,
+    "host_frames": 2,
+    "all_frames": 5
+   },
+   {
+    "profile": "keyboard",
+    "node": 1,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 3,
+    "all_frames": 6
+   },
+   {
+    "profile": "name",
+    "node": 0,
+    "owner_frames": 2,
+    "visible_frames": 3,
+    "host_frames": 2,
+    "all_frames": 2
+   },
+   {
+    "profile": "name",
+    "node": 1,
+    "owner_frames": 2,
+    "visible_frames": 2,
+    "host_frames": 2,
+    "all_frames": 2
+   },
+   {
+    "profile": "name",
+    "node": 2,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "keyboard",
+    "node": 0,
+    "owner_frames": 3,
+    "visible_frames": 4,
+    "host_frames": 3,
+    "all_frames": 6
+   },
+   {
+    "profile": "keyboard",
+    "node": 1,
+    "owner_frames": 2,
+    "visible_frames": 2,
+    "host_frames": 3,
+    "all_frames": 6
+   },
+   {
+    "profile": "keyboard",
+    "node": 2,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 3,
+    "all_frames": 7
+   }
+  ]
+ },
+ "suites": {
+  "test-link-roles.py --native": "26/26",
+  "test-link-chaos.py (full matrix)": "243/243",
+  "test-link-chaos.py baseline (full matrix)": "235/243",
+  "test-link.py --native (2/3 consoles, scenarios 0-5)": "pass",
+  "test-link.py --native --scenario 0 --animations": "pass",
+  "test-link.py --scenario 0 --animations --irq-delay 60000": "pass",
+  "test-link-roles.py --animations --scenario 1 (host port 1)": "2/2",
+  "test-link-roles.py --animations --scenario 2 (host on last port)": "2/2",
+  "test-link-input.py": "150 checks passed, 0 failed",
+  "test-link-codec.py": "pass",
+  "test-link-diagnostic.py --native": "32/32"
+ },
+ "test_changes": [
+  "Chaos 6: a single completed-transfer ERROR must now be recovered; it failed on the baseline because 34e3144 already tolerates it.",
+  "Chaos 7/14/19/20: corrupt payload words of the block format instead of the removed byte-phase tags.",
+  "Chaos 18: replays a stale block on a child instead of the removed byte phases.",
+  "Roles enter(): a guest may discover an already opened lobby within its join press."
+ ],
+ "limitations": [
+  "mGBA only; no physical GBA, Pizza Boy Advance or frontend display buffering.",
+  "Event packets still wait for the guests main loop; a host on a child port can spend several frames in one game-loop iteration at scene changes."
+ ]
+}

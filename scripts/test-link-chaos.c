@@ -5,12 +5,15 @@
 static uint32_t prefs_addr,avatars_addr,stage_addr,error_addr,active_addr,match_addr,received_addr,expected_addr;
 static unsigned seed,target,phase,amount,fired,kind,selected_word;
 static uint8_t sram_before[3][128];
+/* Block payload: data or CRC words. Idle probes (0xc1d0), READY (0x9xxx), headers
+ * (0xdxxx), ASK/COMMIT/RETRY (0xe5xx) and bootstrap words are framing. */
+static int payload_word(unsigned word){return word!=0xc1d0&&word!=0xffff&&(word&0xf000)!=0x9000&&(word&0xf000)!=0xd000&&(word&0xff00)!=0xe500&&(word&0xfff0)!=0xc090;}
 static int success,authority;
 static unsigned random32(void){seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return seed;}
 static void diagnostic(void){
  if(success)return;
  fprintf(stderr,"DIAG kind=%u seed=%u target=%u phase=%u amount=%u transfers=%d fired=%u\n",kind,seed,target,phase,amount,transfers,fired);
- for(int i=0;i<count;i++)if(c[i])fprintf(stderr,"device %d mode=%u stage=%u error=%u active=%u SIOCNT=%04x\n",i,rd(i,game_addr+12),rd(i,stage_addr),rd(i,error_addr),rd(i,active_addr),g[i]->sio.siocnt);
+ for(int i=0;i<count;i++)if(c[i])fprintf(stderr,"device %d mode=%u stage=%u error=%u active=%u SIOCNT=%04x why=%u info=%04x\n",i,rd(i,game_addr+12),rd(i,stage_addr),rd(i,error_addr),rd(i,active_addr),g[i]->sio.siocnt,c[i]->busRead16(c[i],received_addr),c[i]->busRead16(c[i],expected_addr));
 }
 static void keys(int i,unsigned k,unsigned frames){c[i]->setKeys(c[i],k);run(frames);c[i]->setKeys(c[i],0);run(12);}
 static void records(void){for(int i=0;i<count;i++)for(int j=0;j<128;j++)assert(c[i]->busRead8(c[i],0x0e000000+j)==sram_before[i][j]);}
@@ -77,30 +80,39 @@ static void corrupt(int i){
  }
  if(kind==6){if(!fired){g[i]->sio.siocnt|=64;fired=1;}return;}
  unsigned word=g[i]->memory.io[REG_SIOMULTI0/2];
- if(kind==20){if((word&0xfd00)==0xa000){g[i]->memory.io[REG_SIOMULTI0/2]^=1;fired++;}return;}
- if(!fired&&(word&0xfd00)==0xa000){selected_word=word;fired=1;}
- if(fired==1&&word==selected_word)g[i]->memory.io[REG_SIOMULTI0/2]^=1;
- if(fired==1&&(word&0xff00)==((selected_word&0xff00)|0x100))fired=2;
+ /* Flip one bit of a payload word as received by the target. The block CRC
+  * must reject it and the parent must repeat the block. */
+ if(kind==20){if(payload_word(word)){g[i]->memory.io[REG_SIOMULTI0/2]^=1;fired++;}return;}
+ if(!fired&&payload_word(word)){g[i]->memory.io[REG_SIOMULTI0/2]^=1;fired=1;}
 }
-/* Replay the preceding HEADER payload in START's byte phases, preserving
- * tags and a clear hardware error bit. This is a fault model, not a claim
- * that this is the physical source of the reported hardware failure. */
+/* Replay a stale block on the target: the previous header and its payload
+ * are delivered again instead of the current ones. Sequence numbers and
+ * kinds must keep the stale copy from being accepted as the new block. */
+static unsigned replay_words[80],replay_count,replay_at;
 static void replay_start(int i){
- if((unsigned)i!=target||fired==3)return;
- unsigned word=g[i]->memory.io[REG_SIOMULTI0/2],tag=word&0xff00;
- if(!fired&&rd(0,stage_addr)==2&&(word&0xfd77)==0xa076){selected_word=tag;fired=1;}
- if(fired==1&&tag==selected_word)g[i]->memory.io[REG_SIOMULTI0/2]=tag|0x10;
- else if(fired&&tag==(selected_word|0x100)){fired=2;g[i]->memory.io[REG_SIOMULTI0/2]=tag|0xa7;}
- else if(fired==2)fired=3;
+ if((unsigned)i!=target||fired==3||rd(0,stage_addr)!=2)return;
+ unsigned word=g[i]->memory.io[REG_SIOMULTI0/2];
+ if(fired==0){
+  if((word&0xf000)==0xd000){replay_count=0;fired=1;}
+  else return;
+ }
+ if(fired==1){
+  if(replay_count<80)replay_words[replay_count++]=word;
+  if((word&0xff00)==0xe500&&(word&0xf0)!=0)fired=2; /* COMMIT/RETRY ends the copy. */
+  return;
+ }
+ if(fired==2&&(word&0xf000)==0xd000){replay_at=0;fired=4;}
+ if(fired==4){
+  g[i]->memory.io[REG_SIOMULTI0/2]=replay_words[replay_at++];
+  if(replay_at==replay_count)fired=3;
+ }
 }
 /* Corrupt a child's payload as observed by the host, retaining its tag.
  * CRC validation must catch the opposite direction too. */
 static void corrupt_reply(int i){
  if(i||rd(0,stage_addr)!=phase||fired==2)return;
  unsigned index=REG_SIOMULTI0/2+target,word=g[0]->memory.io[index];
- if(!fired&&(word&0xfd00)==0xa000){selected_word=word;fired=1;}
- if(fired==1&&word==selected_word)g[0]->memory.io[index]^=1;
- if(fired==1&&(word&0xff00)==((selected_word&0xff00)|0x100))fired=2;
+ if(!fired&&payload_word(word)){g[0]->memory.io[index]^=1;fired=2;}
 }
 static void arm(void){
  fired=0;
@@ -131,12 +143,7 @@ int main(int argc,char**argv){
  if(kind==18){
   receive_hook=replay_start;
   for(int i=0;i<count;i++)c[i]->setKeys(c[i],1);run(20);for(int i=0;i<count;i++)c[i]->setKeys(c[i],0);
-  if(!amount){
-   errors(-1,2000);
-   unsigned rx=c[target]->busRead16(c[target],received_addr),expected=c[target]->busRead16(c[target],expected_addr);
-   printf("REPLAY host_stage=%u child_stage=%u RX=%u OK=%u SIO=%04x/%04x\n",rd(0,error_addr),rd(target,error_addr),rx,expected,g[0]->sio.siocnt,g[target]->sio.siocnt);
-   assert(rd(0,error_addr)==3&&rd(target,error_addr)==2&&expected==0xa710&&rx!=expected);
-  }else{lobby(count);assert(fired==3);start();no_errors();}
+  lobby(count);assert(fired==3);start();no_errors();
  }else if(kind==16){
   keys(target,1,12);run(60);for(int i=0;i<count;i++)if((unsigned)i!=target)keys(i,1,12);
   lobby(count);start();
@@ -213,7 +220,7 @@ int main(int argc,char**argv){
    }else{
     if(kind==13)for(int i=0;i<count;i++)assert(c[i]->busRead16(c[i],0x0400010c)<0xff00);
     arm();
-    if(kind==7||kind==19||kind==21){
+    if(kind==6||kind==7||kind==19||kind==21){
      run(300);no_errors();
      for(int i=0;i<count;i++)assert(rd(i,active_addr));
      if(kind==21){

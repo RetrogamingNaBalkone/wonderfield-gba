@@ -15,8 +15,46 @@ cells, mouth poses and individual banknotes do not.
 An event carries a checked delta of the authoritative state and the parameters
 needed to start/resume its presentation. The receiving wire baseline remains
 separate from locally animated `game`, `scene` and `cash`; applying the next delta
-never uses client-mutated poses as its base. Word CRC/retry, commit acknowledgments
+never uses client-mutated poses as its base. Block CRC-16/retry, two-phase commit
 and each snapshot's full-state FNV check remain enabled.
+
+## Block transport
+
+The cable parent clocks every transfer. A packet is a sequence of blocks; each
+block exchanges up to 64 words from every console:
+
+1. probes until every member answers `READY(kind, n)` (a probe repeats COMMIT for
+   the last committed block, so a child that missed it catches up);
+2. HEADER with a 2-bit sequence number, an attempt bit, the kind and `n`;
+3. `n` data words in both directions, then each side's CRC-16 of its own words;
+4. ASK, answered by each child's verdict on the parent's words (attempt and
+   sequence included);
+5. COMMIT if every member's verdict and CRC match, otherwise RETRY.
+
+A child's serial IRQ answers from the block its main loop armed: a reply written
+after transfer k is latched for transfer k+1, so a block costs n+4 transfers plus
+probes, instead of 8 transfers per word. A child accepts only the kind and length
+it armed and never infers a commit from other words, because payload seen out of
+position may resemble framing. While blocks fail, the turnaround between transfers
+doubles from 4096 up to 131072 cycles so a late serial IRQ still sees every
+transfer; it halves after each success. Probes back off to 65536 cycles while a
+child is still drawing.
+
+A guest arms the next REQUEST block when its packet ends. Its IRQ answers that
+block and then arms CONTROL itself (CONTROL carries no guest data), so a keepalive
+completes while the guest's main loop renders. Only event packets wait for the
+guest's main loop.
+
+| Block | Parent sends | Children send | Purpose |
+| --- | --- | --- | --- |
+| REQUEST | request, input | request, input | roles, events, owner input |
+| CONTROL | control word, owner input | — | decisions; input for a child host |
+| BUILD | fingerprint | fingerprint | full packets only |
+| LOBBY | status, name | status, name | lobby events; RELAY to a child host |
+| PUBLISH | authority words | authority words | navigation/length, delta chunks |
+| RELAY | collected words | — | three consoles with a child host |
+| HASH | snapshot hash | snapshot hash | end-to-end check |
+| VERDICT | mismatch flag | — | commit or full resync |
 
 | Presentation | Event parameters | Locally produced work | Host-only completion |
 | --- | --- | --- | --- |
@@ -39,21 +77,13 @@ per-frame formatted text is sent.
 
 ## Steady traffic and input
 
-Between events the SIO parent exchanges a compact input/keepalive packet. It may
-start two VBlanks after the previous one, but each guest notices a request only
-between its own frames, so the measured period during a human turn is about
-eight VBlanks (`human_turn` benchmark: ~31 hardware transfers per packet). It
-contains HEADER, START flags and input: three logical words, at least 24 hardware
-transfers under the existing acknowledged CRC transport.
-Only the authority consumes input. It already has its own word and the checked
-parent's word, so a fourth word relays input only with three consoles, a child
-hosting and the third console owning the input. The control word's bit 3
-announces that relay to every peer.
-The host announces the input owner in its request, so the cable parent never
-selects input using an older copy of the turn state.
-The client notices the next low-byte request in the serial IRQ state and otherwise
-continues its local presentation. The snapshot and its hash are omitted from a
-keepalive. Clients redraw only for local visual changes or a received event.
+Between events the SIO parent exchanges a keepalive packet every two VBlanks:
+REQUEST and CONTROL, about 12 transfers plus probes. The owner's input travels in
+REQUEST; the parent forwards it in CONTROL, which is how a host on a child port
+receives it. The host announces the input owner in its request, so the cable
+parent never selects input using an older copy of the turn state. The snapshot
+and its hash are omitted from a keepalive. Clients redraw only for local visual
+changes or a received event.
 
 Presses are logical events produced on the owner's console. Its VBlank applies the
 same autorepeat timing as local play (18 VBlanks, then every 5) and queues one key
@@ -67,13 +97,11 @@ changes. Held keys only gate START arming and cancellation. The host still accep
 gameplay input only from the current player's console.
 `scripts/test-link-input.py` runs the production functions against local play for
 taps, holds and every packet period/phase from 2 to 12 VBlanks.
-Repeated phases back off while a peer is
-rendering; the minimum 4096-cycle turnaround remains in place.
 
 Cursor/choice changes in TURN, LETTER, SOLVE and PLUS use one compact publication
 word when every other semantic field is unchanged. Its tag, mode and player are
 validated, and the authority checks the relayed value against its own word.
-The normal CRC/commit transport delivers the same assignment to every peer's
+The normal block transport delivers the same assignment to every peer's
 previously verified snapshot. Both wire baselines advance together; navigation
 does not send a full snapshot/hash or rebase presentation clocks. All other events
 use the normal snapshot delta and full-state hash.
@@ -84,40 +112,39 @@ changes the synchronized Game or executes rules. The next authoritative navigati
 mode or player change clears it. A direction followed quickly by A still executes
 in order on the host. Spectators cannot preview another player's navigation.
 
-A transfer whose SIOCNT ERROR flag is set is treated as lost. The parent repeats
-the same tagged phase, which peers already handle as a duplicate; a guest ignores
-that sample. Sixteen consecutive ERROR samples end the session.
+A transfer whose SIOCNT ERROR flag is set keeps its position in the block but fails
+the block's check, so the block is repeated. Sixteen consecutive ERROR samples end
+the session.
 
 The build fingerprint is checked when establishing a session. The first accepted
 creation request elects the application host independently of the cable parent;
 simultaneous requests tie by port and later requests cannot replace that host.
-With a child hosting, each published event word is collected by the parent using
-CRC/commit checks. With two consoles that completes delivery: the parent has the
-checked word and the authority owns its source. With three consoles the parent
-also relays it to the remaining peer, retaining CRC/commit on both legs. Lobby
-metadata uses the same distinction: two peers already have the parent's checked
-value and their own value; three peers relay only the other child’s value to the elected host. No per-pose events
+With a child hosting, each PUBLISH block is collected by the parent. With two
+consoles that completes delivery; with three the parent repeats it in a RELAY
+block for the remaining peer. Lobby metadata uses the same distinction: three
+peers relay only the other child's words to the elected host. No per-pose events
 are added by relaying. Lobby snapshots are requested only when rules, membership,
 names, avatars or editing flags change; local keyboard cursor movement does not
-request one. Names are sent on change; avatar/edit flags share one word. Unchanged
-name/avatar screens are not redrawn while a peer awaits the next request.
+request one. A lobby event sends every console's avatar/edit flags and name in one
+LOBBY block. A submitted name is judged for conflicts only by a snapshot built
+from it. Unchanged name/avatar screens are not redrawn while a peer awaits the next
+request.
 Name edits repaint their text and changed keys; navigation on the game keyboard
 repaints only the old and new keys when the rest of the view is unchanged.
 An admitted late lobby participant
 resets the snapshot baseline on all peers. A reset/join during a running match is
 rejected. Leaving/reopening the connection resets all session/event caches.
-An existing lobby child also abandons its old alternating phase when a returning
-parent sends the bootstrap word, then establishes a fresh checked transport while
-keeping its profile and lobby role.
+An existing lobby child also abandons its block state when a returning parent sends
+the bootstrap word, then establishes a fresh transport while keeping its profile
+and lobby role.
 
-Snapshots choose the smaller of the existing word/index encoding and a byte XOR
-delta against the verified wire baseline. The latter combines a zero skip and a
-literal run in one byte (four bits each); counts of 15 or more use 255-byte
-extensions. Header bit 15 selects byte encoding and the remaining bits give its
-byte length. Padding must be zero, skips/literals must remain within the snapshot,
-and decoding must consume exactly that snapshot. The full-state FNV check still
-precedes applying Game, messages or rules. The legacy fallback retains its
-monotonic-index and run-length checks.
+Snapshots are sent as a byte XOR delta against the verified wire baseline, in
+PUBLISH blocks of up to 64 words. Each token combines a zero skip and a literal run
+in one byte (four bits each); counts of 15 or more use 255-byte extensions. The
+length word has bit 15 set and gives the byte length. Padding must be zero,
+skips/literals must remain within the snapshot, and decoding must consume exactly
+that snapshot. The full-state FNV check still precedes applying Game, messages or
+rules.
 
 The snapshot zeroes `game.frame` and `scene.last_redraw`: guests never read these
 per-iteration counters, so they no longer enter every delta. `game.rng` stays
@@ -131,8 +158,8 @@ the following delta.
 
 ## Limits and verification
 
-This remains synchronous GBA SIO during packet delivery; it is not a fully
-asynchronous network stack. An emulator's own network synchronization can still
+The parent's main loop still drives every transfer, and event packets wait for the
+guests' main loops; it is not a fully asynchronous network stack. An emulator's own network synchronization can still
 add latency to a transfer. The measured improvements and fault-injection results
 are from mGBA, not Pizza Boy Advance or physical GBA hardware.
 
@@ -189,11 +216,13 @@ without applying it to Game. Every peer requests a full snapshot in the next
 packet. Full recovery disables the compact navigation path. Build mismatch and
 malformed framing still fail closed.
 
-The November 15 audit is in `verification/link-roadmap-audit.json`; role, CRC,
-recovery and latency reports share the rebuilt ROM hash. Event application takes
-17–23 frames with two consoles and 32–41 with three (child host). These measurements
-do not meet the roadmap's two-frame target. The asynchronous transport is still
-pending. The three-console animation fixture failure was traced to direct debugger writes
+With the block transport (`verification/link-block-transport-tests.json`) event
+application takes 8–14 frames with two consoles (17–24 before) and 12–20 with three
+(31–41 before); keepalives run every two VBlanks and the host loop keeps 60
+iterations per second. The remaining time is mostly the host's own game-loop
+iteration at scene changes, which the event has to wait for. The roadmap's
+two-frame target is not met. The November 15 audit is in
+`verification/link-roadmap-audit.json`. The three-console animation fixture failure was traced to direct debugger writes
 to choice during temporary render/navigation state restoration. The fixture now
 uses actual LEFT input. Native two/three-console animation runs pass with hosts
 on ports 0 and 1; see `verification/link-animation-fixture-audit.json` and

@@ -14,7 +14,7 @@ static int link_preview_cursor,link_preview_choice,link_preview_base_cursor,link
 static int link_is_host(void){return link_host_device>=0&&(mp.local+1)%3==link_host_device;}
 static int link_active,link_connected,link_start_armed,link_cancelled;
 static u16 link_avatar;
-static int link_name_edit,link_name_cursor,link_name_pos;
+static int link_name_edit,link_name_cursor,link_name_pos,link_name_wait;
 static char link_name_answer[21];
 static u16 link_keys,link_submit;
 static volatile u32 link_serial;
@@ -95,15 +95,47 @@ static void link_rebase(u32 elapsed){link_rebase_state(&scene,&cash,elapsed);}
 static char link_sent_name[11];
 static unsigned link_sent_status;
 static volatile u16 link_received[4],link_status;
-/* Stop-and-wait: low byte, high byte, CRC, commit. Tags alone do not
- * validate the payload. Neither CPU may consume an unchecked word. */
-static volatile u16 link_reply,link_decoded,link_low,link_ack;
-static volatile unsigned link_pending,link_phase,link_done,link_fault,link_retries,link_errors;
-/* A hardware ERROR sample is treated as a lost transfer: the repeated phase
- * recovers it. Only a persistent run of errors ends the session. */
+/* Block transport. The cable parent clocks every transfer of a block:
+ *   probes until every member shows READY(kind,n), then
+ *   HEADER(seq,kind,n), n data words, CRC-16, ASK, COMMIT or RETRY.
+ * Each child answers from its serial IRQ: its own n words, their CRC-16,
+ * then a verdict on the parent's words. A reply written in the IRQ after
+ * transfer k is latched for transfer k+1, so a block costs n+4 transfers.
+ * A child accepts only the block its main loop armed (kind and length) and
+ * advertises it as READY, so an unready console costs one probe transfer,
+ * not a whole block.
+ * Commit is two-phase: the parent commits only after every member's CRC
+ * and verdict check. Every later probe repeats COMMIT for the last committed
+ * block, so a child that missed it catches up; a child never infers a commit
+ * from other words, because payload seen out of position may resemble them. */
+enum{LINK_BLOCK_MAX=64,LINK_HEADER=0xd000,LINK_READY=0x9000,LINK_IDLE=0xc1d0,LINK_ASK=0xe500,LINK_COMMIT=0xe5c0,LINK_RETRY=0xe5a0,LINK_OK=0xb5a0,LINK_BAD=0xb520};
+/* Header: 0xd000|seq<<10|attempt<<9|kind<<6|(n-1). The attempt bit keeps a
+ * child's stale verdict from the previous try of the same block from passing. */
+enum{LINK_REQUEST,LINK_CONTROL,LINK_BUILD,LINK_LOBBY,LINK_RELAY,LINK_PUBLISH,LINK_HASH,LINK_VERDICT};
+enum{LINK_RX_IDLE,LINK_RX_DATA,LINK_RX_CRC,LINK_RX_ASK,LINK_RX_COMMIT};
+static unsigned link_crc16(unsigned crc,unsigned word);
+static int link_cancel_requested(void);
+static void link_idle_reply(void);
+static volatile u16 link_tx[LINK_BLOCK_MAX],link_rx[4][LINK_BLOCK_MAX],link_tx_crc;
+static volatile unsigned link_armed,link_arm_kind,link_arm_n;
+static volatile unsigned link_rx_state,link_rx_pos,link_rx_n,link_rx_seq,link_rx_attempt,link_rx_crc,link_rx_good,link_rx_present;
+static volatile unsigned link_pending_commit,link_pending_seq;
+static volatile unsigned link_done,link_present,link_request_ready,link_control_ready;
+/* CONTROL carries no guest data: the IRQ arms it right after REQUEST and keeps
+ * its words, so a keepalive completes while the guest's main loop renders. */
+static volatile u16 link_control[2];
+static volatile unsigned link_fault,link_retries,link_errors;
+/* A hardware ERROR sample is treated as a damaged transfer: the block fails
+ * its check and is repeated. Only a persistent run of errors ends the session. */
 enum{LINK_ERROR_LIMIT=16};
-static volatile u16 link_wire_word;
-static unsigned link_sequence;
+static unsigned link_sequence,link_members;
+static u16 link_last_commit=LINK_IDLE; /* Probe word: repeats the last COMMIT. */
+static int link_wire_bad;
+/* Turnaround between transfers. It doubles while blocks fail, so a child
+ * whose serial IRQ is late still sees every transfer, and halves back after
+ * each success. */
+static u32 link_gap=4096;
+static volatile u16 link_wire_word; /* Last word on the wire, shown on the error screen. */
 static int link_stage,link_error_stage;
 static volatile int link_master,link_started;
 static volatile int link_restart;
@@ -174,8 +206,7 @@ static int link_decode_delta(unsigned length){
 static char link_message1[96],link_message2[96];
 static void link_copy(volatile void*d,const volatile void*s,unsigned n){volatile u8*a=d;const volatile u8*b=s;while(n--)*a++=*b++;}
 static void link_text(char*d,const char*s,unsigned cap){unsigned i=0;while(s&&s[i]&&i+1<cap){d[i]=s[i];i++;}d[i]=0;}
-/* CRC-8/ATM over both bytes. The snapshot hash remains an independent
- * end-to-end check; this CRC permits retransmission before consuming data. */
+/* FNV-1a over the whole snapshot: an end-to-end check beside the block CRC. */
 static u32 link_hash(const void*data,unsigned n);
 static u32 link_semantic_key(void){
  Game state=game;
@@ -200,65 +231,124 @@ static int link_navigation_only(u32 event_key){
  u32 previous=link_semantic_key();game.cursor=cursor;game.choice=choice;
  return previous==link_event_key;
 }
+static u16 link_request_word(void){
+ /* Requests share one logical word: fresh session, changed event, create,
+  * configured lobby, lobby/game, resync and the input owner. */
+ int lobby=game.mode==MP_LOBBY;
+ u32 event_key=link_is_host()?link_semantic_key():0;
+ int event=!link_event_valid||event_key!=link_event_key||(lobby&&link_lobby_changed());
+ unsigned owner=human(game.player)?(game.player+1)%3:(mp.local+1)%3;
+ return (link_resync?128:0)|(owner<<5)|0xa700|(!link_session?1:0)|(event?2:0)|(link_create?4:0)|(link_setup_ready?8:0)|(lobby?16:0);
+}
+static void link_prepare_request(void){
+ u16 request=link_request_word();
+ u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
+ if(!link_request_ready&&!link_control_ready&&(!link_armed||(link_arm_kind==LINK_REQUEST&&link_rx_state==LINK_RX_IDLE&&!link_pending_commit))){
+  /* Keep an input event already armed; otherwise take the next one. */
+  if(!link_armed||!(link_tx[1]&0xfc00)){link_sample_input();link_tx[1]=link_submit;}
+  link_tx[0]=request;
+  link_tx_crc=link_crc16(link_crc16(0xffff,link_tx[0]),link_tx[1]);
+  link_arm_kind=LINK_REQUEST;link_arm_n=2;link_armed=1;
+  if(link_rx_state==LINK_RX_IDLE)link_idle_reply();
+ }
+ REG16(0x04000208)=ime;
+}
 static int link_due(void){
  if(!link_session)return 1;
+ /* Guests no longer wait inside every packet; notice B here as well. */
+ if(link_cancel_requested())return 1;
  if(link_master)return (game.mode==MP_LOBBY&&link_lobby_changed())||(link_is_host()&&(!link_event_valid||link_semantic_key()!=link_event_key))||video_ticks-link_last_packet>=2;
- /* A new low-byte phase is the host's request. The final commit ACK from
-  * the preceding packet is not a request. Keep rendering until it arrives. */
- return (link_received[0]&0xff00)==(0xa000|(link_phase&0x200))||video_ticks-link_last_packet>=(game.mode==MP_LOBBY?30u:120u);
+ /* The REQUEST block is armed ahead of the parent and answered by IRQ while
+  * this console renders; the packet continues once it has committed. */
+ link_prepare_request();
+ return link_control_ready||video_ticks-link_last_packet>=(game.mode==MP_LOBBY?30u:120u);
 }
-static unsigned link_crc(u16 word){
- unsigned crc=0;
- for(unsigned byte=0;byte<2;byte++){
-  crc^=(word>>(byte*8))&255;
-  for(unsigned bit=0;bit<8;bit++)crc=((crc<<1)^((crc&128)?7:0))&255;
- }
+/* CRC-16/CCITT over 16-bit words, MSB first. */
+static unsigned link_crc16(unsigned crc,unsigned word){
+ crc^=word;
+ for(unsigned bit=0;bit<16;bit++)crc=crc&0x8000?((crc<<1)^0x1021)&0xffff:(crc<<1)&0xffff;
  return crc;
+}
+static void link_commit(void){
+ unsigned kind=link_arm_kind;
+ link_pending_commit=0;link_present=link_rx_present;
+ link_armed=0;link_done++;
+ if(kind==LINK_REQUEST){
+  link_request_ready=1;
+  link_tx[0]=link_tx[1]=0;link_tx_crc=link_crc16(link_crc16(0xffff,0),0);
+  link_arm_kind=LINK_CONTROL;link_arm_n=2;link_armed=1;
+ }else if(kind==LINK_CONTROL){
+  link_control[0]=link_rx[0][0];link_control[1]=link_rx[0][1];link_control_ready=1;
+ }
+}
+static void link_idle_reply(void){REG16(0x0400012a)=link_armed?LINK_READY|(link_arm_kind<<6)|(link_arm_n-1):LINK_IDLE;}
+static void link_child_irq(u16 word,int error){
+ unsigned state=link_rx_state;
+ if(state==LINK_RX_DATA){
+  unsigned pos=link_rx_pos;
+  link_rx[0][pos]=word;link_rx_crc=link_crc16(link_rx_crc,word);if(error)link_rx_good=0;
+  link_rx_pos=++pos;
+  REG16(0x0400012a)=pos<link_rx_n?link_tx[pos]:link_tx_crc;
+  if(pos==link_rx_n)link_rx_state=LINK_RX_CRC;
+  return;
+ }
+ if(state==LINK_RX_CRC){
+  if(error||word!=link_rx_crc)link_rx_good=0;
+  REG16(0x0400012a)=(link_rx_good?LINK_OK:LINK_BAD)|link_rx_attempt<<2|link_rx_seq;
+  link_rx_state=LINK_RX_ASK;return;
+ }
+ if(state==LINK_RX_ASK){
+  /* Every member answers ASK with a verdict, never 0xffff: an exact roster. */
+  unsigned present=0;for(int i=1;i<4;i++)if(link_received[i]!=0xffff)present|=1u<<i;
+  link_rx_present=present;
+  REG16(0x0400012a)=LINK_IDLE;
+  link_pending_commit=link_rx_good&&!error;link_pending_seq=link_rx_seq;
+  link_rx_state=LINK_RX_COMMIT;return;
+ }
+ if(state==LINK_RX_COMMIT){
+  link_rx_state=LINK_RX_IDLE;
+  if(!error&&word==(LINK_COMMIT|link_pending_seq)){if(link_pending_commit)link_commit();link_idle_reply();return;}
+  if(!error&&word==(LINK_RETRY|link_pending_seq)){link_pending_commit=0;link_idle_reply();return;}
+  /* Missed COMMIT/RETRY: keep the verdict and examine this word as idle. */
+ }
+ if(error)return;
+ /* A parent re-entering from the role menu starts a fresh transport. */
+ if(word==0xc091&&link_session&&game.mode==MP_LOBBY){link_restart=1;REG16(0x0400012a)=0xc092;return;}
+ if(link_restart)return;
+ if(link_pending_commit&&word==(LINK_COMMIT|link_pending_seq)){link_commit();link_idle_reply();return;}
+ if(link_pending_commit&&word==(LINK_RETRY|link_pending_seq)){link_pending_commit=0;link_idle_reply();return;}
+ if((word&0xf000)!=LINK_HEADER){link_idle_reply();return;}
+ unsigned seq=(word>>10)&3,kind=(word>>6)&7,n=(word&63)+1;
+ if(link_pending_commit){
+  /* A newer block while ours awaits COMMIT: wait for the repeated COMMIT.
+   * The same sequence number means the parent is retrying ours. */
+  if(seq!=link_pending_seq){link_idle_reply();return;}
+  link_pending_commit=0;
+ }
+ if(!link_armed||kind!=link_arm_kind||n!=link_arm_n){link_idle_reply();return;}
+ link_rx_seq=seq;link_rx_attempt=(word>>9)&1;link_rx_n=n;link_rx_pos=0;link_rx_crc=0xffff;link_rx_good=1;link_rx_state=LINK_RX_DATA;
+ REG16(0x0400012a)=link_tx[0];
 }
 static void link_irq(void){
  u16 status=REG16(0x04000128);
- /* A delayed IRQ may belong to a duplicate phase preceding the transfer
-  * now in flight. Receive registers are partial and ERROR is undefined
-  * while BUSY. Wait for this transfer's completion instead. */
+ /* A delayed IRQ may belong to a transfer preceding the one now in flight.
+  * Receive registers are partial and ERROR is undefined while BUSY. */
  if(status&128)return;
  link_status=status;
  for(int i=0;i<4;i++)link_received[i]=REG16(0x04000120+i*2);
  if(game.mode==LINK_TEST){link_test_irq();link_serial++;return;}
  if(link_master==0&&link_received[0]!=0xffff)link_started=1;
  if(link_master==1)for(int i=1;i<4;i++)if(link_received[i]!=0xffff)link_started=1;
- if(link_status&64){if(++link_errors>=LINK_ERROR_LIMIT)link_fault=1;}else link_errors=0;
- if(link_master==0&&!link_fault&&!(link_status&64)){
-  u16 word=link_received[0],tag=word&0xff00;link_wire_word=word;
-  /* A parent re-entering from the role menu starts a fresh transport.
-   * Abort the old wait; its alternating phase cannot be reused safely. */
-  if(word==0xc091&&link_session&&game.mode==MP_LOBBY){link_restart=1;REG16(0x0400012a)=0xc092;return;}
-  if(link_restart)return;
-  if(!link_done&&!(link_phase&1)&&(tag==0xa000||tag==0xa200))link_phase=tag&0x200;
-  unsigned low=0xa000|(link_phase&0x200);
-  if(link_pending&&tag==low){
-   link_low=word&255;link_phase=(link_phase&0x200)|1;
-   REG16(0x0400012a)=low|(link_reply&255);
-  }else if(link_pending&&(link_phase&1)&&tag==(low|0x100)){
-   link_decoded=link_low|((word&255)<<8);
-   link_phase=(link_phase&0x200)|3;
-   REG16(0x0400012a)=tag|(link_reply>>8);
-  }else if(link_pending&&(link_phase&2)&&tag==(low|0x400)){
-   if((word&255)==link_crc(link_decoded)){
-    link_phase|=4;
-    REG16(0x0400012a)=tag|link_crc(link_reply);
-   }else{
-    link_phase&=~4u;link_retries++;
-    REG16(0x0400012a)=(low|0x800); /* NACK: retry both bytes. */
-   }
-  }else if(link_pending&&(link_phase&4)&&word==((low|0x500)|0x5a)){
-   link_ack=word;link_pending=0;
-   link_phase=(link_phase^0x200)&0x200;link_done++;
-   /* The main loop publishes this ACK only after copying link_decoded. */
-  }
-  /* Duplicate phases keep the last acknowledgement, including while the
-   * main loop is drawing, hashing, or preparing the following word. */
- }
+ int error=(link_status&64)!=0;
+ if(error){if(++link_errors>=LINK_ERROR_LIMIT)link_fault=1;}else link_errors=0;
+ if(link_master==0){link_wire_word=link_received[0];if(!link_fault)link_child_irq(link_received[0],error);}
  link_completed_at=input_clock();link_serial++;
+}
+static void link_transport_reset(void){
+ u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
+ link_armed=link_rx_state=link_pending_commit=link_request_ready=link_control_ready=0;
+ link_done=link_fault=link_errors=link_sequence=link_members=0;link_restart=0;link_last_commit=LINK_IDLE;link_gap=4096;
+ REG16(0x04000208)=ime;
 }
 static void link_close(void){if(link_active&&!link_is_host()){link_copy(record_names,link_saved_names,sizeof record_names);link_copy(record_scores,link_saved_scores,sizeof record_scores);}REG16(0x04000200)&=~128;REG16(0x04000128)=0;REG16(0x04000134)=0x8000;link_active=0;}
 static void link_open(void){
@@ -273,12 +363,12 @@ static void link_open(void){
  link_session=0;for(int i=0;i<11;i++)link_sent_name[i]=0;
  link_sent_status=~0u;
  link_avatar_edit=!link_create;link_avatar_armed=0;
- link_connected=1;link_start_armed=link_cancelled=link_name_edit=0;link_name_cursor=game.cursor;
+ link_connected=1;link_start_armed=link_cancelled=link_name_edit=link_name_wait=0;link_name_cursor=game.cursor;
  link_copy(link_saved_names,record_names,sizeof record_names);link_copy(link_saved_scores,record_scores,sizeof record_scores);
  link_text(link_name,mp.names[2],11);link_avatar=avatars[2];link_submit=0;
  for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
  for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
- link_pending=link_phase=link_done=link_fault=link_sequence=0;link_ack=link_wire_word=0;link_retries=link_errors=0;
+ link_transport_reset();link_retries=0;
  link_master=-1;link_started=link_stage=link_error_stage=0;link_status=link_error_status=0;
  link_restart=0;
  link_error_received=link_error_expected=0;
@@ -318,129 +408,139 @@ static int link_timed_out(u32 start){
  if(game.mode==MP_LOBBY&&!link_started)return 0;
  return input_clock()-start>(game.mode==MP_LOBBY?503316480u:33554432u);
 }
-static int link_wire_exchange(u16 value,u32 exchange_start){
+/* One parent transfer. A transfer with ERROR set still happened on every
+ * console, so the block keeps its position and fails its check instead. */
+static int link_wire(u16 value,u32 start){
  if(link_cancel_requested())return 0;
- u32 serial;int master=link_master;
- for(unsigned errors=0;;errors++){
- serial=link_serial;
+ u32 serial=link_serial;
  link_wire_word=value;REG16(0x0400012a)=value;
- if(master){
-  /* Preserve the 4096-cycle turnaround, counting work already done since
-   * the previous IRQ instead of adding another full delay after that work. */
-  while(input_clock()-link_completed_at<4096){}
-  while(!(REG16(0x04000128)&8)){if(link_cancel_requested()||link_timed_out(exchange_start))return 0;}
-  REG16(0x04000128)|=128;
- }
- /* Once START was issued, an IRQ must arrive even before the first peer
-  * word. Initial lobby waiting must not disable this hardware deadline. */
+ /* Preserve the turnaround for the children's IRQs, counting work already
+  * done since the previous completion. */
+ while(input_clock()-link_completed_at<link_gap){}
+ while(!(REG16(0x04000128)&8)){if(link_cancel_requested()||link_timed_out(start))return 0;}
+ REG16(0x04000128)|=128;
  u32 wire_start=input_clock();
- while(link_serial==serial){if(link_cancel_requested()||link_timed_out(exchange_start)||input_clock()-wire_start>(game.mode==MP_LOBBY?503316480u:33554432u))return 0;}
- if(!(link_status&64))break;
- /* The parent repeats the same tagged phase; peers treat it as a duplicate. */
- if(!master||errors+1>=LINK_ERROR_LIMIT)return 0;
- }
+ while(link_serial==serial){if(link_cancel_requested()||link_timed_out(start)||input_clock()-wire_start>(game.mode==MP_LOBBY?503316480u:33554432u))return 0;}
+ if(link_status&64){link_wire_bad=1;if(link_errors>=LINK_ERROR_LIMIT)return 0;}
  for(int i=0;i<4;i++)link_remote[i]=link_received[i];
  mp.local=((link_status>>4&3)+2)%3;
  return 1;
 }
-static int link_exchange(u16 value){
+/* Exchange link_tx[0..n-1]. The parent receives every member's words in
+ * link_rx[slot] (its own in slot 0); a child receives the parent's words in
+ * link_rx[0]. The REQUEST block also fixes this packet's member slots. */
+static int link_block(unsigned kind,unsigned n){
  u32 start=input_clock();
+ if(!n||n>LINK_BLOCK_MAX)return 0;
  if(!link_master){
-  unsigned done=link_done;
-  link_reply=value;link_pending=1;
+  unsigned crc=0xffff;for(unsigned k=0;k<n;k++)crc=link_crc16(crc,link_tx[k]);
+  u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
+  /* A prepared REQUEST may have committed just now: the parent has moved on. */
+  if(kind==LINK_REQUEST&&link_request_ready){link_request_ready=0;REG16(0x04000208)=ime;return 1;}
+  if(kind==LINK_CONTROL&&(link_control_ready||(link_armed&&link_arm_kind==LINK_CONTROL))){
+   /* Armed by the IRQ after REQUEST: wait for it, never re-arm a block the
+    * parent may already have committed. */
+   REG16(0x04000208)=ime;
+   while(!link_control_ready)if(link_restart||link_fault||link_cancel_requested()||link_timed_out(start))return 0;
+   link_control_ready=0;link_rx[0][0]=link_control[0];link_rx[0][1]=link_control[1];
+   mp.local=((link_status>>4&3)+2)%3;
+   return 1;
+  }
+  link_arm_kind=kind;link_arm_n=n;link_tx_crc=crc;unsigned done=link_done;link_armed=1;
+  if(link_rx_state==LINK_RX_IDLE)link_idle_reply();
+  REG16(0x04000208)=ime;
   while(link_done==done){
-   if(link_restart||link_fault||link_cancel_requested()||link_timed_out(start))return 0;
+   if(link_restart||link_fault||link_cancel_requested()||link_timed_out(start)){
+    ime=REG16(0x04000208);REG16(0x04000208)=0;link_armed=0;REG16(0x04000208)=ime;return 0;
+   }
   }
   if(link_restart)return 0;
-  link_remote[0]=link_decoded;
-  REG16(0x0400012a)=link_ack;
+  if(kind==LINK_REQUEST)link_request_ready=0;
+  if(kind==LINK_CONTROL){link_control_ready=0;link_rx[0][0]=link_control[0];link_rx[0][1]=link_control[1];}
   mp.local=((link_status>>4&3)+2)%3;
   return 1;
  }
- u16 result[4]={value,0xffff,0xffff,0xffff};unsigned members=0;
- unsigned phase=0;
- while(phase<4){
-  /* Keep the alternating word bit separate from the four phase tags. */
-  unsigned tags[4]={0,0x100,0x400,0x500};
-  u16 tag=0xa000|link_sequence|tags[phase];
-  unsigned payload=phase<2?(value>>(phase*8))&255:phase==2?link_crc(value):0x5a;
-  int retry=0;unsigned polls=0;
-  for(;;){
-   int started=link_started;
-   if(!link_wire_exchange(tag|payload,start))return 0;
+ u16 ready=LINK_READY|(kind<<6)|(n-1);
+ for(unsigned polls=0,attempt=0;;){
+  unsigned seq=link_sequence&3,crc=0xffff;int started=link_started;
+  /* Probe until every member has armed this block. */
+  if(!link_wire(link_last_commit,start))return 0;
+  unsigned present=0,armed=1;
+  for(int i=1;i<4;i++)if(link_remote[i]!=0xffff){present|=1u<<i;if(link_remote[i]!=ready&&(kind==LINK_REQUEST||(link_members&(1u<<i))))armed=0;}
+  if(kind!=LINK_REQUEST&&(link_members&~present))return 0; /* A member left mid-packet. */
+  if(!armed){
    if(!started)start=input_clock();
-   int ready=1;unsigned present=0;
-   for(int i=1;i<4;i++)if(link_remote[i]!=0xffff){
-    present|=1u<<i;
-    if((link_remote[i]&0xff00)!=tag)ready=0;
-    if(phase==2&&((link_remote[i]&0xff00)==(0xa800|link_sequence)))retry=1;
-   }
-   if(phase&&present!=members)return 0;
-   if(retry)break;
-   if(ready){
-    if(!phase)members=present;
-    for(int i=1;i<4;i++)if(present&(1u<<i)){
-     if(!phase)result[i]=link_remote[i]&255;
-     else if(phase==1)result[i]|=(link_remote[i]&255)<<8;
-     else if(phase==2&&(link_remote[i]&255)!=link_crc(result[i]))retry=1;
-     else if(phase==3&&(link_remote[i]&255)!=0x5a)return 0;
-    }
-    break;
-   }
    if(link_cancel_requested()||link_timed_out(start))return 0;
-   /* A peer may be drawing. Do not flood the cable with the same phase. */
-   if(++polls>2){
-    unsigned shift=polls<6?polls-2:4;u32 pause=input_clock();
+   /* A child may be drawing before it arms. Do not flood the cable. */
+   /* Back off to 65536 cycles: a child whose serial IRQ is delayed must get
+    * a completion outside BUSY, or it would never see a probe at all. */
+   if(++polls>4){
+    unsigned shift=polls<8?polls-4:4;u32 pause=input_clock();
     while(input_clock()-pause<(4096u<<shift))if(link_cancel_requested()||link_timed_out(start))return 0;
    }
+   continue;
   }
-  if(!members)break;
-  if(link_timed_out(start))return 0;
-  if(retry)link_retries++;
-  phase=retry?0:phase+1;
+  link_wire_bad=0;
+  if(!link_wire(LINK_HEADER|(seq<<10)|(attempt<<9)|(kind<<6)|(n-1),start))return 0;
+  for(unsigned k=0;k<n;k++){
+   u16 word=link_tx[k];
+   if(!link_wire(word,start))return 0;
+   link_rx[0][k]=word;crc=link_crc16(crc,word);
+   for(int i=1;i<4;i++)link_rx[i][k]=link_remote[i];
+  }
+  u16 crcs[4];
+  if(!link_wire(crc,start))return 0;
+  for(int i=0;i<4;i++)crcs[i]=link_remote[i];
+  if(!link_wire(LINK_ASK|seq,start))return 0;
+  present=0;for(int i=1;i<4;i++)if(link_remote[i]!=0xffff)present|=1u<<i;
+  if(kind==LINK_REQUEST)link_members=present;
+  else if(link_members&~present)return 0; /* A member left mid-packet. */
+  int ok=!link_wire_bad;
+  for(int i=1;i<4;i++)if(link_members&(1u<<i)){
+   if(link_remote[i]!=(LINK_OK|attempt<<2|seq)){ok=0;continue;}
+   unsigned expected=0xffff;for(unsigned k=0;k<n;k++)expected=link_crc16(expected,link_rx[i][k]);
+   if(expected!=crcs[i])ok=0;
+  }
+  if(!link_wire((ok?LINK_COMMIT:LINK_RETRY)|seq,start))return 0;
+  if(ok){link_sequence++;link_last_commit=LINK_COMMIT|seq;if(link_gap>4096)link_gap>>=1;return 1;}
+  link_retries++;attempt^=1;if(link_gap<0x20000)link_gap<<=1;
+  if(!started)start=input_clock();
+  if(link_cancel_requested()||link_timed_out(start))return 0;
  }
- /* With no peers, keep the first sequence for a console joining the lobby. */
- if(members)link_sequence^=0x200;
- for(int i=0;i<4;i++)link_remote[i]=result[i];
+}
+/* Authority words in link_pub reach every console's link_pub. With a child
+ * hosting, the parent collects them; with three consoles it relays them. */
+static u16 link_pub[LINK_BLOCK_MAX];
+static int link_publish(unsigned n){
+ int authority=link_is_host();
+ for(unsigned k=0;k<n;k++)link_tx[k]=authority?link_pub[k]:0;
+ if(!link_block(LINK_PUBLISH,n))return 0;
+ if(link_host_device==0){if(!authority)for(unsigned k=0;k<n;k++)link_pub[k]=link_rx[0][k];return 1;}
+ if(link_master)for(unsigned k=0;k<n;k++)link_pub[k]=link_rx[link_host_device][k];
+ if(link_connected==2)return 1;
+ for(unsigned k=0;k<n;k++)link_tx[k]=link_master?link_pub[k]:0;
+ if(!link_block(LINK_RELAY,n))return 0;
+ if(!link_master&&!authority)for(unsigned k=0;k<n;k++)link_pub[k]=link_rx[0][k];
+ return 1;
+}
+/* Every console contributes link_tx[0..n-1]; the parent and the elected host
+ * end with all of them in link_collected[slot]. */
+static u16 link_collected[3][LINK_BLOCK_MAX];
+static int link_collect(unsigned kind,unsigned n){
+ u16 own[LINK_BLOCK_MAX];for(unsigned k=0;k<n;k++)own[k]=link_tx[k];
+ if(!link_block(kind,n))return 0;
+ unsigned self=(mp.local+1)%3;
+ for(int i=0;i<link_connected;i++)for(unsigned k=0;k<n;k++)link_collected[i][k]=link_master?link_rx[i][k]:i==0?link_rx[0][k]:i==(int)self?own[k]:0;
+ if(link_host_device<=0||link_connected==2)return 1;
+ /* Three consoles, child host: relay the other child's words to it. */
+ int other=3-link_host_device;
+ for(unsigned k=0;k<n;k++)link_tx[k]=link_master?link_rx[other][k]:0;
+ if(!link_block(LINK_RELAY,n))return 0;
+ if(link_is_host())for(unsigned k=0;k<n;k++)link_collected[other][k]=link_rx[0][k];
  return 1;
 }
 static u32 link_hash(const void*data,unsigned n){const u8*p=data;u32 h=2166136261u;while(n--)h=(h^*p++)*16777619u;return h;}
-static int link_word(u16 host,u16 reply,u16*out){
- int master=link_master;
- if(!link_exchange(master?host:reply))return 0;
- if(out)*out=link_remote[0];return 1;
-}
-/* With a child hosting, collect its word then relay through the physical
- * parent. Both legs use the existing CRC/commit protocol; no assumptions about
- * another child's IRQ timing or partially updated receive registers. */
-static int link_publish(u16 value,u16*out){
- if(link_host_device==0)return link_word(value,0,out);
- if(!link_word(0,link_is_host()?value:0,0))return 0;
- /* With two consoles the parent has already checked the child's reply,
-  * and the authority owns its source word. No third console needs a relay. */
- if(link_connected==2){if(out)*out=link_master?link_remote[link_host_device]:value;return 1;}
- u16 relay=link_master?link_remote[link_host_device]:0;
- return link_word(relay,0,out);
-}
-/* Lobby metadata is collected by the cable parent and made available to the
- * elected host as well. Steady gameplay uses only the selected player's input. */
-static int link_collect(u16 value){
- if(!link_word(value,value,0))return 0;
- if(link_host_device==0)return 1;
- if(link_connected==2){if(!link_master)link_remote[1]=value;return 1;}
- /* The host already owns its reply and the checked parent word. Only
-  * the other child's value is missing; spectators do not consume metadata. */
- int other=3-link_host_device;
- u16 parent=link_remote[0],own=value,item;
- u16 missing=link_master?link_remote[other]:0;
- if(!link_word(missing,0,&item))return 0;
- if(link_is_host()){
-  link_remote[0]=parent;link_remote[link_host_device]=own;
-  link_remote[other]=item;
- }
- return 1;
-}
-static int link_frame(void){
+static int link_packet(void){
  if(link_master<0){
   link_stage=1;
   /* Bootstrap with one hardware transfer, then use the assigned ID, not
@@ -460,41 +560,40 @@ static int link_frame(void){
   if(!id)for(int i=1;i<4;i++)if(link_received[i]!=0xffff)link_started=1;
  }
  int master=link_master,full=!link_session,lobby=game.mode==MP_LOBBY;
- int input_device=0,expected_members=mp.humans,relay_input=0;
+ int input_device=0,expected_members=mp.humans;
  u32 event_key=link_is_host()?link_semantic_key():0;
- int event=!link_event_valid||event_key!=link_event_key||(lobby&&link_lobby_changed());
+ int event=0;
  int was_ready=link_host_ready;
- /* Requests share one logical word: fresh session, changed event, create,
-  * configured lobby, lobby/game. The first accepted create request wins;
-  * requests in the same exchange tie deterministically by physical port. */
- unsigned owner=human(game.player)?(game.player+1)%3:(mp.local+1)%3;
- u16 request=(link_resync?128:0)|(owner<<5)|0xa700|(!link_session?1:0)|(event?2:0)|(link_create?4:0)|(link_setup_ready?8:0)|(lobby?16:0);
- u32 start=input_clock();link_stage=2;
+ link_stage=2;
+ /* REQUEST: every console's request word and input event. */
  if(master){
+  u32 start=input_clock();
   for(;;){
    int started=link_started;
-   if(!link_exchange(request))return 0;
+   link_tx[0]=link_request_word();link_sample_input();link_tx[1]=link_submit;
+   if(!link_block(LINK_REQUEST,2))return 0;
    if(!started)start=input_clock();
-   int ready=1,connected=1;
-   for(int i=1;i<4;i++)if(link_remote[i]!=0xffff){
+   int connected=1;
+   for(int i=1;i<4;i++)if(link_members&(1u<<i)){
     if(i!=connected||i==3)return 0;
     connected++;
-    if((link_remote[i]&0xff00)!=0xa700)ready=0;
-    else if(link_remote[i]&1)full=1;
+    if((link_rx[i][0]&0xff00)!=0xa700)return link_mismatch(link_rx[i][0],0xa710);
+    if(link_rx[i][0]&1)full=1;
    }
    if(!lobby&&(connected!=mp.humans||full))return 0;
-   if(ready&&connected>=2){
+   if(connected>=2){
     if(link_connected!=connected)full=1;
     link_connected=connected;mp.humans=connected;
     if(link_host_device<0){
      /* An already opened lobby beats a new creator still editing rules,
-      * including when the existing host occupies a child cable port. */
+      * including when the existing host occupies a child cable port.
+      * Requests in the same exchange tie deterministically by port. */
      for(int ready_host=1;ready_host>=0&&link_host_device<0;ready_host--)
-      for(int i=0;i<connected;i++)if((link_remote[i]&4)&&(!ready_host||(link_remote[i]&8))){link_host_device=i;break;}
+      for(int i=0;i<connected;i++)if((link_rx[i][0]&4)&&(!ready_host||(link_rx[i][0]&8))){link_host_device=i;break;}
     }
     if(link_host_device>=connected)return 0;
     if(link_host_device>=0){
-     unsigned host_request=link_remote[link_host_device];
+     unsigned host_request=link_rx[link_host_device][0];
      lobby=(host_request&16)!=0;link_host_ready=(host_request&8)!=0;
      if(!lobby&&(full||connected!=expected_members))return 0;
      input_device=lobby?link_host_device:(host_request>>5)&3;
@@ -502,111 +601,81 @@ static int link_frame(void){
      event=full||(host_request&2);
      if(lobby){
       if(link_host_ready!=was_ready)event=1;
-      for(int i=0;i<connected;i++)if(link_remote[i]&2)event=1;
+      for(int i=0;i<connected;i++)if(link_rx[i][0]&2)event=1;
      }
     }else{lobby=1;link_host_ready=0;event=0;}
-    for(int i=0;i<connected;i++)if(link_remote[i]&128){full=1;event=1;}
+    for(int i=0;i<connected;i++)if(link_rx[i][0]&128){full=1;event=1;}
     break;
    }
    if(link_timed_out(start))return 0;
   }
+  link_keys=link_rx[input_device][1];
+  /* CONTROL: decisions and the owner's input, which only the host consumes. */
   unsigned host=link_host_device<0?3:link_host_device;
-  /* Only the authority consumes input. It already has the parent's word and
-   * its own, so relay only when the third console owns the input. */
-  relay_input=link_host_device>0&&link_connected==3&&input_device!=0&&input_device!=link_host_device;
-  if(!link_exchange(0xb170|(relay_input?8:0)|(full?2:0)|(lobby?4:0)|(!event?1:0)|(host<<9)|(link_host_ready?128:0)))return 0;
+  link_tx[0]=0xb170|(full?2:0)|(lobby?4:0)|(!event?1:0)|(host<<9)|(link_host_ready?128:0);
+  link_tx[1]=link_keys;
+  if(!link_block(LINK_CONTROL,2))return 0;
  }else{
-  for(;;){
-   if(!link_exchange(request))return 0;
-   if((link_remote[0]&0xf970)==0xb170){
-    relay_input=(link_remote[0]&8)!=0;
-    event=!(link_remote[0]&1);full=(link_remote[0]&2)!=0;lobby=(link_remote[0]&4)!=0;
-    unsigned host=(link_remote[0]>>9)&3;link_host_device=host==3?-1:(int)host;
-    link_host_ready=(link_remote[0]&128)!=0;
-    if(!link_session&&!full)return link_mismatch(link_remote[0],0xb176);
-    link_connected=1;for(int i=1;i<4;i++)if(link_received[i]!=0xffff)link_connected++;
-    if(link_connected>3||link_host_device>=link_connected)return 0;
-    mp.humans=link_connected;break;
-   }
-   if((link_remote[0]&0xff00)!=0xa700)return link_mismatch(link_remote[0],0xa710);
-   if(link_timed_out(start))return 0;
-  }
+  /* REQUEST is armed ahead (link_prepare_request) and answered by IRQ. */
+  u32 start=input_clock();
+  link_prepare_request();
+  while(!link_request_ready&&!link_control_ready&&!(link_armed&&link_arm_kind==LINK_CONTROL))
+   if(link_restart||link_fault||link_cancel_requested()||link_timed_out(start))return 0;
+  link_request_ready=0;
+  if(!link_block(LINK_CONTROL,2))return 0;
+  u16 control=link_rx[0][0];
+  if((control&0xf970)!=0xb170)return link_mismatch(control,0xb176);
+  event=!(control&1);full=(control&2)!=0;lobby=(control&4)!=0;
+  unsigned host=(control>>9)&3;link_host_device=host==3?-1:(int)host;
+  link_host_ready=(control&128)!=0;
+  if(!link_session&&!full)return link_mismatch(control,0xb176);
+  link_connected=1;for(int i=1;i<4;i++)if(link_present&(1u<<i))link_connected++;
+  if(link_connected>3||link_host_device>=link_connected)return 0;
+  mp.humans=link_connected;
+  if(link_is_host())link_keys=link_rx[0][1];
  }
  int authority=link_is_host(),navigation=0;
  u16 value,*words=(u16*)&link_snapshot;
  if(full){
- link_stage=3;
- if(!link_word(MULTIPLAYER_BUILD&65535,MULTIPLAYER_BUILD&65535,&value))return 0;
- if(value!=(MULTIPLAYER_BUILD&65535))return link_mismatch(value,MULTIPLAYER_BUILD&65535);
- if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return link_mismatch(link_remote[i],value);
- if(!link_word(MULTIPLAYER_BUILD>>16,MULTIPLAYER_BUILD>>16,&value))return 0;
- if(value!=(MULTIPLAYER_BUILD>>16))return link_mismatch(value,MULTIPLAYER_BUILD>>16);
- if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)return link_mismatch(link_remote[i],value);
- link_session=1;
- /* A joining lobby participant needs a complete base, not deltas against
-  * a snapshot it has never received. Existing peers reset that base too. */
- if(authority)for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
- else for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
+  link_stage=3;
+  link_tx[0]=MULTIPLAYER_BUILD&65535;link_tx[1]=MULTIPLAYER_BUILD>>16;
+  if(!link_block(LINK_BUILD,2))return 0;
+  for(int i=0;i<(master?link_connected:1);i++)for(int k=0;k<2;k++)
+   if(link_rx[i][k]!=link_tx[k])return link_mismatch(link_rx[i][k],link_tx[k]);
+  link_session=1;
+  /* A joining lobby participant needs a complete base, not deltas against
+   * a snapshot it has never received. Existing peers reset that base too. */
+  if(authority)for(unsigned i=0;i<sizeof link_previous/2;i++)link_previous[i]=0;
+  else for(unsigned i=0;i<sizeof link_snapshot;i++)((u8*)&link_snapshot)[i]=0;
  }
- link_stage=4;
- link_sample_input();
- if(!link_word(link_submit,link_submit,0))return 0;
- if(master)link_keys=link_remote[input_device];
- if(relay_input){if(!link_word(link_keys,0,&value))return 0;link_keys=value;}
- else if(link_host_device>0&&authority)link_keys=lobby||owner?link_submit:link_remote[0];
  link_packets++;link_last_packet=video_ticks;
  if(!event)return 1; /* Input/keepalive: no poses, text or snapshot hash. */
  link_events++;
  u32 event_at=video_ticks;
- if(!lobby){
-  u16 control=authority&&!full&&link_navigation_only(event_key)?0x8000|(game.cursor&31)|((game.choice&1)<<5)|(game.mode<<6)|(game.player<<12):0;
-  if(!link_publish(control,&value))return 0;
-  if(authority&&value!=control)return 0;
-  if(value&&(!(value&0x8000)||(value&0x4000)||full))return 0;
-  navigation=value!=0;
-  if(navigation){
-   if(((value>>6)&63)!=(unsigned)link_snapshot.game.mode||((value>>12)&3)!=(unsigned)link_snapshot.game.player)return 0;
-   link_snapshot.game.cursor=value&31;link_snapshot.game.choice=(value>>5)&1;
-   /* A committed CRC-checked assignment preserves the verified baseline:
-    * every peer applies the same cursor/choice to the same snapshot. */
-   goto commit_event;
-  }
- }
+ u16 control=0;
+ if(!lobby&&authority&&!full&&link_navigation_only(event_key))
+  control=0x8000|(game.cursor&31)|((game.choice&1)<<5)|(game.mode<<6)|(game.player<<12);
  if(lobby){
-  int name_changed=full;
-  for(int j=0;j<11;j++)if(link_name[j]!=link_sent_name[j])name_changed=1;
-  /* Avatar and edit flags fit in one word. Names are sent only when at
-   * least one participant changed theirs, or a fresh session needs them. */
-  unsigned status=link_lobby_status()|(name_changed?64:0);
+  /* LOBBY: avatar/edit flags and the name from every console in one block. */
   link_stage=5;
-  if(!link_collect(status))return 0;
-  link_sent_status=status&63;
-  unsigned names_needed=full;
+  link_tx[0]=link_lobby_status();
+  for(int j=0;j<6;j++){u16 pair=(u8)link_name[j*2];if(j<5)pair|=(u16)(u8)link_name[j*2+1]<<8;link_tx[1+j]=pair;}
+  if(!link_collect(LINK_LOBBY,7))return 0;
+  link_sent_status=link_lobby_status();link_copy(link_sent_name,link_name,sizeof link_sent_name);
   if(authority){
    link_snapshot.name_editing=link_snapshot.avatar_editing=0;
    for(int i=0;i<mp.humans;i++){
-    unsigned state=link_remote[i],avatar=state&15;
-    if((state&~127u)||avatar>(prefs.characters?8u:6u))return 0;
-    avatars[(i+2)%3]=avatar;
-    if(state&16)link_snapshot.name_editing|=1<<((i+2)%3);
-    if(state&32)link_snapshot.avatar_editing|=1<<((i+2)%3);
-    if(state&64)names_needed=1;
+    unsigned state=link_collected[i][0],avatar=state&15,p=(i+2)%3;
+    if((state&~63u)||avatar>(prefs.characters?8u:6u))return 0;
+    avatars[p]=avatar;
+    if(state&16)link_snapshot.name_editing|=1<<p;
+    if(state&32)link_snapshot.avatar_editing|=1<<p;
+    for(int j=0;j<6;j++){link_incoming_names[p][j*2]=link_collected[i][1+j]&255;if(j<5)link_incoming_names[p][j*2+1]=link_collected[i][1+j]>>8;}
    }
+   link_snapshot.name_conflicts=link_name_conflicts(link_incoming_names);
   }
-  if(!link_publish(names_needed,&value))return 0;
-  if(value>1)return 0;
-  if(value){
-   link_stage=4;
-   for(int j=0;j<6;j++){
-    u16 pair=(u8)link_name[j*2];if(j<5)pair|=(u16)(u8)link_name[j*2+1]<<8;
-    if(!link_collect(pair))return 0;
-    if(authority)for(int i=0;i<mp.humans;i++){int p=(i+2)%3;link_incoming_names[p][j*2]=link_remote[i]&255;if(j<5)link_incoming_names[p][j*2+1]=link_remote[i]>>8;}
-   }
-   link_copy(link_sent_name,link_name,sizeof link_sent_name);
-  }
-  if(authority)link_snapshot.name_conflicts=link_name_conflicts(link_incoming_names);
  }
- if(authority){
+ if(authority&&!control){
   link_snapshot.match=match;link_snapshot.rule=prefs.rule;link_snapshot.rounds=prefs.rounds;
   link_snapshot.humans=mp.humans;
   link_copy(&link_snapshot.cash,&cash,sizeof cash);link_snapshot.cash_seed=cash_initial_seed;
@@ -622,69 +691,51 @@ static int link_frame(void){
   link_copy(link_snapshot.durations,host_durations,sizeof host_durations);
   link_snapshot.event=presentation_event;link_copy(link_snapshot.tokens,message_tokens,sizeof message_tokens);
  }
+ /* PUBLISH: navigation assignment or the byte delta's length. */
+ link_stage=4;
+ unsigned length=authority&&!control?link_encode_delta():0;
+ link_pub[0]=control;link_pub[1]=control?0:0x8000|length;
+ if(!link_publish(2))return 0;
+ value=link_pub[0];
+ if(authority&&value!=control)return 0;
+ if(value&&(!(value&0x8000)||(value&0x4000)||full||lobby))return 0;
+ navigation=value!=0;
+ if(navigation){
+  if(((value>>6)&63)!=(unsigned)link_snapshot.game.mode||((value>>12)&3)!=(unsigned)link_snapshot.game.player)return 0;
+  link_snapshot.game.cursor=value&31;link_snapshot.game.choice=(value>>5)&1;
+  /* A committed CRC-checked assignment preserves the verified baseline:
+   * every peer applies the same cursor/choice to the same snapshot. */
+  goto commit_event;
+ }
+ if(!(link_pub[1]&0x8000))return 0;
+ length=link_pub[1]&0x7fff;
+ if(!length||length>sizeof link_delta)return 0;
  link_stage=6;
- unsigned changed=0,legacy=0,packed=0;
- if(authority){
-  for(unsigned i=0;i<sizeof link_snapshot/2;){
-   if(words[i]==link_previous[i]){i++;continue;}
-   unsigned run=1;while(i+run<sizeof link_snapshot/2&&words[i+run]!=link_previous[i+run])run++;
-   changed+=run;legacy+=run<3?run*2:run+2;i+=run;
+ for(unsigned at=0;at<length;){
+  unsigned n=(length-at+1)/2;if(n>LINK_BLOCK_MAX)n=LINK_BLOCK_MAX;
+  for(unsigned k=0;k<n;k++){unsigned i=at+k*2;link_pub[k]=authority?link_delta[i]|(i+1<length?link_delta[i+1]<<8:0):0;}
+  if(!link_publish(n))return 0;
+  for(unsigned k=0;k<n;k++){
+   unsigned i=at+k*2;u16 pair=link_pub[k];
+   if(i+1>=length&&(pair>>8))return 0;
+   if(!authority){link_delta[i]=pair&255;if(i+1<length)link_delta[i+1]=pair>>8;}
   }
-  packed=link_encode_delta();
+  at+=n*2;
  }
- unsigned encoded=authority&&(packed+1)/2<legacy?0x8000|packed:changed;
- if(!link_publish(encoded,&value))return 0;
- if(value&0x8000){
-  unsigned length=value&0x7fff;
-  if(!length||length>sizeof link_delta)return 0;
-  for(unsigned i=0;i<length;i+=2){
-   u16 pair=authority?link_delta[i]|(i+1<length?link_delta[i+1]<<8:0):0;
-   if(!link_publish(pair,&value))return 0;
-   if(i+1==length&&(value>>8))return 0;
-   if(!authority){link_delta[i]=value&255;if(i+1<length)link_delta[i+1]=value>>8;}
-  }
-  if(!authority&&!link_decode_delta(length))return 0;
- }else{
-  if(value>sizeof link_snapshot/2)return 0;
-  if(authority){
-  for(unsigned i=0;i<sizeof link_snapshot/2;){
-   if(words[i]==link_previous[i]){i++;continue;}
-   unsigned run=1;
-   while(i+run<sizeof link_snapshot/2&&words[i+run]!=link_previous[i+run])run++;
-   /* Isolated words retain index/value encoding. Runs of at least three
-    * changes share one index and length, without growing sparse deltas. */
-   if(run<3){if(!link_publish(i,0)||!link_publish(words[i],0))return 0;i++;}
-   else{
-    if(!link_publish(i|0x8000,0)||!link_publish(run,0))return 0;
-    for(unsigned j=0;j<run;j++)if(!link_publish(words[i+j],0))return 0;
-    i+=run;
-   }
-  }
-  }else{
-  unsigned remaining=value,previous=0;
-  while(remaining){
-   u16 encoded;if(!link_publish(0,&encoded))return 0;
-   unsigned index=encoded&0x7fff,run=1;
-   if(encoded&0x8000){u16 length;if(!link_publish(0,&length))return 0;run=length;if(run<3)return 0;}
-   if(index<previous||index>=sizeof link_snapshot/2||run>remaining||run>sizeof link_snapshot/2-index)return 0;
-   for(unsigned j=0;j<run;j++){if(!link_publish(0,&value))return 0;words[index+j]=value;}
-   previous=index+run;remaining-=run;
-  }
-  }
- }
+ if(!authority&&!link_decode_delta(length))return 0;
  link_stage=7;
- u32 hash=link_hash(&link_snapshot,sizeof link_snapshot),remote_hash;
+ /* HASH from every console, then the parent's verdict to every console. */
+ u32 hash=link_hash(&link_snapshot,sizeof link_snapshot);
+ link_tx[0]=hash&65535;link_tx[1]=hash>>16;
+ if(!link_block(LINK_HASH,2))return 0;
  int mismatch=0;
- if(!link_word(hash&65535,hash&65535,&value))return 0;remote_hash=value;
- if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)mismatch=1;
- if(!link_word(hash>>16,hash>>16,&value))return 0;remote_hash|=(u32)value<<16;
- if(master)for(int i=1;i<mp.humans;i++)if(link_remote[i]!=value)mismatch=1;
- if(hash!=remote_hash)mismatch=1;
- /* Complete both hash words before broadcasting the parent's verdict.
-  * Every peer retries together, including the authority on a child port. */
- if(!link_word(mismatch?1:0,0,&value))return 0;
+ for(int i=0;i<(master?link_connected:1);i++)if(link_rx[i][0]!=link_tx[0]||link_rx[i][1]!=link_tx[1])mismatch=1;
+ link_tx[0]=master?mismatch:0;
+ if(!link_block(LINK_VERDICT,1))return 0;
+ value=link_rx[0][0];
  if(value>1)return 0;
  if(value){
+  /* Roll back to the committed baseline and request a full snapshot. */
   link_copy(&link_snapshot,link_previous,sizeof link_snapshot);
   link_resync=1;link_event_valid=0;
   return 1;
@@ -715,6 +766,15 @@ commit_event:
   u32 elapsed=video_ticks-(authority?event_at:link_snapshot.scene.now);
   link_rebase(elapsed);if(authority)link_clock_offset+=elapsed;
  }
+ /* The applied lobby snapshot was built from the name sent in this packet. */
+ if(lobby){int same=1;for(int i=0;i<11;i++)if(link_sent_name[i]!=link_name[i])same=0;if(same)link_name_wait=0;}
  link_event_key=authority?link_semantic_key():0;link_event_valid=1;link_last_packet=video_ticks;dirty=1;
  return 1;
+}
+/* A guest arms the next REQUEST before returning to render, so the IRQ can
+ * answer the parent's next packet without waiting for this main loop. */
+static int link_frame(void){
+ int result=link_packet();
+ if(result&&!link_master&&link_active&&link_session)link_prepare_request();
+ return result;
 }

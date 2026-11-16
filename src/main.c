@@ -774,7 +774,8 @@ static void link_edit_options(u16 pressed,u16 repeat){
 }
 static void link_edit_name(u16 pressed,u16 repeat){
  if(!link_name_edit){
-  if(!(link_snapshot.name_conflicts&(1<<mp.local)))return;
+  /* Judge a submitted name only by a snapshot that already includes it. */
+  if(link_name_wait||!(link_snapshot.name_conflicts&(1<<mp.local)))return;
   link_name_edit=1;link_text(link_name_answer,link_name,21);
   link_name_pos=len(link_name_answer);return;
  }
@@ -790,7 +791,7 @@ static void link_edit_name(u16 pressed,u16 repeat){
  if(pressed&START){
   char candidate[11];name_clean(candidate,link_name_answer);
   if(!candidate[0]){link_name_edit=3;return;}
-  link_text(link_name,candidate,11);link_name_edit=0;
+  link_text(link_name,candidate,11);link_name_edit=0;link_name_wait=1;
  }
 }
 static void link_render_name(void){
@@ -904,10 +905,9 @@ void gba_main(void){
    if(exchanged)success=link_frame();
    if(!success&&link_restart){
     /* Keep the lobby/profile, but join the parent's new CRC/commit stream. */
-    ime=REG16(0x04000208);REG16(0x04000208)=0;
-    link_pending=link_phase=link_done=link_fault=link_errors=link_sequence=0;link_ack=0;
-    link_session=0;link_event_valid=0;link_sent_status=~0u;link_restart=0;
-    REG16(0x04000208)=ime;success=1;exchanged=0;
+    link_transport_reset();
+    link_session=0;link_event_valid=0;link_sent_status=~0u;
+    success=1;exchanged=0;
    }
    if(!success){
     link_error_stage=link_stage;link_error_status=link_status;
