@@ -177,14 +177,35 @@ static int len(const char *s){int n=0;while(s[n])n++;return n;}
 static unsigned random_n(unsigned n){game.rng=game.rng*134775813u+1;return (game.rng>>16)%n;}
 static void effect(unsigned id){u32 seed=game.rng;if(!id)for(int i=0;i<6;i++)random_n(100);game_effect(id,seed);}
 static void pixel(int x,int y,u8 c){if((unsigned)x<240 && (unsigned)y<160)framebuffer[y*240+x]=c;}
-static void rect(int x,int y,int w,int h,u8 c){
+/* Hot drawing primitives run as ARM code from IWRAM, several times faster than
+ * Thumb from the cartridge. They call nothing outside IWRAM. */
+#define FAST __attribute__((section(".iwram"),target("arm"),noinline,no_builtin))
+FAST static void fill_bytes(u8*d,int n,u8 c){
+ while(n>0&&((u32)d&3)){*d++=c;n--;}
+ u32 w=c*0x01010101u,*q=(u32*)d;
+ while(n>=16){q[0]=w;q[1]=w;q[2]=w;q[3]=w;q+=4;n-=16;}
+ while(n>=4){*q++=w;n-=4;}
+ d=(u8*)q;while(n-->0)*d++=c;
+}
+FAST static void rect(int x,int y,int w,int h,u8 c){
  if(x<0){w+=x;x=0;}if(y<0){h+=y;y=0;}
  if(x>=240||y>=160||w<=0||h<=0)return;
  if(w>240-x)w=240-x;if(h>160-y)h=160-y;
- for(int j=0;j<h;j++){u8*row=framebuffer+(y+j)*240+x;for(int i=0;i<w;i++)row[i]=c;}
+ u8*row=framebuffer+y*240+x;
+ /* Narrow spans (borders, separators) are cheaper without a fill call. */
+ if(w<8){for(int j=0;j<h;j++,row+=240)for(int i=0;i<w;i++)row[i]=c;return;}
+ for(int j=0;j<h;j++,row+=240)fill_bytes(row,w,c);
 }
 static void line(int x,int y,int w,u8 c){rect(x,y,w,1,c);}
-static void glyph(int x,int y,unsigned c,int small,u8 color){int h=small?8:14;const u8 *f=small?font8:font14;for(int j=0;j<h;j++)for(int i=0;i<8;i++)if(f[c*h+j]&(128>>i))pixel(x+i,y+j,color);}
+FAST static void glyph(int x,int y,unsigned c,int small,u8 color){
+ int h=small?8:14;const u8*f=(small?font8:font14)+c*h;
+ if(x>=0&&x<=232&&y>=0&&y+h<=160){
+  u8*row=framebuffer+y*240+x;
+  for(int j=0;j<h;j++,row+=240){unsigned bits=f[j];for(int i=0;bits;i++,bits=(bits<<1)&255)if(bits&128)row[i]=color;}
+  return;
+ }
+ for(int j=0;j<h;j++)for(int i=0;i<8;i++)if(f[j]&(128>>i)){int px=x+i,py=y+j;if((unsigned)px<240&&(unsigned)py<160)framebuffer[py*240+px]=color;}
+}
 static void text(int x,int y,const char *s,int small,u8 c){int advance=8;for(int i=0;s[i];i++)glyph(x+i*advance,y,(u8)s[i],small,c);}
 static void centered(int y,const char*s,int small,u8 c){text((240-len(s)*8)/2,y,s,small,c);}
 static void number(int x,int y,int value,int small,u8 c){char b[12];int n=0;unsigned v=value<0?-value:value;do{b[n++]='0'+v%10;v/=10;}while(v);if(value<0)b[n++]='-';for(int i=n-1;i>=0;i--)glyph(x+(n-1-i)*8,y,b[i],small,c);}

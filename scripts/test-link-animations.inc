@@ -11,7 +11,14 @@ static void anim_messages(void){
  for(int t=0;t<300;t++){
   int ready=1;
   for(int i=0;i<count;i++)if(rd(i,tokens)!=first||rd(i,tokens+4)!=second||rd(i,game_addr+12)!=mode)ready=0;
-  if(ready)break;run(1);assert(t<299);
+  /* A frame boundary may fall between a guest copying the tokens and decoding
+   * their text. Require the match to hold across one more frame. */
+  if(ready){
+   run(1);
+   for(int i=0;i<count;i++)if(rd(i,tokens)!=first||rd(i,tokens+4)!=second||rd(i,game_addr+12)!=mode)ready=0;
+   if(ready)break;
+  }
+  run(1);assert(t<299);
  }
  for(int line=0;line<2;line++){
   uint32_t address=anim_address(line?"LINK_MESSAGE2_ADDR":"LINK_MESSAGE1_ADDR");

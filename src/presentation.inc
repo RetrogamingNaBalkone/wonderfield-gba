@@ -1,7 +1,7 @@
 /* The DOS stage, rebuilt from its original artwork at GBA dimensions.
  * Layer order is intentional: stage, board, wheel, people, panels, speech.
  * No moving part may paint over a spoken sentence. */
-static void image(const Sprite*s,int x,int y,int transparent){
+FAST static void image(const Sprite*s,int x,int y,int transparent){
  int left=x<0?-x:0,right=s->w,top=y<0?-y:0,bottom=s->h;
  if(x+right>240)right=240-x;if(y+bottom>160)bottom=160-y;
  for(int yy=top;yy<bottom;yy++){
@@ -56,20 +56,23 @@ static void board(void){
  }
  line(30,43,181,8);
 }
+/* Wheel frames include the old wall behind transparent pixels. Preserve the
+ * stationary wall when shifting the multiplayer wheel four pixels left. */
+FAST static void wheel_wall(const u8*source){
+ for(int y=0;y<13;y++)for(int x=0;x<128;x++){
+  int old=(43+y)*240+32+x,dest=old-4+240;
+  if(source[y*128+x]==stage_background[old])framebuffer[dest]=stage_background[dest];
+ }
+}
 static void wheel(void){
  int phase=(24-game.sector*2)&31;
  if(game.mode==SPIN)phase+=scene.spin_half;
  const u32*source=(const u32*)(wheel_bitmaps+(phase&31)*(128*112));
  for(int y=0;y<112;y++){
   u32*d=(u32*)(framebuffer+((mp.humans>1?44:43)+y)*240+(mp.humans>1?28:32));
-  for(int x=0;x<32;x++)d[x]=source[y*32+x];
+  dma_words(d,source+y*32,32);
  }
- /* Wheel frames include the old wall behind transparent pixels. Preserve the
-  * stationary wall when shifting the multiplayer wheel four pixels left. */
- if(mp.humans>1)for(int y=0;y<13;y++)for(int x=0;x<128;x++){
-  int old=(43+y)*240+32+x,dest=old-4+240;
-  if(((const u8*)source)[y*128+x]==stage_background[old])framebuffer[dest]=stage_background[dest];
- }
+ if(mp.humans>1)wheel_wall((const u8*)source);
 }
 static void score_badge(int player,int x,int y){
  int value=game.score[player];
@@ -101,6 +104,18 @@ static const Sprite*avatar_portrait(int avatar){
  const u8 portraits[8]={11,12,9,7,8,10,0,1};return &extra_sprites[portraits[avatar-1]];
 }
 static void multiplayer_labels(int who,int center,int bottom);
+/* Inked height and columns of a portrait (transparent colour 2), cached: the
+ * scan is constant per sprite and was repeated on every redraw. */
+static void portrait_ink(const Sprite*s,int*height,int*left,int*right){
+ static const Sprite*sprite[4];static int heights[4],lefts[4],rights[4];static unsigned next;
+ for(int i=0;i<4;i++)if(sprite[i]==s){*height=heights[i];*left=lefts[i];*right=rights[i];return;}
+ int h=s->h;
+ while(h>0){int ink=0;for(int col=0;col<s->w;col++)if(s->data[(h-1)*s->w+col]!=2)ink=1;if(ink)break;h--;}
+ int l=s->w,r=0;
+ for(int row=0;row<h;row++)for(int col=0;col<s->w;col++)if(s->data[row*s->w+col]!=2){if(col<l)l=col;if(col>r)r=col;}
+ unsigned i=next++&3;sprite[i]=s;heights[i]=h;lefts[i]=l;rights[i]=r;
+ *height=h;*left=l;*right=r;
+}
 static void people(void){
  for(int player=0;player<2;player++){
   int who=mp.humans>1?perspective(player):player;
@@ -120,15 +135,11 @@ static void people(void){
    else if(!prefs.characters)portrait=&sprites_half[opponent_sprites[character]];
    else{const u8 portraits[8]={11,12,9,7,8,10,0,1};portrait=&extra_sprites[portraits[character]];}
   }
-  int height=portrait->h;
-  while(mp.humans>1&&height>0){int ink=0;for(int col=0;col<portrait->w;col++)if(portrait->data[(height-1)*portrait->w+col]!=2)ink=1;if(ink)break;height--;}
+  int height=portrait->h,ink_left=0,ink_right=0;
+  if(mp.humans>1)portrait_ink(portrait,&height,&ink_left,&ink_right);
   if(!(mp.humans>1&&(mp.eliminated&(1<<who))))image(portrait,x,y,2);
   score_badge(who,player?141:1,mp.humans>1?63:73);
-  if(mp.humans>1){
-   int left=portrait->w,right=0;
-   for(int row=0;row<height;row++)for(int col=0;col<portrait->w;col++)if(portrait->data[row*portrait->w+col]!=2){if(col<left)left=col;if(col>right)right=col;}
-   multiplayer_labels(who,x+(left+right+1)/2,y+height);
-  }
+  if(mp.humans>1)multiplayer_labels(who,x+(ink_left+ink_right+1)/2,y+height);
 
  }
  /* Host rectangle: [185,240), separate from the widest contestant [153,182). */
@@ -174,12 +185,18 @@ static void multiplayer_panel(void){
  }
  score_badge(who,prefs.rule==MP_RISK?100:148,150);
 }
-static void speech_shape(int x,int y,const int*left,const int*right,int height){
- /* Outline the final silhouette, so no black stroke is lost to resampling. */
- for(int yy=0;yy<height;yy++)for(int xx=left[yy];xx<=right[yy];xx++){
-  int edge=xx==left[yy]||xx==right[yy]||yy==0||yy==height-1;
-  if(!edge)edge=xx<left[yy-1]||xx>right[yy-1]||xx<left[yy+1]||xx>right[yy+1];
-  pixel(x+xx,y+yy,edge?0:14);
+FAST static void speech_shape(int x,int y,const int*left,const int*right,int height){
+ /* Outline the final silhouette, so no black stroke is lost to resampling.
+  * A pixel is outline when it lies outside either neighbouring row; the rest
+  * of each row is interior, so every row is two runs, not per-pixel tests. */
+ for(int yy=0;yy<height;yy++){
+  int l=left[yy],r=right[yy];if(r<l)continue;
+  rect(x+l,y+yy,r-l+1,1,0);
+  if(yy==0||yy==height-1)continue;
+  int from=l+1,to=r-1;
+  if(left[yy-1]>from)from=left[yy-1];if(left[yy+1]>from)from=left[yy+1];
+  if(right[yy-1]<to)to=right[yy-1];if(right[yy+1]<to)to=right[yy+1];
+  if(from<=to)rect(x+from,y+yy,to-from+1,1,14);
  }
 }
 static void speech_strip(const Sprite*s,int x,int y,int width,int transparent){

@@ -216,11 +216,12 @@ without applying it to Game. Every peer requests a full snapshot in the next
 packet. Full recovery disables the compact navigation path. Build mismatch and
 malformed framing still fail closed.
 
-With the block transport (`verification/link-block-transport-tests.json`) event
-application takes 8–14 frames with two consoles (17–24 before) and 12–20 with three
-(31–41 before); keepalives run every two VBlanks and the host loop keeps 60
-iterations per second. The remaining time is mostly the host's own game-loop
-iteration at scene changes, which the event has to wait for. The roadmap's
+With the block transport and IWRAM drawing primitives
+(`verification/link-render-tests.json`) event application takes 6–8 frames with
+two consoles (17–24 before the block transport) and 8–11 with three (31–41);
+keepalives run every two VBlanks and the host loop keeps 60 iterations per second.
+The remaining time is the packet itself and about two frames of the host's own
+scene drawing, which the event waits for. The roadmap's
 two-frame target is not met. The November 15 audit is in
 `verification/link-roadmap-audit.json`. The three-console animation fixture failure was traced to direct debugger writes
 to choice during temporary render/navigation state restoration. The fixture now
