@@ -21,7 +21,9 @@ and each snapshot's full-state FNV check remain enabled.
 ## Block transport
 
 The cable parent clocks every transfer. A packet is a sequence of blocks; each
-block exchanges up to 64 words from every console:
+block exchanges up to 64 words from every console. Every GBA receives every
+SIOMULTI slot, so a child also keeps and CRC-checks the other children's slots it
+needs; its verdict covers them:
 
 1. probes until every member answers `READY(kind, n)` (a probe repeats COMMIT for
    the last committed block, so a child that missed it catches up);
@@ -50,9 +52,8 @@ guest's main loop.
 | REQUEST | request, input | request, input | roles, events, owner input |
 | CONTROL | control word, owner input | — | decisions; input for a child host |
 | BUILD | fingerprint | fingerprint | full packets only |
-| LOBBY | status, name | status, name | lobby events; RELAY to a child host |
+| LOBBY | status, name | status, name | lobby events |
 | PUBLISH | authority words | authority words | navigation/length, delta chunks |
-| RELAY | collected words | — | three consoles with a child host |
 | HASH | snapshot hash | snapshot hash | end-to-end check |
 | VERDICT | mismatch flag | — | commit or full resync |
 
@@ -119,11 +120,11 @@ the session.
 The build fingerprint is checked when establishing a session. The first accepted
 creation request elects the application host independently of the cable parent;
 simultaneous requests tie by port and later requests cannot replace that host.
-With a child hosting, each PUBLISH block is collected by the parent. With two
-consoles that completes delivery; with three the parent repeats it in a RELAY
-block for the remaining peer. Lobby metadata uses the same distinction: three
-peers relay only the other child's words to the elected host. No per-pose events
-are added by relaying. Lobby snapshots are requested only when rules, membership,
+With a child hosting, the parent takes each PUBLISH block from the host's slot,
+and with three consoles the remaining child reads that slot itself in the same
+block; the parent commits only after that child's verdict also covers it. In the
+LOBBY block a host on a child port reads the other child's slot the same way.
+No block is relayed. Lobby snapshots are requested only when rules, membership,
 names, avatars or editing flags change; local keyboard cursor movement does not
 request one. A lobby event sends every console's avatar/edit flags and name in one
 LOBBY block. A submitted name is judged for conflicts only by a snapshot built
@@ -217,8 +218,10 @@ packet. Full recovery disables the compact navigation path. Build mismatch and
 malformed framing still fail closed.
 
 With the block transport and IWRAM drawing primitives
-(`verification/link-render-tests.json`) event application takes 6–8 frames with
-two consoles (17–24 before the block transport) and 8–11 with three (31–41);
+(`verification/link-render-tests.json`, `verification/link-direct-slot-tests.json`)
+event application takes 6–8 frames with
+two consoles (17–24 before the block transport) and 7–9 with three (31–41),
+where a child host now costs no more transfers than with two consoles;
 keepalives run every two VBlanks and the host loop keeps 60 iterations per second.
 The remaining time is the packet itself and about two frames of the host's own
 scene drawing, which the event waits for. The roadmap's

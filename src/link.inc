@@ -111,13 +111,17 @@ static volatile u16 link_received[4],link_status;
 enum{LINK_BLOCK_MAX=64,LINK_HEADER=0xd000,LINK_READY=0x9000,LINK_IDLE=0xc1d0,LINK_ASK=0xe500,LINK_COMMIT=0xe5c0,LINK_RETRY=0xe5a0,LINK_OK=0xb5a0,LINK_BAD=0xb520};
 /* Header: 0xd000|seq<<10|attempt<<9|kind<<6|(n-1). The attempt bit keeps a
  * child's stale verdict from the previous try of the same block from passing. */
-enum{LINK_REQUEST,LINK_CONTROL,LINK_BUILD,LINK_LOBBY,LINK_RELAY,LINK_PUBLISH,LINK_HASH,LINK_VERDICT};
+enum{LINK_REQUEST,LINK_CONTROL,LINK_BUILD,LINK_LOBBY,LINK_PUBLISH,LINK_HASH,LINK_VERDICT};
 enum{LINK_RX_IDLE,LINK_RX_DATA,LINK_RX_CRC,LINK_RX_ASK,LINK_RX_COMMIT};
 static unsigned link_crc16(unsigned crc,unsigned word);
 static int link_cancel_requested(void);
 static void link_idle_reply(void);
 static volatile u16 link_tx[LINK_BLOCK_MAX],link_rx[4][LINK_BLOCK_MAX],link_tx_crc;
 static volatile unsigned link_armed,link_arm_kind,link_arm_n;
+/* Every console receives every SIOMULTI slot. A child also keeps and checks
+ * the other children's slots it needs (link_arm_need), so three consoles
+ * with a child host need no relay block: the verdict covers those slots. */
+static volatile unsigned link_arm_need,link_rx_peer_crc[4];
 static volatile unsigned link_rx_state,link_rx_pos,link_rx_n,link_rx_seq,link_rx_attempt,link_rx_crc,link_rx_good,link_rx_present;
 static volatile unsigned link_pending_commit,link_pending_seq;
 static volatile unsigned link_done,link_present,link_request_ready,link_control_ready;
@@ -248,7 +252,7 @@ static void link_prepare_request(void){
   if(!link_armed||!(link_tx[1]&0xfc00)){link_sample_input();link_tx[1]=link_submit;}
   link_tx[0]=request;
   link_tx_crc=link_crc16(link_crc16(0xffff,link_tx[0]),link_tx[1]);
-  link_arm_kind=LINK_REQUEST;link_arm_n=2;link_armed=1;
+  link_arm_kind=LINK_REQUEST;link_arm_n=2;link_arm_need=0;link_armed=1;
   if(link_rx_state==LINK_RX_IDLE)link_idle_reply();
  }
  REG16(0x04000208)=ime;
@@ -276,7 +280,7 @@ static void link_commit(void){
  if(kind==LINK_REQUEST){
   link_request_ready=1;
   link_tx[0]=link_tx[1]=0;link_tx_crc=link_crc16(link_crc16(0xffff,0),0);
-  link_arm_kind=LINK_CONTROL;link_arm_n=2;link_armed=1;
+  link_arm_kind=LINK_CONTROL;link_arm_n=2;link_arm_need=0;link_armed=1;
  }else if(kind==LINK_CONTROL){
   link_control[0]=link_rx[0][0];link_control[1]=link_rx[0][1];link_control_ready=1;
  }
@@ -287,6 +291,10 @@ static void link_child_irq(u16 word,int error){
  if(state==LINK_RX_DATA){
   unsigned pos=link_rx_pos;
   link_rx[0][pos]=word;link_rx_crc=link_crc16(link_rx_crc,word);if(error)link_rx_good=0;
+  for(unsigned slot=1,need=link_arm_need;need;slot++)if(need&(1u<<slot)){
+   need&=~(1u<<slot);u16 peer=link_received[slot];
+   link_rx[slot][pos]=peer;link_rx_peer_crc[slot]=link_crc16(link_rx_peer_crc[slot],peer);
+  }
   link_rx_pos=++pos;
   REG16(0x0400012a)=pos<link_rx_n?link_tx[pos]:link_tx_crc;
   if(pos==link_rx_n)link_rx_state=LINK_RX_CRC;
@@ -294,6 +302,7 @@ static void link_child_irq(u16 word,int error){
  }
  if(state==LINK_RX_CRC){
   if(error||word!=link_rx_crc)link_rx_good=0;
+  for(unsigned slot=1;slot<4;slot++)if((link_arm_need&(1u<<slot))&&link_received[slot]!=link_rx_peer_crc[slot])link_rx_good=0;
   REG16(0x0400012a)=(link_rx_good?LINK_OK:LINK_BAD)|link_rx_attempt<<2|link_rx_seq;
   link_rx_state=LINK_RX_ASK;return;
  }
@@ -327,6 +336,7 @@ static void link_child_irq(u16 word,int error){
  }
  if(!link_armed||kind!=link_arm_kind||n!=link_arm_n){link_idle_reply();return;}
  link_rx_seq=seq;link_rx_attempt=(word>>9)&1;link_rx_n=n;link_rx_pos=0;link_rx_crc=0xffff;link_rx_good=1;link_rx_state=LINK_RX_DATA;
+ for(int slot=1;slot<4;slot++)link_rx_peer_crc[slot]=0xffff;
  REG16(0x0400012a)=link_tx[0];
 }
 static void link_irq(void){
@@ -429,7 +439,7 @@ static int link_wire(u16 value,u32 start){
 /* Exchange link_tx[0..n-1]. The parent receives every member's words in
  * link_rx[slot] (its own in slot 0); a child receives the parent's words in
  * link_rx[0]. The REQUEST block also fixes this packet's member slots. */
-static int link_block(unsigned kind,unsigned n){
+static int link_block_need(unsigned kind,unsigned n,unsigned need){
  u32 start=input_clock();
  if(!n||n>LINK_BLOCK_MAX)return 0;
  if(!link_master){
@@ -446,7 +456,7 @@ static int link_block(unsigned kind,unsigned n){
    mp.local=((link_status>>4&3)+2)%3;
    return 1;
   }
-  link_arm_kind=kind;link_arm_n=n;link_tx_crc=crc;unsigned done=link_done;link_armed=1;
+  link_arm_kind=kind;link_arm_n=n;link_arm_need=need;link_tx_crc=crc;unsigned done=link_done;link_armed=1;
   if(link_rx_state==LINK_RX_IDLE)link_idle_reply();
   REG16(0x04000208)=ime;
   while(link_done==done){
@@ -508,35 +518,32 @@ static int link_block(unsigned kind,unsigned n){
   if(link_cancel_requested()||link_timed_out(start))return 0;
  }
 }
-/* Authority words in link_pub reach every console's link_pub. With a child
- * hosting, the parent collects them; with three consoles it relays them. */
+static int link_block(unsigned kind,unsigned n){return link_block_need(kind,n,0);}
+/* Authority words in link_pub reach every console's link_pub in one block:
+ * the parent collects a child host's slot, and the third console reads that
+ * slot itself. */
 static u16 link_pub[LINK_BLOCK_MAX];
 static int link_publish(unsigned n){
  int authority=link_is_host();
  for(unsigned k=0;k<n;k++)link_tx[k]=authority?link_pub[k]:0;
- if(!link_block(LINK_PUBLISH,n))return 0;
- if(link_host_device==0){if(!authority)for(unsigned k=0;k<n;k++)link_pub[k]=link_rx[0][k];return 1;}
- if(link_master)for(unsigned k=0;k<n;k++)link_pub[k]=link_rx[link_host_device][k];
- if(link_connected==2)return 1;
- for(unsigned k=0;k<n;k++)link_tx[k]=link_master?link_pub[k]:0;
- if(!link_block(LINK_RELAY,n))return 0;
- if(!link_master&&!authority)for(unsigned k=0;k<n;k++)link_pub[k]=link_rx[0][k];
+ unsigned need=!link_master&&!authority&&link_host_device>0?1u<<link_host_device:0;
+ if(!link_block_need(LINK_PUBLISH,n,need))return 0;
+ if(authority)return 1;
+ unsigned from=link_host_device>0?(unsigned)link_host_device:0;
+ for(unsigned k=0;k<n;k++)link_pub[k]=link_rx[from][k];
  return 1;
 }
 /* Every console contributes link_tx[0..n-1]; the parent and the elected host
- * end with all of them in link_collected[slot]. */
+ * end with all of them in link_collected[slot]. A host on a child port reads
+ * the other child's slot itself. */
 static u16 link_collected[3][LINK_BLOCK_MAX];
 static int link_collect(unsigned kind,unsigned n){
  u16 own[LINK_BLOCK_MAX];for(unsigned k=0;k<n;k++)own[k]=link_tx[k];
- if(!link_block(kind,n))return 0;
  unsigned self=(mp.local+1)%3;
- for(int i=0;i<link_connected;i++)for(unsigned k=0;k<n;k++)link_collected[i][k]=link_master?link_rx[i][k]:i==0?link_rx[0][k]:i==(int)self?own[k]:0;
- if(link_host_device<=0||link_connected==2)return 1;
- /* Three consoles, child host: relay the other child's words to it. */
- int other=3-link_host_device;
- for(unsigned k=0;k<n;k++)link_tx[k]=link_master?link_rx[other][k]:0;
- if(!link_block(LINK_RELAY,n))return 0;
- if(link_is_host())for(unsigned k=0;k<n;k++)link_collected[other][k]=link_rx[0][k];
+ unsigned need=!link_master&&link_is_host()&&link_connected==3?1u<<(3-self):0;
+ if(!link_block_need(kind,n,need))return 0;
+ for(int i=0;i<link_connected;i++)for(unsigned k=0;k<n;k++)
+  link_collected[i][k]=link_master||i==0||(need&(1u<<i))?link_rx[i][k]:i==(int)self?own[k]:0;
  return 1;
 }
 static u32 link_hash(const void*data,unsigned n){const u8*p=data;u32 h=2166136261u;while(n--)h=(h^*p++)*16777619u;return h;}
