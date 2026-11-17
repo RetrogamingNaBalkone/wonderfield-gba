@@ -1,0 +1,836 @@
+{
+ "title": "Task 3: parent blocks from interrupts, packets as a coroutine",
+ "rom_sha256": "bd9e39d3c4121ba7ed90162a83d007be652154e5252c18798ca52eabb9b4328d",
+ "previous_rom_sha256": "cd91554eb1b322d2fe45e7b7964b749f8a65c1a023f225ebdd88de5e9994a1a8",
+ "emulator": "mGBA 0.10.5 (commit 26b7884b), native SIO driver unless noted",
+ "build": "Zig 0.13.0; -Wall -Wextra -Werror; 1 MiB ROM",
+ "event_latency": {
+  "two_consoles_host_port1": {
+   "before": {
+    "frames": [
+     7,
+     8
+    ],
+    "transfers": [
+     111,
+     130
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 111
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 114
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 113
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 111
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 11,
+      "transfers": 129
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 13,
+      "transfers": 130
+     }
+    ]
+   },
+   "after": {
+    "frames": [
+     7,
+     8
+    ],
+    "transfers": [
+     110,
+     127
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 110
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 113
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 12,
+      "transfers": 122
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 110
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 11,
+      "transfers": 127
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 12,
+      "transfers": 120
+     }
+    ]
+   }
+  },
+  "two_consoles_host_port0": {
+   "before": {
+    "frames": [
+     6,
+     7
+    ],
+    "transfers": [
+     82,
+     88
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 6,
+      "press_to_all_frames": 7,
+      "transfers": 84
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 8,
+      "transfers": 86
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 6,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 88
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 6,
+      "press_to_all_frames": 7,
+      "transfers": 82
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 8,
+      "transfers": 84
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 6,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 88
+     }
+    ]
+   },
+   "after": {
+    "frames": [
+     6,
+     8
+    ],
+    "transfers": [
+     82,
+     89
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 6,
+      "press_to_all_frames": 7,
+      "transfers": 82
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 8,
+      "transfers": 85
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 87
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 6,
+      "press_to_all_frames": 7,
+      "transfers": 83
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 8,
+      "transfers": 83
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 89
+     }
+    ]
+   }
+  },
+  "three_consoles_host_port1": {
+   "before": {
+    "frames": [
+     7,
+     8
+    ],
+    "transfers": [
+     109,
+     116
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 112
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 111
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 13,
+      "transfers": 112
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 109
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 114
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 4,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 12,
+      "transfers": 112
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 2,
+      "mode": 5,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 110
+     },
+     {
+      "event": "spin_start",
+      "owner": 2,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 111
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 2,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 13,
+      "transfers": 116
+     }
+    ]
+   },
+   "after": {
+    "frames": [
+     6,
+     8
+    ],
+    "transfers": [
+     107,
+     128
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 6,
+      "press_to_all_frames": 9,
+      "transfers": 108
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 6,
+      "press_to_all_frames": 10,
+      "transfers": 108
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 12,
+      "transfers": 113
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 108
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 7,
+      "press_to_all_frames": 10,
+      "transfers": 111
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 7,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 13,
+      "transfers": 128
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 2,
+      "mode": 5,
+      "host_to_all_frames": 6,
+      "press_to_all_frames": 10,
+      "transfers": 107
+     },
+     {
+      "event": "spin_start",
+      "owner": 2,
+      "mode": 2,
+      "host_to_all_frames": 6,
+      "press_to_all_frames": 10,
+      "transfers": 108
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 2,
+      "mode": 3,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 12,
+      "transfers": 116
+     }
+    ]
+   }
+  },
+  "three_consoles_host_port2": {
+   "before": {
+    "frames": [
+     8,
+     9
+    ],
+    "transfers": [
+     107,
+     129
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 109
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 109
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 9,
+      "press_to_all_frames": 11,
+      "transfers": 113
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 107
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 111
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 3,
+      "host_to_all_frames": 9,
+      "press_to_all_frames": 13,
+      "transfers": 127
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 2,
+      "mode": 5,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 10,
+      "transfers": 109
+     },
+     {
+      "event": "spin_start",
+      "owner": 2,
+      "mode": 2,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 10,
+      "transfers": 109
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 2,
+      "mode": 3,
+      "host_to_all_frames": 9,
+      "press_to_all_frames": 13,
+      "transfers": 129
+     }
+    ]
+   },
+   "after": {
+    "frames": [
+     8,
+     9
+    ],
+    "transfers": [
+     106,
+     129
+    ],
+    "samples": [
+     {
+      "event": "solve_prompt",
+      "owner": 0,
+      "mode": 5,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 108
+     },
+     {
+      "event": "spin_start",
+      "owner": 0,
+      "mode": 2,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 108
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 0,
+      "mode": 3,
+      "host_to_all_frames": 9,
+      "press_to_all_frames": 11,
+      "transfers": 110
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 1,
+      "mode": 5,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 10,
+      "transfers": 107
+     },
+     {
+      "event": "spin_start",
+      "owner": 1,
+      "mode": 2,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 11,
+      "transfers": 109
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 1,
+      "mode": 3,
+      "host_to_all_frames": 9,
+      "press_to_all_frames": 13,
+      "transfers": 128
+     },
+     {
+      "event": "solve_prompt",
+      "owner": 2,
+      "mode": 5,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 10,
+      "transfers": 106
+     },
+     {
+      "event": "spin_start",
+      "owner": 2,
+      "mode": 2,
+      "host_to_all_frames": 8,
+      "press_to_all_frames": 12,
+      "transfers": 122
+     },
+     {
+      "event": "spin_result_message",
+      "owner": 2,
+      "mode": 3,
+      "host_to_all_frames": 9,
+      "press_to_all_frames": 13,
+      "transfers": 129
+     }
+    ]
+   }
+  }
+ },
+ "benchmark": {
+  "before": [
+   {
+    "profile": "elected_host_human_turn",
+    "consoles": 2,
+    "updates": 600,
+    "transfers": 4200,
+    "cycles": 168537600,
+    "by_stage": [
+     0,
+     0,
+     4200,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ],
+  "after": [
+   {
+    "profile": "elected_host_human_turn",
+    "consoles": 2,
+    "updates": 600,
+    "transfers": 4200,
+    "cycles": 168537721,
+    "by_stage": [
+     0,
+     0,
+     4200,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ "input_latency": {
+  "host_port1": [
+   {
+    "profile": "name",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 3,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "name",
+    "node": 1,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "keyboard",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 3,
+    "all_frames": 7
+   },
+   {
+    "profile": "keyboard",
+    "node": 1,
+    "owner_frames": 4,
+    "visible_frames": 5,
+    "host_frames": 4,
+    "all_frames": 8
+   },
+   {
+    "profile": "name",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 3,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "name",
+    "node": 1,
+    "owner_frames": 2,
+    "visible_frames": 2,
+    "host_frames": 2,
+    "all_frames": 2
+   },
+   {
+    "profile": "name",
+    "node": 2,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "keyboard",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 4,
+    "all_frames": 6
+   },
+   {
+    "profile": "keyboard",
+    "node": 1,
+    "owner_frames": 4,
+    "visible_frames": 4,
+    "host_frames": 4,
+    "all_frames": 6
+   },
+   {
+    "profile": "keyboard",
+    "node": 2,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 5,
+    "all_frames": 7
+   }
+  ],
+  "host_port0": [
+   {
+    "profile": "name",
+    "node": 0,
+    "owner_frames": 1,
+    "visible_frames": 3,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "name",
+    "node": 1,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "keyboard",
+    "node": 0,
+    "owner_frames": 2,
+    "visible_frames": 4,
+    "host_frames": 2,
+    "all_frames": 5
+   },
+   {
+    "profile": "keyboard",
+    "node": 1,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 3,
+    "all_frames": 6
+   },
+   {
+    "profile": "name",
+    "node": 0,
+    "owner_frames": 2,
+    "visible_frames": 3,
+    "host_frames": 2,
+    "all_frames": 2
+   },
+   {
+    "profile": "name",
+    "node": 1,
+    "owner_frames": 2,
+    "visible_frames": 2,
+    "host_frames": 2,
+    "all_frames": 2
+   },
+   {
+    "profile": "name",
+    "node": 2,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 1,
+    "all_frames": 1
+   },
+   {
+    "profile": "keyboard",
+    "node": 0,
+    "owner_frames": 3,
+    "visible_frames": 4,
+    "host_frames": 3,
+    "all_frames": 6
+   },
+   {
+    "profile": "keyboard",
+    "node": 1,
+    "owner_frames": 2,
+    "visible_frames": 2,
+    "host_frames": 3,
+    "all_frames": 6
+   },
+   {
+    "profile": "keyboard",
+    "node": 2,
+    "owner_frames": 1,
+    "visible_frames": 2,
+    "host_frames": 3,
+    "all_frames": 7
+   }
+  ]
+ },
+ "suites": {
+  "test-link-roles.py --native": "26/26",
+  "test-link-chaos.py (full matrix)": "243/243",
+  "test-link.py --native (2/3 consoles, scenarios 0-5)": "pass",
+  "test-link.py --native --scenario 0 --animations": "pass",
+  "test-link.py --scenario 0 --animations --irq-delay 60000": "pass",
+  "test-link-roles.py --animations --scenario 1": "2/2",
+  "test-link-roles.py --animations --scenario 2": "2/2",
+  "test-link-input.py": "150 checks passed, 0 failed",
+  "test-link-codec.py": "pass",
+  "test-link-diagnostic.py --native": "32/32"
+ },
+ "notes": [
+  "The parent's serial IRQ processes each transfer and HBlank starts the next one; link_packet is a coroutine advanced by link_service() each main-loop iteration.",
+  "Waiting for peers, the bootstrap, keepalives and lobby packets yield to the game after 8 frames; in-game events are delivered without yielding so the presentation clock stays exact.",
+  "Longest main-loop stall by the link during session start (instrumented build, roles scenario 1): 8 frames with 2 and 3 consoles, versus 42.8 (2 consoles) and 116.1 (3 consoles) frames before.",
+  "Event latency is unchanged: in-game events still stop the host for their delivery."
+ ],
+ "limitations": [
+  "mGBA only; no physical GBA, Pizza Boy Advance or frontend display buffering."
+ ]
+}

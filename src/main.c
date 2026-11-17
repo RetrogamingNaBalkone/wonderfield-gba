@@ -93,9 +93,10 @@ static const char*mp_stage(void){
  title[i]=0;return title;
 }
 static void link_irq(void);
+static void link_hblank(void);
 static void link_test_irq(void);
 static void link_close(void);
-static int link_frame(void);
+static int link_service(void);
 static int link_is_host(void);
 static void link_capture_input(u16 pressed);
 static void mp_setup(void);
@@ -156,7 +157,7 @@ static void capture_keys(void){
   u8 next=(input_write+1)&31;if(next!=input_read){input_events[input_write]=event;input_write=next;}
  }
 }
-void game_irq(unsigned flags){if(flags&1){video_ticks++;capture_keys();}if(flags&128)link_irq();speaker_irq(flags);}
+void game_irq(unsigned flags){if(flags&1){video_ticks++;capture_keys();}if(flags&128)link_irq();if(flags&2)link_hblank();speaker_irq(flags);}
 
 static u16 oldkeys;
 static u32 repeat_at,rendered_key=~0u,solve_fixed;
@@ -921,14 +922,13 @@ void gba_main(void){
    if(pressed&L){sound_on=!sound_on;speaker_enable(sound_on);dirty=1;}
    link_submit=(link_name_edit||link_avatar_edit)?0:keys&~L;
    if(game.mode!=MP_LOBBY&&link_preview_navigation(pressed))link_render_game();
-   int exchanged=link_due();
-   int success=1;
-   if(exchanged)success=link_frame();
+   /* Packets advance while the game keeps updating and drawing. */
+   int success=link_service();
    if(!success&&link_restart){
-    /* Keep the lobby/profile, but join the parent's new CRC/commit stream. */
+    /* Keep the lobby/profile, but join the parent's new block stream. */
     link_transport_reset();
     link_session=0;link_event_valid=0;link_sent_status=~0u;
-    success=1;exchanged=0;
+    success=1;
    }
    if(!success){
     link_error_stage=link_stage;link_error_status=link_status;
@@ -986,7 +986,7 @@ void gba_main(void){
     /* Presses and autorepeat were produced by the owner's VBlank. Held keys
      * only gate START; they never create a press on the authority. */
     int owner_player=game.mode==MP_LOBBY?-1:game.player;
-    if(exchanged)link_queue_remote(link_keys,owner_player);
+    if(link_keys_fresh){link_keys_fresh=0;link_queue_remote(link_keys,owner_player);}
     pressed=repeat=link_next_remote(owner_player);
     if(game.mode==MP_LOBBY){
      dirty=1;

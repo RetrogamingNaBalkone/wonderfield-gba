@@ -42,10 +42,25 @@ doubles from 4096 up to 131072 cycles so a late serial IRQ still sees every
 transfer; it halves after each success. Probes back off to 65536 cycles while a
 child is still drawing.
 
+The parent runs blocks from interrupts as well: its serial IRQ processes each
+completion (probe check, payload, CRC, verdicts, commit decision) and the HBlank
+IRQ starts the next transfer once the turnaround has passed. HBlank interrupts are
+enabled only while a parent block is in flight.
+
 A guest arms the next REQUEST block when its packet ends. Its IRQ answers that
 block and then arms CONTROL itself (CONTROL carries no guest data), so a keepalive
-completes while the guest's main loop renders. Only event packets wait for the
-guest's main loop.
+completes while the guest's main loop renders.
+
+A packet is a coroutine (`link_packet`, state in `link_step`): every main-loop
+iteration calls `link_service()`, which starts a due packet or advances the
+current one as far as the committed blocks allow. It follows a packet for at most
+eight frames and then returns to the game, so waiting for peers, the bootstrap,
+keepalives and lobby packets (full snapshots on joins) no longer freeze a console.
+An in-game event is delivered without yielding: its presentation clock excludes the
+whole delivery, which is only right if the game did not run meanwhile. The host takes its snapshot
+when the event part begins and stores the semantic key of that state; changes made
+while the rest of the packet crosses become the next event. Received owner input
+is applied when `link_keys_fresh` is set.
 
 | Block | Parent sends | Children send | Purpose |
 | --- | --- | --- | --- |
@@ -159,8 +174,9 @@ the following delta.
 
 ## Limits and verification
 
-The parent's main loop still drives every transfer, and event packets wait for the
-guests' main loops; it is not a fully asynchronous network stack. An emulator's own network synchronization can still
+Packet steps between blocks still run in the main loop, so an event waits for each
+participant's current game-loop iteration, and an in-game event still pauses the
+game for its delivery (a resynchronizing full snapshot included). An emulator's own network synchronization can still
 add latency to a transfer. The measured improvements and fault-injection results
 are from mGBA, not Pizza Boy Advance or physical GBA hardware.
 
@@ -218,7 +234,8 @@ packet. Full recovery disables the compact navigation path. Build mismatch and
 malformed framing still fail closed.
 
 With the block transport and IWRAM drawing primitives
-(`verification/link-render-tests.json`, `verification/link-direct-slot-tests.json`)
+(`verification/link-render-tests.json`, `verification/link-direct-slot-tests.json`,
+`verification/link-async-packet-tests.json`)
 event application takes 6–8 frames with
 two consoles (17–24 before the block transport) and 7–9 with three (31–41),
 where a child host now costs no more transfers than with two consoles;
