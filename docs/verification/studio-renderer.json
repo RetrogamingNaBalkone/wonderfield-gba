@@ -1,0 +1,398 @@
+{
+  "emulator": "mGBA 0.10.5",
+  "reference_commit": "214cdf5119a6fc8c673f7379ad052f8104b29baa",
+  "reference_rom_sha256": "bd9e39d3c4121ba7ed90162a83d007be652154e5252c18798ca52eabb9b4328d",
+  "rom_sha256": "ff25c5f0ab6e59c00f47964f18379543801224c2118a77e7f2762c49d19a6521",
+  "frame_cycles": 280896,
+  "vblank_cycles": 83776,
+  "comparison": {
+    "format": "240 x 160 RGB555, first displayed frame",
+    "frames": 797,
+    "compared_pixels": 30604800,
+    "different_pixels": 0
+  },
+  "timing_method": {
+    "preparation": "CPU cycles in render, mute and explicitly invoked scene preparation. The wait for VBlank and display upload are measured separately.",
+    "intervals": "VBlank boundaries elapsed before present returned, starting from the same PPU phase for each fixture.",
+    "isolated_finish": "CPU cycles from VBlank start to return from present.",
+    "link_finish": "CPU cycles from VBlank start to final DISPCNT write in the real game loop with cable IRQs active."
+  },
+  "isolated": {
+    "frames": 797,
+    "one_interval": 703,
+    "two_intervals": 94,
+    "max_preparation_cycles": 519740,
+    "max_cycles_after_vblank": 70276
+  },
+  "cached_animation": {
+    "frames": 434,
+    "one_interval": 434,
+    "two_intervals": 0,
+    "max_preparation_cycles": 144948,
+    "max_cycles_after_vblank": 12889
+  },
+  "by_test_group": {
+    "studio-mode": {
+      "frames": 45,
+      "one_interval": 42,
+      "two_intervals": 3,
+      "max_preparation_cycles": 465020,
+      "max_cycles_after_vblank": 67449
+    },
+    "wheel": {
+      "frames": 96,
+      "one_interval": 96,
+      "two_intervals": 0,
+      "max_preparation_cycles": 73795,
+      "max_cycles_after_vblank": 20759
+    },
+    "intro": {
+      "frames": 72,
+      "one_interval": 72,
+      "two_intervals": 0,
+      "max_preparation_cycles": 243702,
+      "max_cycles_after_vblank": 37060
+    },
+    "walk": {
+      "frames": 108,
+      "one_interval": 108,
+      "two_intervals": 0,
+      "max_preparation_cycles": 244727,
+      "max_cycles_after_vblank": 28572
+    },
+    "chest": {
+      "frames": 24,
+      "one_interval": 24,
+      "two_intervals": 0,
+      "max_preparation_cycles": 217736,
+      "max_cycles_after_vblank": 19381
+    },
+    "host": {
+      "frames": 33,
+      "one_interval": 33,
+      "two_intervals": 0,
+      "max_preparation_cycles": 252135,
+      "max_cycles_after_vblank": 20588
+    },
+    "credits": {
+      "frames": 123,
+      "one_interval": 123,
+      "two_intervals": 0,
+      "max_preparation_cycles": 67924,
+      "max_cycles_after_vblank": 43148
+    },
+    "page": {
+      "frames": 9,
+      "one_interval": 5,
+      "two_intervals": 4,
+      "max_preparation_cycles": 471699,
+      "max_cycles_after_vblank": 69202
+    },
+    "back to stage": {
+      "frames": 9,
+      "one_interval": 1,
+      "two_intervals": 8,
+      "max_preparation_cycles": 313028,
+      "max_cycles_after_vblank": 69005
+    },
+    "portraits": {
+      "frames": 48,
+      "one_interval": 0,
+      "two_intervals": 48,
+      "max_preparation_cycles": 499539,
+      "max_cycles_after_vblank": 48179
+    },
+    "cursor": {
+      "frames": 96,
+      "one_interval": 88,
+      "two_intervals": 8,
+      "max_preparation_cycles": 301965,
+      "max_cycles_after_vblank": 43624
+    },
+    "mute-long-speech": {
+      "frames": 17,
+      "one_interval": 7,
+      "two_intervals": 10,
+      "max_preparation_cycles": 484682,
+      "max_cycles_after_vblank": 70276
+    },
+    "certificate": {
+      "frames": 4,
+      "one_interval": 0,
+      "two_intervals": 4,
+      "max_preparation_cycles": 519740,
+      "max_cycles_after_vblank": 43418
+    },
+    "menu": {
+      "frames": 19,
+      "one_interval": 10,
+      "two_intervals": 9,
+      "max_preparation_cycles": 456306,
+      "max_cycles_after_vblank": 68950
+    },
+    "cash-host": {
+      "frames": 22,
+      "one_interval": 22,
+      "two_intervals": 0,
+      "max_preparation_cycles": 208823,
+      "max_cycles_after_vblank": 65783
+    },
+    "notes": {
+      "frames": 68,
+      "one_interval": 68,
+      "two_intervals": 0,
+      "max_preparation_cycles": 144948,
+      "max_cycles_after_vblank": 40814
+    },
+    "pause-cash": {
+      "frames": 2,
+      "one_interval": 2,
+      "two_intervals": 0,
+      "max_preparation_cycles": 186541,
+      "max_cycles_after_vblank": 68992
+    },
+    "restore-cash": {
+      "frames": 2,
+      "one_interval": 2,
+      "two_intervals": 0,
+      "max_preparation_cycles": 133584,
+      "max_cycles_after_vblank": 62469
+    }
+  },
+  "linked": {
+    "display_commits": 8725,
+    "late_commits": 0,
+    "max_cycles_after_vblank": 75317
+  },
+  "linked_runs": [
+    {
+      "host": 0,
+      "consoles": 2,
+      "ports": [
+        {
+          "port": 0,
+          "commits": 768,
+          "late": 0,
+          "max_cycles_after_vblank": 74112,
+          "game_mode_at_max": 31
+        },
+        {
+          "port": 1,
+          "commits": 596,
+          "late": 0,
+          "max_cycles_after_vblank": 74332,
+          "game_mode_at_max": 31
+        }
+      ]
+    },
+    {
+      "host": 0,
+      "consoles": 3,
+      "ports": [
+        {
+          "port": 0,
+          "commits": 775,
+          "late": 0,
+          "max_cycles_after_vblank": 74082,
+          "game_mode_at_max": 31
+        },
+        {
+          "port": 1,
+          "commits": 599,
+          "late": 0,
+          "max_cycles_after_vblank": 75317,
+          "game_mode_at_max": 15
+        },
+        {
+          "port": 2,
+          "commits": 591,
+          "late": 0,
+          "max_cycles_after_vblank": 74252,
+          "game_mode_at_max": 31
+        }
+      ]
+    },
+    {
+      "host": 1,
+      "consoles": 2,
+      "ports": [
+        {
+          "port": 0,
+          "commits": 540,
+          "late": 0,
+          "max_cycles_after_vblank": 74186,
+          "game_mode_at_max": 31
+        },
+        {
+          "port": 1,
+          "commits": 874,
+          "late": 0,
+          "max_cycles_after_vblank": 74080,
+          "game_mode_at_max": 31
+        }
+      ]
+    },
+    {
+      "host": 1,
+      "consoles": 3,
+      "ports": [
+        {
+          "port": 0,
+          "commits": 536,
+          "late": 0,
+          "max_cycles_after_vblank": 74086,
+          "game_mode_at_max": 31
+        },
+        {
+          "port": 1,
+          "commits": 900,
+          "late": 0,
+          "max_cycles_after_vblank": 74082,
+          "game_mode_at_max": 31
+        },
+        {
+          "port": 2,
+          "commits": 629,
+          "late": 0,
+          "max_cycles_after_vblank": 74140,
+          "game_mode_at_max": 31
+        }
+      ]
+    },
+    {
+      "host": 2,
+      "consoles": 3,
+      "ports": [
+        {
+          "port": 0,
+          "commits": 491,
+          "late": 0,
+          "max_cycles_after_vblank": 74296,
+          "game_mode_at_max": 31
+        },
+        {
+          "port": 1,
+          "commits": 574,
+          "late": 0,
+          "max_cycles_after_vblank": 74922,
+          "game_mode_at_max": 31
+        },
+        {
+          "port": 2,
+          "commits": 852,
+          "late": 0,
+          "max_cycles_after_vblank": 74084,
+          "game_mode_at_max": 31
+        }
+      ]
+    }
+  ],
+  "animation_duration_vblanks": {
+    "ordering": [
+      "reference",
+      "current_single",
+      "current_multiplayer"
+    ],
+    "spin_16": [
+      232,
+      232,
+      232
+    ],
+    "spin_24": [
+      312,
+      312,
+      312
+    ],
+    "spin_31": [
+      382,
+      382,
+      382
+    ],
+    "reveal_10_1": [
+      275,
+      275,
+      275
+    ],
+    "reveal_10_3": [
+      340,
+      340,
+      340
+    ],
+    "reveal_100_1": [
+      275,
+      275,
+      275
+    ],
+    "reveal_100_3": [
+      340,
+      340,
+      340
+    ]
+  },
+  "identical_reference_and_current_game_timing": {
+    "host_phases": [
+      [
+        0,
+        0
+      ],
+      [
+        16,
+        1
+      ],
+      [
+        32,
+        2
+      ],
+      [
+        48,
+        3
+      ],
+      [
+        56,
+        4
+      ],
+      [
+        64,
+        5
+      ],
+      [
+        72,
+        6
+      ],
+      [
+        80,
+        7
+      ],
+      [
+        104,
+        8
+      ],
+      [
+        112,
+        9
+      ],
+      [
+        120,
+        10
+      ]
+    ],
+    "ai": [
+      {
+        "event": "turn",
+        "vblanks": 180
+      },
+      {
+        "event": "letter",
+        "vblanks": 180
+      },
+      {
+        "event": "answer",
+        "vblanks": 180
+      },
+      {
+        "event": "result",
+        "vblanks": 180
+      }
+    ]
+  }
+}

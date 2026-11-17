@@ -3,7 +3,7 @@
 Fixtures select states; inputs and images come from the compiled ROM in mGBA.
 --long additionally plays all 100000 bills naturally (about 9.5 emulated min).
 """
-from emulator import Emulator,ROOT
+from emulator import unpack_tiles,Emulator,ROOT
 from extract import png,EGA
 import ctypes as c,struct,json,hashlib,sys,wave
 
@@ -44,7 +44,17 @@ def letter(ch):e.poke(70,ch-128);e.tap(8)
 def answer():return c.string_at(e.ramgame+352,21)
 
 title_pixels=ppu(title_raw);font6=asset('font6',256*6)
-check('compact version fits the final grid cell',all(title_pixels[(122+y)*240+218+i*4+x]==(0 if font6[ch*6+y]&(128>>x) else 7) for i,ch in enumerate(b'2.0') for y in range(6) for x in range(4)))
+version=b'2.0beta2';version_x=230-len(version)*4
+logo_w,logo_h,logo_addr=struct.unpack_from('<III',rom,e.sym['title_logos']-0x08000000+12)
+def title_label_pixel(x,y):
+ i,col=divmod(x-version_x,4)
+ if font6[version[i]*6+y-122]&(128>>col):return 0
+ if 104<=x<104+logo_w and 23<=y<23+logo_h:
+  color=rom[logo_addr-0x08000000+(y-23)*logo_w+x-104]
+  if color!=7:return color
+ return 6 if (x-5)%23==0 else 7
+check('full beta version is right-aligned over the original grid and logo',
+      all(title_pixels[y*240+x]==title_label_pixel(x,y) for y in range(122,128) for x in range(version_x,230)))
 check('version keeps the grid cell border intact',all(title_pixels[y*240+234]==6 for y in range(115,134)) and all(title_pixels[134*240+x]==6 for x in range(213,235)))
 check('version no longer touches the dedication',all(title_pixels[y*240+x]==7 for y in range(8) for x in range(208,232)))
 
@@ -141,7 +151,7 @@ check('longest word keeps fixed end cells and input in bounds',answer()[len(word
 
 # All 32 moving phases: compare actual ink to explicit hand-hinted masks.
 labels=json.loads((ROOT/'build/generated/wheel-labels.json').read_text())
-bank=asset('wheel_bitmaps',32*128*112);contact=bytearray(1920*640);numeric_checks=0
+contact=bytearray(1920*640);numeric_checks=0
 for phase in range(32):
  for i,v in {3:2,5:2,7:(12-phase//2)&15,74:100,75:100000,76:0}.items():e.poke(i,v)
  write('scene',phase&1,152);write('scene',read('video_ticks'),20);write('message1',0);write('dirty',1);e.run(24)
@@ -188,18 +198,18 @@ def composite(canvas,seed,n):
 def cash_fixture(amount):
  for i,v in {3:7,5:2,79:0,81:0,82:1,83:amount}.items():e.poke(i,v)
  e.tap(8);check(f'{amount} rubles opens dedicated payout',e.state()[3]==21 and read('cash')==0)
- return memory('cash_canvas',38400),read('cash',8)
+ return unpack_tiles(memory('cash_canvas',19200),240,160),read('cash',8)
 frames=[];timings=[];skip_timings=[]
 for amount in (100,1000,100000,1000000):
  canvas,seed=cash_fixture(amount);check(f'{amount} rubles has exact original bill count',read('cash',4)==amount//10)
  if amount==1000:shot('cash-screen-v11.png');frames.append(e.raw)
  if amount>=100000:
-  expected=asset('cash_finished_bitmap',38400);end_seed=seed
+  expected=unpack_tiles(asset('cash_finished_tiles',19200),240,160);end_seed=seed
   for _ in range(amount//10*3):end_seed=(end_seed*134775813+1)&0xffffffff
  else:expected,end_seed=composite(canvas,seed,amount//10)
  e.run(140);drawn=read('cash');check(f'{amount} rubles accumulates bills',drawn>0)
- e.tap(3);paused=memory('cash_canvas',38400);n=read('cash');e.run(120)
- check(f'{amount} rubles pauses without changing bills',e.state()[3]==23 and memory('cash_canvas',38400)==paused and read('cash')==n)
+ e.tap(3);paused=unpack_tiles(memory('cash_canvas',19200),240,160);n=read('cash');e.run(120)
+ check(f'{amount} rubles pauses without changing bills',e.state()[3]==23 and unpack_tiles(memory('cash_canvas',19200),240,160)==paused and read('cash')==n)
  e.tap(3);e.run(8);check(f'{amount} rubles restores scene from pause',e.state()[3]==21)
  if read('cash')<read('cash',4):
   started=read('video_ticks');e.tap(8)
@@ -208,9 +218,9 @@ for amount in (100,1000,100000,1000000):
   skip_timings.append(dict(rubles=amount,vblanks=latency))
   if amount>=100000:check(f'{amount} ruble skip completes within twelve VBlanks',latency<=12)
  e.until(lambda s:read('cash')==read('cash',4),limit=3000);e.run(16)
- check(f'{amount} skip uses prepared picture' if amount>=100000 else f'{amount} skip equals every original stamp',memory('cash_canvas',38400)==expected and read('cash',8)==end_seed)
+ check(f'{amount} skip uses prepared picture' if amount>=100000 else f'{amount} skip equals every original stamp',unpack_tiles(memory('cash_canvas',19200),240,160)==expected and read('cash',8)==end_seed)
  check(f'{amount} completed screen waits for next A',e.state()[3]==21)
- check(f'{amount} bills preserve bottom margin and footer canvas',memory('cash_canvas',38400)[150*240:]==canvas[150*240:])
+ check(f'{amount} bills preserve bottom margin and footer canvas',unpack_tiles(memory('cash_canvas',19200),240,160)[150*240:]==canvas[150*240:])
  check(f'{amount} completed payout advertises continuation',footer_matches('A: Продолжить'))
  if amount==1000000:shot('cash-filled-v11.png')
  e.tap(8);check(f'{amount} completed payout proceeds to farewell',e.state()[3]==10 and e.state()[82]==0)
@@ -221,7 +231,7 @@ started=read('cash',12);e.run(120);audio=len(e.audio)
 while read('cash')<100:
  e.run(3);frames.append(e.raw)
 elapsed=read('video_ticks')-started;timings.append(dict(banknotes=100,vblanks=elapsed,seconds=elapsed/e.fps))
-check('natural payout equals exact independent compositor',memory('cash_canvas',38400)==expected and read('cash',8)==end_seed)
+check('natural payout equals exact independent compositor',unpack_tiles(memory('cash_canvas',19200),240,160)==expected and read('cash',8)==end_seed)
 check('natural bill rate tracks measured 5000-cycle DOS within rendering tolerance',abs(elapsed/e.fps-100*.005672)<.15)
 check('payout audio reaches real mGBA output',any(any(block) for block in e.audio[audio:]))
 with wave.open(str(ROOT/'build/qa/cash-v11.wav'),'wb') as w:
@@ -238,7 +248,7 @@ if '--long' in sys.argv:
   e.run(100)
   if read('cash')//10000>last:last=read('cash')//10000;print(f'Natural payout: {read("cash")}/100000',flush=True)
  elapsed=(read('video_ticks')-start)/e.fps
- check('natural million completes every bill without duration cap',memory('cash_canvas',38400)==expected and read('cash',8)==end_seed)
+ check('natural million completes every bill without duration cap',unpack_tiles(memory('cash_canvas',19200),240,160)==expected and read('cash',8)==end_seed)
  check('natural million matches DOS duration',abs(elapsed-567.2)<3)
  timings.append(dict(banknotes=100000,seconds=elapsed))
 

@@ -2,20 +2,43 @@
 #define main link_regression_main
 #include "test-link.c"
 #undef main
+#include "ppu-sample.h"
 static uint32_t prefs_addr,avatars_addr,create_addr,avatar_edit_addr,host_addr;
 static int scenario,graphics,host,retried;
 static uint32_t address(const char*name){const char*v=getenv(name);assert(v);return strtoul(v,0,16);}
+static color_t displayed_pixel(int node,int x,int y){
+ const void*buffer;size_t stride;c[node]->getPixels(c[node],&buffer,&stride);
+ return ((const color_t*)buffer)[y*stride+x]&M_COLOR_WHITE;
+}
+/* Observe the cartridge's final display-register write with every serial,
+ * VBlank and sound IRQ active. Only commits during the actual playthrough
+ * are counted, not hardware reset/boot. */
+static uint16_t (*write_video)(struct GBAVideoRenderer*,uint32_t,uint16_t);
+static struct {unsigned commits,late,max_cycles,mode;} vblank_profile[3];
+static uint16_t trace_display(struct GBAVideoRenderer*r,uint32_t reg,uint16_t value){
+ if(reg==REG_DISPCNT)for(int i=0;i<count;i++)if(g[i]->video.renderer==r){
+  struct GBA*gba=g[i];
+  unsigned line=gba->video.vcount;
+  unsigned cycles=cycles_since_vblank(gba);
+  vblank_profile[i].commits++;
+  if(line<160)vblank_profile[i].late++;
+  if(cycles>vblank_profile[i].max_cycles){
+   vblank_profile[i].max_cycles=cycles;vblank_profile[i].mode=rd(i,game_addr+12);
+  }
+  break;
+ }
+ return write_video(r,reg,value);
+}
 static void capture(const char*stage){
  const char*directory=getenv("ROLE_SCREENSHOTS");
  if(!directory||count!=2||(scenario!=1&&scenario!=8)||graphics!=1)return;
  for(int i=0;i<count;i++){
   char path[1024];snprintf(path,sizeof path,"%s/%s-port%d.ppm",directory,stage,i);
   FILE*out=fopen(path,"wb");assert(out);fprintf(out,"P6\n240 160\n255\n");
-  unsigned page=(c[i]->busRead16(c[i],0x04000000)&16)?0xa000:0;
-  for(unsigned j=0;j<240*160;j++){
-   unsigned index=c[i]->busRead8(c[i],0x06000000+page+j);
-   unsigned rgb=c[i]->busRead16(c[i],0x05000000+index*2);
-   fputc((rgb&31)*255/31,out);fputc(((rgb>>5)&31)*255/31,out);fputc(((rgb>>10)&31)*255/31,out);
+  for(unsigned y=0;y<160;y++)for(unsigned x=0;x<240;x++){
+   color_t pixel=displayed_pixel(i,x,y);
+   unsigned rgb=ppu_rgb555(pixel);
+   fputc(M_R8(rgb),out);fputc(M_G8(rgb),out);fputc(M_B8(rgb),out);
   }
   fclose(out);
  }
@@ -42,17 +65,18 @@ static void configure(int i){
  wr(i,prefs_addr+16,1);wr(i,prefs_addr+20,5);
 }
 static unsigned key_color(int node,unsigned cursor){
- unsigned page=(c[node]->busRead16(c[node],0x04000000)&16)?0xa000:0;
- return c[node]->busRead8(c[node],0x06000000+page+(88+cursor/8*16)*240+10+cursor%8*28);
+ color_t sample=displayed_pixel(node,10+cursor%8*28,88+cursor/8*16);
+ for(unsigned i=0;i<16;i++)
+  if(sample==mColorFrom555(c[node]->busRead16(c[node],0x05000000+2*i)))return i;
+ return 16;
 }
 static void verify_keyboard_frame(int node,int shared){
- unsigned char pixels[240*160];
- unsigned page=(c[node]->busRead16(c[node],0x04000000)&16)?0xa000:0;
- for(unsigned i=0;i<sizeof pixels;i++)pixels[i]=c[node]->busRead8(c[node],0x06000000+page+i);
+ color_t pixels[160][240];
+ for(int y=0;y<160;y++)for(int x=0;x<240;x++)pixels[y][x]=displayed_pixel(node,x,y);
  if(shared){wr(node,address("ROLE_KEYBOARD_VALID"),0);wr(node,address("ROLE_DIRTY"),1);}
  else{wr(node,address("ROLE_PROFILE_CURSOR"),0xffffffffu);wr(node,address("ROLE_PROFILE_RENDER_KEY"),0xffffffffu);}
- run(24);page=(c[node]->busRead16(c[node],0x04000000)&16)?0xa000:0;
- for(unsigned i=0;i<sizeof pixels;i++)assert(pixels[i]==c[node]->busRead8(c[node],0x06000000+page+i));
+ run(24);
+ for(int y=0;y<160;y++)for(int x=0;x<240;x++)assert(pixels[y][x]==displayed_pixel(node,x,y));
  printf("PASS: incremental %s keyboard matches a full redraw (node %d)\n",shared?"game":"name",node);
 }
 static void latency(const char*label,int node,uint32_t cursor,int shared){
@@ -282,6 +306,10 @@ int main(int argc,char**argv){
  run(100);for(int i=0;i<count;i++)for(int j=0;j<128;j++)saved[i][j]=c[i]->busRead8(c[i],0x0e000000+j);
  press(-1,1);press(-1,128);press(-1,128);press(-1,1);
  for(int i=0;i<count;i++)assert(rd(i,game_addr+12)==39);
+ if(getenv("LINK_VBLANK_PROFILE"))for(int i=0;i<count;i++){
+  write_video=g[i]->video.renderer->writeVideoRegister;
+  g[i]->video.renderer->writeVideoRegister=trace_display;
+ }
  elect();
  if(getenv("LINK_LATENCY"))for(int i=0;i<count;i++)latency("name",i,address("ROLE_NAME_CURSOR"),0);
  if(scenario==7){
@@ -293,6 +321,11 @@ int main(int argc,char**argv){
  }
  if(scenario!=9||count!=3)play();
  for(int i=0;i<count;i++)for(int j=0;j<128;j++)assert(c[i]->busRead8(c[i],0x0e000000+j)==saved[i][j]);
+ if(getenv("LINK_VBLANK_PROFILE"))for(int i=0;i<count;i++){
+  printf("VBLANK port=%d commits=%u late=%u max_cycles=%u mode=%u\n",i,
+    vblank_profile[i].commits,vblank_profile[i].late,vblank_profile[i].max_cycles,vblank_profile[i].mode);
+  assert(vblank_profile[i].commits&&!vblank_profile[i].late);
+ }
  printf("PASS create/join count=%d host=%d scenario=%d graphics=%d: election, profiles, settings, input, disconnect, SRAM\n",count,host,scenario,graphics);
  return 0;
 }

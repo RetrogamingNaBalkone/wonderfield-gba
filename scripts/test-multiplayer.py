@@ -19,13 +19,14 @@ def accept_name(e):
   tap(e,8)
  tap(e,3);assert e.state()[3]==33
  tap(e,8)
-def options(e,humans=1,link=False):
+def options(e,humans=1,link=False,open_lobby=True):
  e.run(100);tap(e,8);assert e.state()[3]==26
  for _ in range(0 if humans==1 else 2 if link else 1):tap(e,5)
  tap(e,8)
  if link:
   assert e.state()[3]==39;tap(e,8);assert e.state()[3]==32
-  tap(e,8);assert e.state()[3]==30;return
+  if open_lobby:tap(e,8);assert e.state()[3]==30
+  return
  if humans>1 and not link:
   assert e.state()[3]==34
   if humans==3:tap(e,5)

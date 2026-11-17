@@ -35,7 +35,7 @@ static SoundCommand sound_command;
 static void game_effect(unsigned id,u32 seed){sound_command.sequence++;sound_command.type=1;sound_command.a=id;sound_command.seed=seed;speaker_effect(id,seed);}
 static void game_tone(int hz,int duration){sound_command.sequence++;sound_command.type=2;sound_command.a=hz;sound_command.b=duration;speaker_tone(hz,duration);}
 static u8 framebuffer[240*160] __attribute__((aligned(4)));
-static u8 cash_canvas[240*160] __attribute__((aligned(4)));
+static u32 cash_canvas[600*8];
 typedef struct {u32 drawn,total,rng,next_at,pause_at;int ready;u32 credit;} Cash;
 static volatile Cash cash;
 static u32 cash_initial_seed;
@@ -177,7 +177,6 @@ static unsigned divide(unsigned a,unsigned b){unsigned q=0,r=0;for(int i=31;i>=0
 static int len(const char *s){int n=0;while(s[n])n++;return n;}
 static unsigned random_n(unsigned n){game.rng=game.rng*134775813u+1;return (game.rng>>16)%n;}
 static void effect(unsigned id){u32 seed=game.rng;if(!id)for(int i=0;i<6;i++)random_n(100);game_effect(id,seed);}
-static void pixel(int x,int y,u8 c){if((unsigned)x<240 && (unsigned)y<160)framebuffer[y*240+x]=c;}
 /* Hot drawing primitives run as ARM code from IWRAM, several times faster than
  * Thumb from the cartridge. They call nothing outside IWRAM. */
 #define FAST __attribute__((section(".iwram"),target("arm"),noinline,no_builtin))
@@ -188,10 +187,90 @@ FAST static void fill_bytes(u8*d,int n,u8 c){
  while(n>=4){*q++=w;n-=4;}
  d=(u8*)q;while(n-->0)*d++=c;
 }
+/* Software-drawn ink goes straight into GBA tile rows. Bounds are in tiles.
+ * On a repaint clear the previous ink and upload the union of the two bounds;
+ * untouched rows survive animation entirely in VRAM. */
+typedef struct {
+ u32 *tiles;
+ int first,rows;
+ u8 left[20],right[20],old_left[20],old_right[20];
+} InkLayer;
+static InkLayer *ink;
+
+static void ink_begin(InkLayer*layer,int erase){
+ ink=layer;
+ for(int y=0;y<layer->rows;y++){
+  int l=layer->left[y],r=layer->right[y];
+  layer->old_left[y]=l;layer->old_right[y]=r;
+  if(erase&&r>l)fill_bytes((u8*)(layer->tiles+(y*30+l)*8),(r-l)*32,0);
+  layer->left[y]=30;layer->right[y]=0;
+ }
+}
+FAST static void ink_rect(int x,int y,int w,int h,u8 color){
+ InkLayer*l=ink;
+ int lx=x/8,rx=(x+w+7)/8,first=y/8-l->first,last=(y+h-1)/8-l->first;
+ u32 value=(color^13)*0x11111111u;
+ if(x==0&&w==240&&!(y&7)&&!(h&7)){
+  fill_bytes((u8*)(l->tiles+first*240),h*120,(u8)value);
+  for(int ty=first;ty<=last;ty++){l->left[ty]=0;l->right[ty]=30;}
+  return;
+ }
+ u32 left_mask=~0u<<((x&7)*4),right_mask=~0u>>((-(x+w)&7)*4);
+ for(int ty=first;ty<=last;ty++){
+  if(lx<l->left[ty])l->left[ty]=lx;if(rx>l->right[ty])l->right[ty]=rx;
+  int top=ty==first?(y&7):0,end=ty==last?((y+h-1)&7)+1:8;
+  u32*p=l->tiles+(ty*30+lx)*8;
+  for(int tx=lx;tx<rx;tx++,p+=8){
+   u32 mask=(tx==lx?left_mask:~0u)&(tx==rx-1?right_mask:~0u);
+   if(mask==~0u){for(int row=top;row<end;row++)p[row]=value;}
+   else for(int row=top;row<end;row++)p[row]=(p[row]&~mask)|(value&mask);
+  }
+ }
+}
+/* Prepacked (mask, colour) pairs for the two frequently stamped assets.
+ * All badge and banknote placements fit entirely inside their layer. */
+FAST static void ink_stamp(InkLayer*l,const u32*p,int x,int y,int w,int h){
+ int tx=x>>3,right=(x+w+7)>>3,shift=(x&7)*4;
+ for(int row=0;row<h;row++,y++){
+  int ty=(y>>3)-l->first;
+  if(tx<l->left[ty])l->left[ty]=tx;if(right>l->right[ty])l->right[ty]=right;
+  u32*d=l->tiles+(ty*30+tx)*8+(y&7),tail_mask=0,tail_value=0;
+  for(int col=0;col<w;col+=8,d+=8){
+   u32 mask=*p++,value=*p++;
+   *d=(*d&~((mask<<shift)|tail_mask))|(value<<shift)|tail_value;
+   if(shift){tail_mask=mask>>(32-shift);tail_value=value>>(32-shift);}
+  }
+  if(tail_mask)*d=(*d&~tail_mask)|tail_value;
+ }
+}
+/* Each glyph crosses at most two tile columns. Draw full glyph rows with
+ * pre-expanded nibble masks instead of issuing one clipped span per dot. */
+FAST static void ink_glyph(int x,int y,const u8*font,int h,u8 color){
+ InkLayer*l=ink;
+ u32 paint=(color^13)*0x11111111u;
+ int start=x<0?0:x,end=x+8>240?240:x+8;
+ if(start>=end)return;
+ for(int j=0;j<h;j++){
+  int py=y+j;if((unsigned)py>=160)continue;
+  int ty=(py>>3)-l->first,lx=start>>3,rx=(end+7)>>3;
+  if(lx<l->left[ty])l->left[ty]=lx;if(rx>l->right[ty])l->right[ty]=rx;
+  u32 mask=studio_font_mask[font[j]];
+  u32*p=l->tiles+(ty*30+lx)*8+(py&7);
+  if(x<0)mask>>=(-x)*4;
+  int shift=(start&7)*4;
+  u32 low=mask<<shift;*p=(*p&~low)|(paint&low);
+  if(rx-lx==2){u32 high=mask>>(32-shift);p[8]=(p[8]&~high)|(paint&high);}
+ }
+}
+static void pixel(int x,int y,u8 c){
+ if((unsigned)x>=240||(unsigned)y>=160)return;
+ if(ink)ink_rect(x,y,1,1,c);else framebuffer[y*240+x]=c;
+}
 FAST static void rect(int x,int y,int w,int h,u8 c){
  if(x<0){w+=x;x=0;}if(y<0){h+=y;y=0;}
  if(x>=240||y>=160||w<=0||h<=0)return;
  if(w>240-x)w=240-x;if(h>160-y)h=160-y;
+ if(ink){ink_rect(x,y,w,h,c);return;}
  u8*row=framebuffer+y*240+x;
  /* Narrow spans (borders, separators) are cheaper without a fill call. */
  if(w<8){for(int j=0;j<h;j++,row+=240)for(int i=0;i<w;i++)row[i]=c;return;}
@@ -200,6 +279,7 @@ FAST static void rect(int x,int y,int w,int h,u8 c){
 static void line(int x,int y,int w,u8 c){rect(x,y,w,1,c);}
 FAST static void glyph(int x,int y,unsigned c,int small,u8 color){
  int h=small?8:14;const u8*f=(small?font8:font14)+c*h;
+ if(ink){ink_glyph(x,y,f,h,color);return;}
  if(x>=0&&x<=232&&y>=0&&y+h<=160){
   u8*row=framebuffer+y*240+x;
   for(int j=0;j<h;j++,row+=240){unsigned bits=f[j];for(int i=0;bits;i++,bits=(bits<<1)&255)if(bits&128)row[i]=color;}
@@ -221,8 +301,20 @@ static void vblank(void){
   while(REG16(0x04000006)<160)poll_startup_keys();
  }else{while(REG16(0x04000006)>=160){}while(REG16(0x04000006)<160){}}
 }
-static void dma_words(u32*destination,const u32*source,unsigned count){while(count){unsigned n=count>64?64:count;REG32(0x040000d4)=(u32)source;REG32(0x040000d8)=(u32)destination;REG32(0x040000dc)=0x84000000|n;source+=n;destination+=n;count-=n;}}
-static void present(void){static unsigned page;page^=1;u32*destination=(u32*)(page?0x0600a000:0x06000000);dma_words(destination,(const u32*)framebuffer,9600);vblank();REG16(0x04000000)=0x0404|(page?16:0);}
+FAST static void dma_words(u32*destination,const u32*source,unsigned count){while(count){unsigned n=count>64?64:count;REG32(0x040000d4)=(u32)source;REG32(0x040000d8)=(u32)destination;REG32(0x040000dc)=0x84000000|n;source+=n;destination+=n;count-=n;}}
+#include "studio.inc"
+static void present(void){static unsigned page;
+ if(studio_frame){studio_present();return;}
+ if(studio_live){
+  /* Page one overlaps BG0, screen maps and the OBJ atlas. Its middle
+   * 5344 bytes lie between the UI tiles and SBB28 and can be filled early. */
+  page=1;u32*dest=(u32*)0x0600a000;const u32*src=(const u32*)framebuffer;
+  unsigned gap=(0xcb20-0xa000)/4,maps=(0xe000-0xa000)/4;
+  dma_words(dest+gap,src+gap,maps-gap);
+  vblank();dma_words(dest,src,gap);dma_words(dest+maps,src+maps,9600-maps);
+  REG16(0x05000000)=palette[0];REG16(0x04000000)=0x0414;studio_live=0;return;
+ }
+ page^=1;u32*destination=(u32*)(page?0x0600a000:0x06000000);dma_words(destination,(const u32*)framebuffer,9600);vblank();REG16(0x04000000)=0x0404|(page?16:0);}
 static void save(void){
  volatile u8*s=(volatile u8*)0x0e000000;u32 hash=2166136261u;int p=4;
  for(int i=0;i<8;i++){for(int j=0;j<11;j++)s[p++]=record_names[i][j];for(int j=0;j<4;j++)s[p++]=record_scores[i]>>(j*8);}
@@ -882,7 +974,7 @@ static void link_render_game(void){
   u32 key=link_hash(&body,sizeof body)^visual_key()^presentation_event^(unsigned)sound_on^solve_fixed;
   if(link_keyboard_valid&&key==link_keyboard_key){
    if(game.cursor==link_keyboard_cursor){game.cursor=cursor;game.choice=choice;dirty=0;vblank();return;}
-   keyboard_key(link_keyboard_cursor);keyboard_key(game.cursor);
+   studio_keyboard_update(link_keyboard_cursor,game.cursor);
   }else render();
   link_keyboard_valid=1;link_keyboard_key=key;link_keyboard_cursor=game.cursor;
  }else{link_keyboard_valid=0;render();}
@@ -893,7 +985,7 @@ void gba_main(void){
  REG16(0x0400010a)=0;REG16(0x0400010e)=0;
  REG16(0x04000108)=0;REG16(0x0400010c)=0;
  REG16(0x0400010e)=0x84;REG16(0x0400010a)=0x80;
- extern void gba_irq(void);REG32(0x03007ffc)=(u32)gba_irq;game.magic=0x504f4c45;REG16(0x04000204)=0x4317;game.rng=boot_seed();game.word_id=-1;game.best=load();REG16(0x04000000)=0x0404;for(int i=0;i<16;i++)((volatile u16*)0x05000000)[i]=palette[i];speaker_init();REG16(0x04000200)|=1;REG16(0x04000004)|=8;set_mode(TITLE);
+ extern void gba_irq(void);REG32(0x03007ffc)=(u32)gba_irq;game.magic=0x504f4c45;REG16(0x04000204)=0x4317;game.rng=boot_seed();game.word_id=-1;game.best=load();REG16(0x04000000)=0x0404;for(int i=0;i<16;i++)((volatile u16*)0x05000000)[i]=palette[i];studio_palette();speaker_init();REG16(0x04000200)|=1;REG16(0x04000004)|=8;set_mode(TITLE);
  for(;;){
   /* VBlank queues taps even while a bitmap is being drawn. Drain in order. */
   u16 ime=REG16(0x04000208);REG16(0x04000208)=0;capture_keys();

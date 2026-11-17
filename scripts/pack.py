@@ -2,6 +2,7 @@
 from pathlib import Path
 import json,struct,re,math
 from extract import ROOT,OUT,SRC,EGA
+from studio_tiles import emit_studio,tiles,keyboard_tiles,credits_tiles,cash_backdrop
 from pixel_art import outlined_resize,wheel_symbol,logo_resize,snickers_label
 from vendor.nayuki.qrcodegen import QrCode,QrSegment
 GEN=ROOT/'build/generated'; GEN.mkdir(parents=True,exist_ok=True)
@@ -55,11 +56,12 @@ def main():
  code.append('const Sprite sprites[57]={'+','.join(sprites)+'};\n')
  code.append('const Sprite sprites_half[57]={'+','.join(half_refs)+'};\n')
  # Extra DOS characters and human back poses; the original 57 assets are untouched.
- extra_refs=[]
+ extra_refs=[];extra=[]
  for index,item in enumerate(json.loads((OUT/'mp-sprites.json').read_text())):
   w,h=item['width'],item['height'];raw=(OUT/f"mp-sprite-{item['id']:02}.bin").read_bytes()
   scale=min(.5,29/((99 if item['id'] in (21,22,57,58,59) else w)*35/48));sw=max(1,round(w*35/48*scale));sh=max(1,round(h*scale))
   pixels=outlined_resize(raw,w,h,sw,sh,2)
+  extra.append((sw,sh,pixels))
   code.append(arr(f'extra_data_{index}',pixels));extra_refs.append(f'{{{sw},{sh},extra_data_{index}}}')
  code.append('const Sprite extra_sprites[13]={'+','.join(extra_refs)+'};\n')
  # Reduce each logo directly from the repaired source mask, preserving fine
@@ -87,13 +89,16 @@ def main():
     if color!=transparent:finished[row+xx]=color
  for id,x,y,transparent in ((46,4,4,7),(47,73,4,7),(27,185,75,-1),(45,196,76,-1),(43,204,94,-1)):
   cash_blit(half[id],x,y,transparent)
+ cash_static,cash_ground_bytes=cash_backdrop(arr,finished)
+ code.append(cash_static)
+ code.append(arr('cash_base_tiles',tiles(finished,240,160,13)))
  seed=1
  for _ in range(100000):
   seed=(seed*134775813+1)&0xffffffff
   seed=(seed*134775813+1)&0xffffffff;x=((seed>>16)%400)*35//96
   seed=(seed*134775813+1)&0xffffffff;y=((seed>>16)%295)*(150-half[56][1]+1)//295
   cash_blit(half[56],x,y,2,150)
- code.append(arr('cash_finished_bitmap',finished))
+ code.append(arr('cash_finished_tiles',tiles(finished,240,160,13)))
  stage=build_stage(half)
  # Bake wheel composites from original sprites; scaling is not repeated per frame.
  labels=[4,5,12,6,14,7,13,6,12,8,11,5,10,7,9,8]
@@ -135,10 +140,12 @@ def main():
    blit((w,h,b),x,y,7)
   blit(half[16],63,33,7)
   wheel.extend(pixels)
- code.append(arr('wheel_bitmaps',wheel))
+ studio,ground_bytes,atlas_bytes=emit_studio(arr,stage,wheel,half,extra,normalized)
+ code.append(studio)
+ code.append(keyboard_tiles(arr,(OUT/'font-14.bin').read_bytes()))
  assert all(p['noncontrasting_pixels']==0 and p['overlapping_pixels']==0 for p in wheel_labels),'Sector signs leave their contrasting wedge'
  (GEN/'wheel-labels.json').write_text(json.dumps(wheel_labels,indent=2))
- code.append(arr('stage_background',stage))
+
  for h in (6,8,14):code.append(arr(f'font{h}',(OUT/f'font-{h}.bin').read_bytes()))
  words=json.loads((OUT/'words-expanded.json').read_text(encoding='utf-8'))
  base_words=json.loads((OUT/'words.json').read_text(encoding='utf-8'))
@@ -173,18 +180,25 @@ def main():
   p=header+off;n=exe[p];b=exe[p+1:p+1+n]
   if 0<n<=120 and all(x>=32 for x in b):literals.append((off,b))
  for off,b in literals:code.append(f'const char msg_{off:x}[]={cstr(b)};\n')
+ credit_ids=(0x4ebd,0x4ecf,0x4ee3,0x4ef5,0x4f08,0x4f18,0x4f2a,0x4f38,0x4f47,0x4f5a)
+ credit_text=dict(literals)
+ code.append(arr('studio_credits',credits_tiles([credit_text[i] for i in credit_ids],(OUT/'font-14.bin').read_bytes(),(OUT/'font-8.bin').read_bytes())))
  (GEN/'assets.c').write_text(''.join(code),encoding='ascii')
- fingerprint=int.from_bytes(__import__('hashlib').sha256(b''.join((ROOT/'src'/n).read_bytes() for n in ('main.c','presentation.inc','scene.inc','link.inc','link-test.inc'))+''.join(code).encode('ascii')).digest()[:4],'little')
+ fingerprint=int.from_bytes(__import__('hashlib').sha256(b''.join((ROOT/'src'/n).read_bytes() for n in ('main.c','presentation.inc','scene.inc','link.inc','link-test.inc','studio.inc'))+''.join(code).encode('ascii')).digest()[:4],'little')
  hdr=f'#define BASE_WORD_COUNT 495\n#define WORD_COUNT {len(words)}\n#define MULTIPLAYER_BUILD 0x{fingerprint:08x}u\n'
  hdr+='#pragma once\ntypedef struct {int w,h;const unsigned char *data;} Sprite;\ntypedef struct {const char *word,*topic;} Word;\nextern const Sprite sprites[57];\nextern const Word words[WORD_COUNT];\nextern const unsigned char font6[],font8[],font14[],opponent_sprites[6];\nextern const char *const opponent_names[6];\nextern const short wheel_sectors[16],sector_values[12];\nextern const unsigned short palette[16];\n'
- hdr+='extern const Sprite extra_sprites[13];\nextern const Sprite sprites_half[57];\nextern const unsigned char wheel_bitmaps[],stage_background[];\nextern const char *const gift_names[10];\nextern const char *const initial_names[8];\nextern const unsigned short initial_scores[8];\n'
- hdr+='extern const unsigned char cash_finished_bitmap[];\n'
+ hdr+='extern const unsigned int studio_font_mask[256],studio_badge[],studio_note[];\nextern const int speech_left[],speech_right[];\n'
+ hdr+='typedef struct {unsigned short tile;unsigned char cols,rows,bank;} StudioObject;\n'
+ hdr+='extern const StudioObject obj_half[57],obj_extra[13],obj_full[57];\n'
+ hdr+=f'extern const unsigned char studio_ground[{ground_bytes}],studio_atlas[{atlas_bytes}],studio_maps[],studio_credits[],studio_board_base[],keyboard_stage[],keyboard_solve[],studio_wheel[],studio_wheel_shifted[];\n'
+ hdr+='extern const Sprite extra_sprites[13];\nextern const Sprite sprites_half[57];\nextern const char *const gift_names[10];\nextern const char *const initial_names[8];\nextern const unsigned short initial_scores[8];\n'
+ hdr+=f'extern const unsigned char cash_ground[{cash_ground_bytes}],cash_map[],cash_base_tiles[],cash_finished_tiles[];\n'
  hdr+='extern const Sprite title_logos[2];\n'
  hdr+='extern const Sprite certificate_logos[2];\n'
  hdr+='extern const unsigned char channel_qr[106];\n'
  hdr+=''.join(f'extern const char msg_{off:x}[];\n' for off,b in literals)
  (GEN/'assets.h').write_text(hdr)
- for name in ('main.c','presentation.inc','scene.inc','link.inc','link-test.inc'):
+ for name in ('main.c','presentation.inc','scene.inc','link.inc','link-test.inc','studio.inc'):
   source=(ROOT/'src'/name).read_text(encoding='utf-8')
   source=re.sub(r'"(?:[^"\\]|\\.)*"',lambda m:cstr(m.group()[1:-1].encode('cp866')) if any(ord(c)>127 for c in m.group()) else m.group(),source)
   (GEN/name).write_text(source,encoding='ascii')

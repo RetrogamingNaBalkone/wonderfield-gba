@@ -46,10 +46,7 @@ static void cash_note(void){
  /* Fit the whole bill above the footer, with a two-pixel bottom margin.
   * Scale the original draw so the RNG sequence and payout pace stay intact. */
  int px=(int)(x*35/96),py=(int)(y*(150-s->h+1)/295);
- for(int yy=0;yy<s->h;yy++)for(int xx=0;xx<s->w;xx++){
-  int dx=px+xx,dy=py+yy;u8 c=s->data[yy*s->w+xx];
-  if(c!=2&&(unsigned)dx<240&&(unsigned)dy<150)cash_canvas[dy*240+dx]=c;
- }
+ ink_stamp(&cash_ink,studio_note,px,py,s->w,s->h);
  unsigned before=cash.drawn*5672/1000;cash.drawn++;
  if(!cash_replaying)speaker_queue_tone(hz,cash.drawn*5672/1000-before);
 }
@@ -57,20 +54,19 @@ static void cash_skip(void){
  if(cash.total>=10000){
   /* A fixed finished picture makes even a million-ruble skip constant-time. */
   cash.rng=cash_advance(cash.rng,(cash.total-cash.drawn)*3);
-  dma_words((u32*)cash_canvas,(const u32*)cash_finished_bitmap,9600);
+  dma_words(cash_canvas,(const u32*)cash_finished_tiles,sizeof cash_canvas/4);cash_full=1;
   cash.drawn=cash.total;
  }else while(cash.drawn<cash.total)cash_note();
  cash.ready=1;scene.host_active=0;game_tone(0,1);dirty=1;
 }
 static void cash_background(void){
- rect(0,0,240,160,7);half_image(46,4,4,7);half_image(47,73,4,7);
- half_image(27,185,75,-1);half_image(45,196,76,-1);half_image(43,204,94,-1);
- dma_words((u32*)cash_canvas,(const u32*)framebuffer,9600);
+ dma_words(cash_canvas,(const u32*)cash_base_tiles,sizeof cash_canvas/4);
+ cash_full=cash_has_base=1;
 }
 static void cash_remote_sync(const Cash*target,u32 seed){
  static u32 previous_seed;static int valid;cash_replaying=1;
  if(!valid||previous_seed!=seed||cash.drawn>target->drawn){cash_background();cash.drawn=0;cash.rng=seed;previous_seed=seed;valid=1;}
- if(target->total>=10000&&target->drawn==target->total){dma_words((u32*)cash_canvas,(const u32*)cash_finished_bitmap,9600);}
+ if(target->total>=10000&&target->drawn==target->total){dma_words(cash_canvas,(const u32*)cash_finished_tiles,sizeof cash_canvas/4);cash_full=1;}
  else while(cash.drawn<target->drawn)cash_note();
  link_copy(&cash,target,sizeof cash);cash_replaying=0;
 }

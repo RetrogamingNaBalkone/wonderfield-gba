@@ -39,17 +39,16 @@ e=Emulator();m['menu'](e,1);m['accept_name'](e);m['accept_name'](e);e.run(1400)
 e.poke(3,2);e.poke(75,10000)
 scene=bytearray(read(e,'scene',180));struct.pack_into('<i',scene,152,0);write(e,'scene',bytes(scene))
 write(e,'dirty',struct.pack('<i',1));e.run(60)
-frame=read(e,'framebuffer',240*160)
-rom=(ROOT/'build/gba/pole.gba').read_bytes()
+frame=e.palette_indices()
 spin_half=struct.unpack_from('<i',read(e,'scene',180),152)[0]
 phase=(24-e.state()[7]*2+spin_half)&31
-bank=e.sym['wheel_bitmaps']-0x08000000+phase*128*112
+wheel=e.wheel_pixels();bank=phase*128*112
 for y in range(132,144):
- assert frame[y*240+28:y*240+156]==rom[bank+(y-44)*128:bank+(y-44+1)*128],y
+ assert frame[y*240+28:y*240+156]==wheel[bank+(y-44)*128:bank+(y-44+1)*128],y
 e.screenshot('panel-bottom-spin.png')
 # A displayed control hint covers scores; it does not reserve a permanent row.
 e.poke(3,4);write(e,'dirty',struct.pack('<i',1));e.run(60)
-frame=read(e,'framebuffer',240*160)
+frame=e.palette_indices()
 assert set(frame[152*240:])<=set((0,7))
 e.screenshot('panel-bottom-hint.png');e.close()
 print('PASS: direct mode menu, all five routes, back navigation, wheel clearance, bottom hint overlay')

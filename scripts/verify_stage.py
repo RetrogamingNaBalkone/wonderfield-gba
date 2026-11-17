@@ -17,7 +17,7 @@ while e.state()[3]==15:e.tap(8)
 rom=(ROOT/'build/gba/pole.gba').read_bytes()
 palette=struct.unpack_from('<16H',rom,e.sym['palette']-0x08000000)
 font8=(ROOT/'assets/font-8.bin').read_bytes()
-stage=rom[e.sym['stage_background']-0x08000000:e.sym['stage_background']-0x08000000+38400]
+stage=e.studio_background()
 def scene(off):return struct.unpack('<I',c.string_at(e.ram+e.sym['scene']-0x02000000+off,4))[0]
 def write_scene(off,value):c.memmove(e.ram+e.sym['scene']-0x02000000+off,struct.pack('<I',value),4)
 def poke_rng(seed):e.poke(2,seed if seed<0x80000000 else seed-0x100000000)
@@ -100,7 +100,7 @@ e.core.retro_serialize_size.restype=c.c_size_t;state_size=e.core.retro_serialize
 e.core.retro_serialize.argtypes=[c.c_void_p,c.c_size_t];e.core.retro_serialize.restype=c.c_bool
 e.core.retro_unserialize.argtypes=[c.c_void_p,c.c_size_t];e.core.retro_unserialize.restype=c.c_bool
 buffer=c.create_string_buffer(state_size)
-bank=rom[e.sym['wheel_bitmaps']-0x08000000:e.sym['wheel_bitmaps']-0x08000000+32*128*112]
+bank=e.wheel_pixels()
 phases={tuple(palette[v] for v in bank[f*128*112:f*128*112+28*128]):f for f in range(32)}
 check('all 32 wheel phases distinguishable from displayed PPU crop',len(phases)==32)
 wheel=struct.unpack_from('<16h',rom,e.sym['wheel_sectors']-0x08000000)

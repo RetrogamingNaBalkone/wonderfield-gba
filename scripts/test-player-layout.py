@@ -20,7 +20,7 @@ for rule in range(3):
   scene=bytearray(s.read(e,'scene',180));struct.pack_into('<I',scene,4,struct.unpack('<I',s.read(e,'video_ticks',4))[0]);s.write(e,'scene',scene)
   s.write(e,'dirty',struct.pack('<I',1));e.run(30)
  def check_name(side,who,color):
-  x=109 if side else 1;pixels=s.read(e,'framebuffer',240*160);font=e.sym['font8']-0x08000000
+  x=109 if side else 1;pixels=e.palette_indices();font=e.sym['font8']-0x08000000
   for k,ch in enumerate(names[who].encode('cp866')):
    for y in range(8):
     for col in range(8):

@@ -5,7 +5,7 @@ m=runpy.run_path(str(ROOT/'scripts/test-multiplayer.py'))
 tap,read=m['tap'],m['read']
 checks=[]
 for cable in (False,True):
- e=Emulator();m['options'](e,2,cable)
+ e=Emulator();m['options'](e,2,cable,open_lobby=False)
  assert e.state()[3]==32
  e.screenshot('options-help-menu.png')
  for setting in (3,4,0,1,2,5):
@@ -31,7 +31,7 @@ for cable in (False,True):
   tap(e,0)
  checks.append({'cable':cable,'all_settings_browsed_without_mutation':True,'reopen_on_selected_value':True,'all_close_buttons':True})
  # Start still opens player entry after closing its help.
- tap(e,8);assert e.state()[3]==27
+ tap(e,8);assert e.state()[3]==(30 if cable else 27)
  e.close()
 report={'rom_sha256':hashlib.sha256((ROOT/'build/gba/pole.gba').read_bytes()).hexdigest(),'checks':checks}
 (ROOT/'docs/verification/options-help-tests.json').write_text(json.dumps(report,indent=2)+'\n')

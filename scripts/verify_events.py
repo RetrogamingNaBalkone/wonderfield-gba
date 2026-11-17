@@ -94,7 +94,7 @@ check('skip replay includes times with a different sector under arrow',different
 
 # Every early rotation frame, including intermediate handles, reaches the PPU.
 e.poke(3,2);e.poke(5,2);e.poke(74,90);e.poke(75,1);e.poke(76,0);write('scene',0,152)
-bank=rom[e.sym['wheel_bitmaps']-0x08000000:e.sym['wheel_bitmaps']-0x08000000+32*128*112]
+bank=e.wheel_pixels()
 known={tuple(palette[v] for v in bank[f*128*112:f*128*112+28*128]):f for f in range(32)}
 phases=set()
 for i in range(110):

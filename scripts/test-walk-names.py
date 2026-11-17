@@ -15,7 +15,9 @@ def setup(sector,age):
  e.poke(3,16);e.poke(5,2);e.poke(8,sector);e.poke(79,0)
  s.write(e,'message1',struct.pack('<I',0))
  scene=bytearray(s.read(e,'scene',180));now=struct.unpack('<I',s.read(e,'video_ticks',4))[0]
- for offset,value in ((12,now-age),(16,now),(36,1),(40,0),(44,32),(48,0),(148,300)):
+ # reveal_begin schedules movement after the ordinary 180-tick reaction.
+ first_step=now-age+(0 if sector==100 else 180)
+ for offset,value in ((12,now-age),(16,first_step),(36,1),(40,0),(44,32),(48,0),(148,300)):
   struct.pack_into('<I',scene,offset,value&0xffffffff)
  scene[64:144]=b'\0'*80
  s.write(e,'scene',scene);s.write(e,'dirty',struct.pack('<I',1))

@@ -4,7 +4,7 @@ from emulator import Emulator,ROOT
 m=runpy.run_path(str(ROOT/'scripts/test-multiplayer.py'))
 tap,read,write,setmp=m['tap'],m['read'],m['write'],m['setmp']
 def redraw(e):write(e,'dirty',struct.pack('<i',1));e.run(30)
-def frame(e):return read(e,'framebuffer',240*160)
+def frame(e):return e.palette_indices()
 e=Emulator();m['menu'](e,2)
 for _ in range(3):m['accept_name'](e)
 e.run(1400);assert e.state()[3]==1

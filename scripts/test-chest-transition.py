@@ -13,7 +13,7 @@ def chest_deadline(e, value=None):
     write(e, 'scene', bytes(scene))
 
 def regions(e, humans):
-    pixels = read(e, 'framebuffer', 240*160)
+    pixels = e.palette_indices()
     y = 90 if humans > 1 else 96
     return b''.join(pixels[row*240+x:row*240+x+36]
                     for x in (18, 115) for row in range(y, y+38))

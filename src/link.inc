@@ -554,7 +554,12 @@ static int link_block_poll(void){
  if(!link_started)link_wait.start=input_clock();
  /* Once a transfer was started, its completion must arrive. */
  u32 deadline=game.mode==MP_LOBBY?503316480u:33554432u;
- if(link_cancel_requested()||link_timed_out(link_wait.start)||(!link_m_want&&input_clock()-link_m_sent_at>deadline)){link_m_stop();return 0;}
+ /* HBlank can start the next transfer during input_clock(). Read its
+  * timestamp first: subtracting a newer IRQ timestamp from the earlier
+  * clock sample wraps to almost 2^32 and disconnects a healthy cable. */
+ u32 sent_at=link_m_sent_at;
+ if(link_cancel_requested()||link_timed_out(link_wait.start)||
+    (!link_m_want&&input_clock()-sent_at>deadline&&sent_at==link_m_sent_at)){link_m_stop();return 0;}
  return 2;
 }
 /* Authority words in link_pub reach every console's link_pub in one block:

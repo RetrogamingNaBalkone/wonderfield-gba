@@ -24,6 +24,14 @@ def symbols(path=None):
    name,value,sz,info,other,ndx=struct.unpack_from('<IIIBBH',b,q)
    if name:result[strings[name:strings.index(0,name)].decode()]=value
  return result
+def unpack_tiles(data,width,height):
+ """Convert the studio's 4bpp tile order and palette bank to EGA indices."""
+ result=bytearray()
+ for y in range(height):
+  for x in range(0,width,2):
+   v=data[(y//8*(width//8)+x//8)*32+(y%8)*4+(x%8)//2]
+   result.extend(((v&15)^13,(v>>4)^13))
+ return bytes(result)
 class Emulator:
  def __init__(self,rom_path=None,elf_path=None):
   core=os.environ.get('MGBA_LIBRETRO')
@@ -127,6 +135,36 @@ class Emulator:
    self.run(1)
   raise AssertionError(('state timeout',self.state()[:12]))
  def state(self):return struct.unpack('<100i',c.string_at(self.ramgame,400))
+ def palette_indices(self):
+  """Map the displayed PPU frame to the cartridge's original EGA indices."""
+  palette=struct.unpack_from('<16H',self.buf,self.sym['palette']-0x08000000)
+  lookup={value:i for i,value in enumerate(palette)}
+  def index(v):
+   if self.format==1:r,g,b=(v>>19)&31,(v>>11)&31,(v>>3)&31
+   elif self.format==2:r,g,b=(v>>11)&31,(v>>6)&31,v&31
+   else:r,g,b=(v>>10)&31,(v>>5)&31,v&31
+   return lookup[r|(g<<5)|(b<<10)]
+  raw=[v for v, in struct.iter_unpack('<I' if self.format==1 else '<H',self.raw)]
+  colors={v:index(v) for v in set(raw)}
+  return bytes(colors[v] for v in raw)
+ def wheel_pixels(self):
+  """Decode the ROM's 32 tiled wheel phases in screen order."""
+  base=self.sym['studio_wheel']-0x08000000
+  bank=self.buf.raw[base:base+32*7168]
+  return b''.join(unpack_tiles(bank[i:i+7168],128,112) for i in range(0,len(bank),7168))
+ def studio_background(self):
+  """Decode the static stage before its editable board rows are painted."""
+  rom=self.buf.raw
+  base=self.sym['studio_board_base']-0x08000000
+  result=bytearray(unpack_tiles(rom[base:base+5760],240,48))
+  maps=self.sym['studio_maps']-0x08000000+3*2048
+  tiles=self.sym['studio_ground']-0x08000000
+  for y in range(48,160):
+   for x in range(0,240,2):
+    cell,=struct.unpack_from('<H',rom,maps+2*(y//8*32+x//8))
+    v=rom[tiles+(cell&1023)*32+(y%8)*4+(x%8)//2]
+    result.extend(((v&15)^13,(v>>4)^13))
+  return result
  def screenshot(self,name):
   rgb=bytearray()
   for v, in struct.iter_unpack('<I' if self.format==1 else '<H',self.raw):

@@ -6,6 +6,7 @@ from emulator import ROOT, symbols
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--animations',action='store_true')
 p.add_argument('--benchmark',action='store_true')
+p.add_argument('--vblank',action='store_true',help='measure the final display write on every console')
 p.add_argument('--latency',action='store_true')
 p.add_argument('--event-latency',action='store_true')
 p.add_argument('--consoles',type=int,choices=(2,3))
@@ -37,6 +38,7 @@ for key in ('scene','cash','link_events','video_ticks','message1','message2','me
  os.environ['LINK_'+key.removeprefix('link_').upper()+'_ADDR']=hex(s[key])
 os.environ['ROLE_STAGE']=hex(s['link_stage'])
 os.environ['ROLE_PRESENTATION_EVENT']=hex(s['presentation_event'])
+if a.vblank:os.environ['LINK_VBLANK_PROFILE']='1'
 if a.animations:os.environ['LINK_ANIMATIONS']='1'
 if a.benchmark:os.environ['LINK_BENCHMARK']='1'
 if a.latency:os.environ['LINK_LATENCY']='1'

@@ -51,7 +51,7 @@ try:
  e.tap(10);check('L on title only changes sound',e.state()[3]==0 and read('sound_on')==1)
  e.tap(11);check('R has no title action',e.state()[3]==0)
  e.tap(2);check('SELECT has no title action',e.state()[3]==0)
- e.tap(3);check('START opens title menu',e.state()[3]==23);e.tap(8);check('A begins a new game from menu',e.state()[3]==15)
+ e.tap(3);check('START opens title menu',e.state()[3]==23);e.tap(8);check('A opens game setup from menu',e.state()[3]==26)
 
  # Restart is destructive only after an explicit second choice and A.
  fixture(2);before=e.state();e.tap(menu_key())
@@ -68,8 +68,8 @@ try:
  e.tap(menu_key());menu_item(3);e.run(180);e.tap(0);e.tap(menu_key())
  check('cancelled restart preserves typed answer',e.state()[3]==5 and e.state()[80]==2 and c.string_at(e.ramgame+352,21)==before)
  fixture(7);e.poke(81,0);e.poke(82,1);e.poke(83,1000000);e.tap(8);e.run(140)
- e.tap(menu_key());menu_item(3);canvas=memory('cash_canvas',38400);bills=read('cash');e.run(180)
- check('restart warning freezes cash without losing banknotes',e.state()[3]==25 and read('cash')==bills and memory('cash_canvas',38400)==canvas)
+ e.tap(menu_key());menu_item(3);canvas=memory('cash_canvas',19200);bills=read('cash');e.run(180)
+ check('restart warning freezes cash without losing banknotes',e.state()[3]==25 and read('cash')==bills and memory('cash_canvas',19200)==canvas)
  e.tap(menu_key());e.tap(menu_key());e.run(30)
  check('cancelled warning continues the same cash payout',e.state()[3]==21 and read('cash')>bills)
 
@@ -185,7 +185,7 @@ try:
  check('unmute restores current active tone',any(any(b) for b in e.audio) and 0<read('remaining')<remaining)
  e.run(50);e.audio.clear();e.run(30);check('unmute never replays expired notes',not any(any(b) for b in e.audio))
  fixture();e.tap(10);e.tap(menu_key());menu_item(3);e.tap(5);e.tap(8);e.tap(8)
- check('mute persists through title and new game',e.state()[3]==15 and read('sound_on')==0)
+ check('mute persists through title and game setup',e.state()[3]==26 and read('sound_on')==0)
 
  # Actual PPU icon remains confined to its backing on every kind of screen.
  for mode in (0,1,5,11,12,14,19,21,23):

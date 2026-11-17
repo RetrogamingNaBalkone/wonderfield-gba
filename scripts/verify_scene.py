@@ -37,7 +37,10 @@ def preview(name):
  (OUT/name).write_bytes(b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',960,640,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(rgb))+chunk(b'IEND',b''))
 def capture(n):
  for i in range(n):e.run(5);frames.append(e.raw)
-e.run(220);capture(3);preview('title-preview.png');e.tap(8);capture(8)
+e.run(220);capture(3);preview('title-preview.png');e.tap(8)
+if e.state()[3]==26:e.tap(8)
+if e.state()[3]==32:e.tap(8)
+capture(8)
 check('introduction is a distinct scene',e.state()[3]==15)
 intro_title=bytes.fromhex('978592828590929c94888d808b');native_font=(ROOT/'assets/font-14.bin').read_bytes();pixels=ppu();left=30+((20-len(intro_title))//2)*9
 check('round title uses individual middle-row cells',all(pixels[(11+y)*240+left+i*9+1+x]==palette[0 if native_font[ch*14+y]&(128>>x) else 7] for i,ch in enumerate(intro_title) for y in range(14) for x in range(8)))
@@ -57,7 +60,7 @@ check('introduction returns to normal turn',e.state()[3]==1)
 meta=json.loads((ROOT/'assets/sprites.json').read_text())
 widths=[round(meta[i]['width']*35/96) for i in (21,22,48,49,50,51)]
 for i,width in enumerate(widths):check(f'contestant {i+1} has at least 3 px gap to host',153+width<=182)
-fb=lambda:c.string_at(e.ram+e.sym['framebuffer']-0x02000000,38400)
+fb=lambda:e.palette_indices()
 check('original blue wall textures are visible',sum(fb()[y*240+x] in (1,9) for y in range(50) for x in range(24))>300)
 original_pair=e.state()[12:14]
 for i in range(6):
@@ -165,7 +168,7 @@ prize=symbol_resize(raw,s['width'],s['height'],11,12,outline=True)
 edges=[(x,y) for y in range(12) for x in range(11) if prize[y*11+x]!=7 and any(not(0<=x+dx<11 and 0<=y+dy<12) or prize[(y+dy)*11+x+dx]==7 for dx,dy in ((1,0),(-1,0),(0,1),(0,-1)))]
 check('Prize outline preserves area-voted silhouette and open arch',all((a==7)==(b==7) for a,b in zip(plain,prize)))
 check('Prize keeps yellow fill inside complete black original-style contour',prize.count(14)>=30 and all(prize[y*11+x]==0 for x,y in edges))
-bank=rom[e.sym['wheel_bitmaps']-0x08000000:e.sym['wheel_bitmaps']-0x08000000+32*128*112]
+bank=e.wheel_pixels()
 phase_frames={tuple(palette[v] for v in bank[f*128*112:f*128*112+28*128]):f for f in range(32)}
 e.poke(3,1);e.poke(5,2);e.run(6);e.tap(8);e.poke(74,90);e.poke(75,1)
 seen=set()
