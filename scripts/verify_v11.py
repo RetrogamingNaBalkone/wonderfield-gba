@@ -44,7 +44,7 @@ def letter(ch):e.poke(70,ch-128);e.tap(8)
 def answer():return c.string_at(e.ramgame+352,21)
 
 title_pixels=ppu(title_raw);font6=asset('font6',256*6)
-version=b'2.0beta2';version_x=230-len(version)*4
+version=b'2.0beta3';version_x=230-len(version)*4
 logo_w,logo_h,logo_addr=struct.unpack_from('<III',rom,e.sym['title_logos']-0x08000000+12)
 def title_label_pixel(x,y):
  i,col=divmod(x-version_x,4)
