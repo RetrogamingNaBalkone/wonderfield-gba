@@ -604,7 +604,32 @@ static void menu_close(void){
 /* Keep START available for saving a name, including while its menu is open. */
 static u16 menu_button(void){return (ui.active?ui.origin:game.mode)==NAME?SELECT:START;}
 static void mp_setup(void){mp.choice=0;mp.link=0;mp.humans=1;mp.viewer=mp.local=2;ui.active=0;set_mode(MP_SETUP);}
-static void options_begin(void){prefs.dictionary=prefs.plus=prefs.characters=mp.humans>1;prefs.rule=MP_POINTS;prefs.rounds=3;prefs.choice=mp.humans>1?5:3;set_mode(MP_OPTIONS);}
+static volatile u8*rules_slot(int multiplayer){
+ /* Records and the boot counter occupy bytes 0x00 through 0x8b. Each rules slot holds
+  * one packed byte and its complement, written with byte accesses. */
+ return (volatile u8*)0x0e000090+2*multiplayer;
+}
+static void rules_save(void){
+ int multiplayer=mp.humans>1;
+ volatile u8*s=rules_slot(multiplayer);
+ u8 value=prefs.dictionary|(prefs.plus<<1)|(prefs.characters<<2);
+ if(multiplayer)value|=(prefs.rule<<3)|((prefs.rounds-1)<<5);
+ if(s[0]!=value||s[1]!=(u8)~value){s[0]=value;s[1]=(u8)~value;}
+}
+static void options_begin(void){
+ int multiplayer=mp.humans>1;
+ prefs.dictionary=prefs.plus=prefs.characters=multiplayer;
+ prefs.rule=MP_POINTS;prefs.rounds=3;prefs.choice=multiplayer?5:3;
+ volatile u8*s=rules_slot(multiplayer);
+ u8 value=s[0];
+ int rule=(value>>3)&3,rounds=(value>>5)+1;
+ if(s[1]==(u8)~value&&
+    (multiplayer?(rule<=MP_WINS&&(rule!=MP_WINS||rounds<=5)):value<8)){
+  prefs.dictionary=value&1;prefs.plus=(value>>1)&1;prefs.characters=(value>>2)&1;
+  if(multiplayer){prefs.rule=rule;prefs.rounds=rounds;}
+ }
+ set_mode(MP_OPTIONS);
+}
 /* Names use the game's single-byte CP866 alphabet, not UTF-8. */
 static void name_clean(char out[11],const char*in){
  int n=0,space=0;
@@ -711,6 +736,7 @@ static void update(u16 pressed,u16 repeat){
    else if(mp.humans>1&&prefs.choice==3){prefs.rule=(prefs.rule+3+delta)%3;if(prefs.rule==MP_WINS&&prefs.rounds>5)prefs.rounds=5;}
    else if(mp.humans>1&&prefs.choice==4){int limit=prefs.rule==MP_WINS?5:8;prefs.rounds=(prefs.rounds+limit-1+delta)%limit+1;}
    else if(pressed&A){
+    rules_save();
     if(mp.humans==1)new_game();
     else if(mp.link&&(!link_active||link_host_device<0)){
      /* Discovery runs alongside settings. Confirming rules opens the
