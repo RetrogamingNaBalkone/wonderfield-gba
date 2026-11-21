@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     if len(sys.argv) != 2:
-        raise SystemExit('Usage: import-cloud-originals.py /path/to/Pole_Chudes.rar')
+        raise SystemExit('Usage: import-originals.py /path/to/Pole_Chudes.rar')
     manifest = json.loads((ROOT / 'analysis/originals.json').read_text())
     found = {}
     with libarchive.file_reader(sys.argv[1]) as entries:

@@ -37,8 +37,7 @@ class Emulator:
   core=os.environ.get('MGBA_LIBRETRO')
   if not core:
    if os.name=='nt':core=str(Path(os.environ['LOCALAPPDATA'])/'Programs/mGBA/libretro-20261024/mgba_libretro.dll')
-   else:core=str(Path(os.environ.get('WONDERFIELD_MGBA_DIR','/workspace/.tools/mgba'))/'mgba_libretro.so')
-  if not Path(core).is_file():raise RuntimeError('mGBA core not found; set MGBA_LIBRETRO to its full path')
+  if not core or not Path(core).is_file():raise RuntimeError('mGBA core not found; set MGBA_LIBRETRO to its full path')
   self.core=c.CDLL(core);self.keys=set();self.format=0;self.raw=b'';self.variables={};self.samples=0;self.nonzero=0;self.errors=[];self.audio=[]
   self.directory=os.fsencode(str(ROOT/'build/gba'))
   self.callbacks=[ENV(self.env),VIDEO(self.video),AUDIO(lambda l,r:None),BATCH(self.batch),POLL(lambda:None),INPUT(lambda p,d,i,b:int(p==0 and d==1 and b in self.keys))]

@@ -1,6 +1,7 @@
 # Local build products and Zig caches
 /build/
 /dist/
+*.gba
 /originals/
 /.zig-cache/
 /zig-cache/

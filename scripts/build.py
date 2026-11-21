@@ -1,4 +1,4 @@
-"""Linux equivalent of build.ps1; extract resources only in an ignored staging tree."""
+"""Build the ROM, extracting resources in an ignored staging tree."""
 from pathlib import Path
 import hashlib
 import json
@@ -11,8 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
-    tools = Path(os.environ.get('WONDERFIELD_TOOLS_DIR', '/workspace/.tools/wonderfield'))
-    zig = [os.environ['ZIG_EXE']] if 'ZIG_EXE' in os.environ else [str(tools / 'bin/python'), '-m', 'ziglang']
+    zig_exe = os.environ.get('ZIG_EXE') or shutil.which('zig')
+    zig = [zig_exe] if zig_exe else [sys.executable, '-m', 'ziglang']
     version = subprocess.check_output(zig + ['version'], text=True).strip()
     if version != '0.13.0':
         raise SystemExit(f'Zig 0.13.0 required, found {version}')
@@ -28,7 +28,7 @@ def main():
     if problems:
         raise SystemExit('\n'.join(problems))
 
-    stage = ROOT / 'build/cloud-source'
+    stage = ROOT / 'build/source'
     stage.mkdir(parents=True, exist_ok=True)
     for name in ('scripts', 'src', 'gba', 'assets', 'analysis'):
         shutil.copytree(ROOT / name, stage / name, dirs_exist_ok=True,
