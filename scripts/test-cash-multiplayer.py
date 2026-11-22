@@ -6,6 +6,38 @@ accept money, eliminate participants and select subsequent players.
 import runpy,struct
 from emulator import Emulator, ROOT
 m=runpy.run_path(str(ROOT/'scripts/test-multiplayer.py'));tap=m['tap'];mp=m['mp'];setmp=m['setmp']
+
+def check_bargaining_input():
+ e=Emulator()
+ def bills():return struct.unpack('<II',m['read'](e,'cash',8))
+ def press_with_bounce():
+  e.run(8,(8,));e.run(3);e.run(4,(8,));e.run(8)
+ try:
+  m['menu'](e,0)
+  e.poke(3,7);e.poke(5,2);e.poke(81,1);e.poke(82,0)
+  tap(e,6)  # Left: take the prize and hear the first offer.
+  press_with_bounce()
+  assert e.state()[82:84]==(1,100),e.state()[82:84]
+  press_with_bounce()
+  assert e.state()[82:84]==(2,1000),e.state()[82:84]
+  tap(e,6)
+  press_with_bounce()
+  assert e.state()[3]==21 and bills()==(0,100)
+  e.run(108)
+  assert 0<bills()[0]<100
+  paying=e.checkpoint()
+  e.run(100)
+  assert e.state()[3]==21 and bills()==(100,100)
+  e.restore(paying)
+  press_with_bounce()
+  assert e.state()[3]==21 and bills()==(100,100)
+  press_with_bounce()
+  assert e.state()[3]==10
+  e.run(40)
+  assert e.state()[3]==10
+ finally:e.close()
+
+check_bargaining_input()
 for humans in (2,3):
  for actor in ((2,0) if humans==2 else (2,0,1)):
   for offer in (1,2,3,4):

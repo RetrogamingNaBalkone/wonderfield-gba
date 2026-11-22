@@ -43,7 +43,7 @@ try {
  & $PythonExe scripts/contact.py
  if($LASTEXITCODE) {throw 'Resource contact sheet failed'}
  New-Item -ItemType Directory -Force -Path dist,docs/media,docs/reports | Out-Null
- Copy-Item -LiteralPath build/gba/pole.gba -Destination 'dist/pole 2.0beta3.gba'
+ Copy-Item -LiteralPath build/gba/pole.gba -Destination 'dist/pole.2.0beta3.gba'
  Copy-Item -LiteralPath build/qa/rng-verification.json -Destination docs/reports/rng-verification.json
  Copy-Item -LiteralPath build/qa/rng-audit.json -Destination docs/reports/rng-audit.json
  Copy-Item -LiteralPath build/qa/rng-cold.json -Destination docs/reports/rng-cold.json

@@ -85,9 +85,12 @@ class Emulator:
    if self.state()[1]!=previous:break
   else:raise AssertionError('CPU stopped while pressing button')
   previous=self.state()[1]
+  latch=self.sym.get('input_stable')
+  released_mask={8:1,0:2,2:4,3:8,7:16,6:32,4:64,5:128,11:256,10:512}.get(button,0)
   for i in range(300):
    self.run(1)
-   if self.state()[1]!=previous:break
+   held=c.c_uint16.from_address(self.ram+latch-0x02000000).value if latch else 0
+   if self.state()[1]!=previous and not held&released_mask:break
   else:raise AssertionError('CPU stopped while releasing button')
  def poke(self,index,value):c.memmove(self.ramgame+index*4,struct.pack('<i',value),4)
  def checkpoint(self):

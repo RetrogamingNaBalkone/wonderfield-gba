@@ -20,8 +20,8 @@ FAST static void image(const Sprite*s,int x,int y,int transparent){
 static void border(int x,int y,int w,int h,u8 c){line(x,y,w,c);line(x,y+h-1,w,c);rect(x,y,1,h,c);rect(x+w-1,y,1,h,c);}
 static void label_center(int x,int y,int width,const char*t,int small,u8 color){text(x+(width-len(t)*8)/2,y,t,small,color);}
 static int speech_visible(void){
- if(!message1||!*message1||game.mode==SPIN||(game.mode==REVEAL&&scene.now-scene.start>=MESSAGE_TICKS))return 0;
- if(game.mode==TURN&&human(game.player)&&scene.now-scene.speech_at>120)return 0;
+ if(!message1||!*message1||game.mode==SPIN||(game.mode==REVEAL&&scene_age(scene.start)>=MESSAGE_TICKS))return 0;
+ if(game.mode==TURN&&human(game.player)&&scene_age(scene.speech_at)>120)return 0;
  return 1;
 }
 static void board(void){
@@ -66,7 +66,7 @@ static int host_visible(void){
  if(!scene.host_active||!speech_visible()||game.mode==AI_ANSWER||game.mode==AI_CHEST)return 0;
  if(game.mode==TITLE||game.mode==HELP||game.mode==MENU||game.mode==RECORDS||game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES||game.mode==AUTHORS||game.mode==RESTART_CONFIRM)return 0;
  if(game.mode==CASH&&cash.ready)return 0;
- if(game.mode==CREDITS&&scene.now-scene.start>=26)return 0;
+ if(game.mode==CREDITS&&scene_age(scene.start)>=26)return 0;
  return 1;
 }
 static void host_pose(int*face,int*eyes,int*eye_y){
@@ -112,8 +112,8 @@ static void people(int paint_stats){
    portrait=&extra_sprites[pose];x+=(29-portrait->w)/2;
   }else{
    if(mp.humans>1&&human(who))character=avatars[who]-1;
-   if(!(mp.humans>1&&human(who))&&game.mode==INTRO&&scene.phase==intro_phase&&scene.now-scene.phase_at<54)
-    portrait=&sprites_half[53+(scene.now-scene.phase_at)/18];
+   if(!(mp.humans>1&&human(who))&&game.mode==INTRO&&scene.phase==intro_phase&&scene_age(scene.phase_at)<54)
+    portrait=&sprites_half[53+(scene_age(scene.phase_at))/18];
    else if(!prefs.characters)portrait=&sprites_half[opponent_sprites[character]];
    else{const u8 portraits[8]={11,12,9,7,8,10,0,1};portrait=&extra_sprites[portraits[character]];}
   }
@@ -241,7 +241,7 @@ static void keyboard(void){
  }
 }
 static void title(void){
- unsigned age=scene.now-scene.title_at;
+ unsigned age=scene_age(scene.title_at);
  rect(0,0,240,160,7);
  for(int x=5;x<240;x+=23){int h=age<TITLE_GRID_HALF?age*120/TITLE_GRID_HALF:120;rect(x,134-h,1,h,6);}
  for(int y=14;y<=134;y+=20){int w=age<TITLE_GRID_HALF?0:age<TITLE_LOGO_AT?(age-TITLE_GRID_HALF)*230/TITLE_GRID_HALF:230;line(5,y,w,6);}
@@ -452,7 +452,7 @@ static void studio_layers(void){
   dma_words(board_tiles,(const u32*)studio_board_base,sizeof board_tiles/4);
   ink_begin(&board_ink,0);board();ink=0;
  }
- unsigned intro_pose=intro>=1&&intro<=3?(scene.now-scene.phase_at)/18:3;
+ unsigned intro_pose=intro>=1&&intro<=3?(scene_age(scene.phase_at))/18:3;
  if(intro_pose>3)intro_pose=3;
  LAYER_CHANGED(stats,mp.humans,mp.viewer,mp.eliminated,intro,intro_pose,
   game.player,game.score[0],game.score[1],game.score[2],
@@ -464,7 +464,7 @@ static void studio_layers(void){
  if(stats_upload)ink_begin(&stats_ink,1);
  if(game.mode==LETTER&&game.keyboard)
   for(int i=0;i<32;i++)if(game.used[i])used|=1u<<i;
- int walking=game.mode==REVEAL&&(game.sector_value==100||scene.now-scene.start>=MESSAGE_TICKS);
+ int walking=game.mode==REVEAL&&(game.sector_value==100||scene_age(scene.start)>=MESSAGE_TICKS);
  LAYER_CHANGED(ui_state,game.mode,game.player,game.round,game.choice,game.deal,
   game.keyboard,game.mode==LETTER?game.cursor:0,used,intro,walking,
   speech_visible(),presentation_event,(u32)message1,(u32)message2,
@@ -717,7 +717,7 @@ static void render(void){
  studio_layers();if(keys_updated)overlay_upload=1;
  people(stats_upload);
  ink=0;
- unsigned age=scene.now-scene.start;
+ unsigned age=scene_age(scene.start);
  credits_top=game.mode==CREDITS&&age<40?160-(int)age*4:0;
  if(game.mode==CREDITS){
   if(!sound_on){
@@ -732,19 +732,19 @@ static void render(void){
   return;
  }
  if(game.mode==REVEAL){
-  int id=(game.sector_value!=100&&scene.now-scene.start<MESSAGE_TICKS)||scene.actor_stop?23:((scene.now/6)%4==0?24:(scene.now/6)%4==2?25:26);
+  int id=(game.sector_value!=100&&scene_age(scene.start)<MESSAGE_TICKS)||scene.actor_stop?23:((scene.now/6)%4==0?24:(scene.now/6)%4==2?25:26);
   /* Both side walls are foreground boundaries: the figure passes behind them. */
   scene_object(&obj_half[id],scene.actor_x,12,1);
  }
  if(game.mode==CHEST||game.mode==AI_CHEST){
-  int phase=(scene.now-scene.speech_at)/6;
-  int animate=game.mode==CHEST&&scene.now-scene.speech_at<90;
+  int phase=(scene_age(scene.speech_at))/6;
+  int animate=game.mode==CHEST&&scene_age(scene.speech_at)<90;
   int y=mp.humans>1?90:96;
   scene_object(&obj_full[animate&&!(phase&1)?37:36],18,y,1);
   scene_object(&obj_full[animate&&(phase&1)?37:36],115,y,1);
 
  }
- if(game.mode==RESULT&&scene.now<scene.chest_until){
+ if(game.mode==RESULT&&(int)(scene.chest_until-scene.now)>0){
   int y=mp.humans>1?90:96;
   scene_object(&obj_full[scene.chest_money?38:37],game.choice?115:18,y,1);
   scene_object(&obj_full[36],game.choice?18:115,y,1);
@@ -753,7 +753,7 @@ static void render(void){
  ink_begin(&ui_ink,1);
  /* Keep names during the host's introduction; hide only during the walk,
   * including stops at letters. Plus starts walking without that delay. */
- int walking=game.mode==REVEAL&&(game.sector_value==100||scene.now-scene.start>=MESSAGE_TICKS);
+ int walking=game.mode==REVEAL&&(game.sector_value==100||scene_age(scene.start)>=MESSAGE_TICKS);
  if(mp.humans>1&&!walking)for(int side=0;side<2;side++){
   int who=perspective(side);
   if(game.mode!=INTRO||scene.phase>=player_number(who))player_name_label(who,side);

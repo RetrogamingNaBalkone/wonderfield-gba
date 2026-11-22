@@ -31,23 +31,34 @@ static int link_event_valid,link_resync;
  * are sampled only once per packet. */
 enum{LINK_TAP_SIZE=32,LINK_TAP_MAX=4,LINK_REMOTE_SIZE=16};
 static volatile u16 link_tap_queue[LINK_TAP_SIZE];
+static volatile u32 link_tap_context[LINK_TAP_SIZE];
 static volatile u8 link_tap_read,link_tap_write;
-static u16 link_tap_oldkeys;static u32 link_tap_repeat_at;
+
 static u16 link_remote_queue[LINK_REMOTE_SIZE];static u8 link_remote_read,link_remote_write;
 static int link_remote_player;
+static u32 link_remote_context;
 static void link_tap_push(unsigned index,int coalesce){
  unsigned tail=(link_tap_write+LINK_TAP_SIZE-1)%LINK_TAP_SIZE;
- if(coalesce&&link_tap_read!=link_tap_write&&(link_tap_queue[tail]&15)==index&&(link_tap_queue[tail]>>4)<LINK_TAP_MAX-1){link_tap_queue[tail]+=16;return;}
+ if(coalesce&&link_tap_context[tail]==presentation_event&&link_tap_read!=link_tap_write&&(link_tap_queue[tail]&15)==index&&(link_tap_queue[tail]>>4)<LINK_TAP_MAX-1){link_tap_queue[tail]+=16;return;}
  unsigned next=(link_tap_write+1)%LINK_TAP_SIZE;
- if(next!=link_tap_read){link_tap_queue[link_tap_write]=index;link_tap_write=next;}
+ if(next!=link_tap_read){link_tap_context[link_tap_write]=presentation_event;link_tap_queue[link_tap_write]=index;link_tap_write=next;}
+}
+typedef struct {u32 context,at;u16 previous,armed;} DirectionRepeat;
+static DirectionRepeat link_repeat;
+static u16 directional_repeat(DirectionRepeat*r,u16 keys,u16 pressed){
+ u16 directions=keys&(UP|DOWN|LEFT|RIGHT);
+ if(r->context!=presentation_event){r->context=presentation_event;r->armed=0;}
+ r->armed=(r->armed|pressed)&directions;
+ if(keys!=r->previous||(pressed&(UP|DOWN|LEFT|RIGHT)))r->at=video_ticks+(navigation_menu()?30:18);
+ else if(r->armed&&(int)(video_ticks-r->at)>=0){
+  pressed|=r->armed;r->at=video_ticks+(navigation_menu()?12:5);
+ }
+ r->previous=keys;
+ return pressed;
 }
 static void link_capture_input(u16 pressed){
- u16 keys=input_keys&~L,directions=keys&(UP|DOWN|LEFT|RIGHT),events=pressed&~L;
- if(!link_active||link_name_edit||link_avatar_edit){link_tap_oldkeys=keys;link_tap_repeat_at=video_ticks+18;return;}
- /* Same timing as local play: 18 VBlanks before the first repeat, then 5. */
- if(keys!=link_tap_oldkeys||(events&(UP|DOWN|LEFT|RIGHT)))link_tap_repeat_at=video_ticks+18;
- else if(directions&&(int)(video_ticks-link_tap_repeat_at)>=0){events|=directions;link_tap_repeat_at=video_ticks+5;}
- link_tap_oldkeys=keys;
+ if(!link_active||link_name_edit||link_avatar_edit){link_repeat.armed=0;return;}
+ u16 events=directional_repeat(&link_repeat,input_keys&~L,pressed&~L);
  /* Simultaneous presses keep local order: directions before buttons. */
  for(unsigned bit=4;bit<8;bit++)if(events&(1u<<bit))link_tap_push(bit+1,1);
  for(unsigned bit=0;bit<4;bit++)if(events&(1u<<bit))link_tap_push(bit+1,0);
@@ -59,18 +70,25 @@ static void link_sample_input(void){
  u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
  u16 event=0;
  if(link_name_edit||link_avatar_edit)link_tap_read=link_tap_write;
- else if(link_tap_read!=link_tap_write){event=link_tap_queue[link_tap_read];link_tap_read=(link_tap_read+1)%LINK_TAP_SIZE;}
+ while(link_tap_read!=link_tap_write&&link_tap_context[link_tap_read]!=presentation_event)
+  link_tap_read=(link_tap_read+1)%LINK_TAP_SIZE;
+ if(link_tap_read!=link_tap_write){event=link_tap_queue[link_tap_read];link_tap_read=(link_tap_read+1)%LINK_TAP_SIZE;}
  u16 key=event&15?1u<<((event&15)-1):0;
  link_submit=(link_name_edit||link_avatar_edit)?0:((input_keys|key)&~L)|((event&15)<<10)|((event>>4)<<14);
+ /* During play the authority consumes only edges. Use the otherwise idle
+  * held-key field for the source presentation, retaining the lobby format. */
+ if(event&&game.mode!=MP_LOBBY)link_submit=(link_submit&0xfc00)|0x200|(presentation_event&511);
  REG16(0x04000208)=ime;
 }
 /* The authority applies one received press per main-loop iteration. Presses
  * still queued when the turn changes belong to the previous owner. */
 static void link_queue_remote(u16 word,int player){
  unsigned index=(word>>10)&15,count=(word>>14)+1;
- if(player!=link_remote_player)link_remote_read=link_remote_write;
+ if(player!=link_remote_player||link_remote_context!=presentation_event)link_remote_read=link_remote_write;
+ link_remote_context=presentation_event;
  link_remote_player=player;
  if(!index||index>9)return;
+ if(game.mode==MP_LOBBY ? (word&0x200)!=0 : (word&1023)!=(0x200|(presentation_event&511)))return;
  while(count--){
   unsigned next=(link_remote_write+1)%LINK_REMOTE_SIZE;
   if(next==link_remote_read)break;
@@ -78,7 +96,7 @@ static void link_queue_remote(u16 word,int player){
  }
 }
 static u16 link_next_remote(int player){
- if(player!=link_remote_player){link_remote_read=link_remote_write;link_remote_player=player;}
+ if(player!=link_remote_player||link_remote_context!=presentation_event){link_remote_read=link_remote_write;link_remote_player=player;}
  if(link_remote_read==link_remote_write)return 0;
  u16 key=link_remote_queue[link_remote_read];link_remote_read=(link_remote_read+1)%LINK_REMOTE_SIZE;
  return key;
@@ -446,7 +464,7 @@ static void link_open(void){
  link_preview_valid=0;
  link_profile_render_key=~0u;
  link_profile_cursor=-1;link_keyboard_valid=0;
- link_last_packet=video_ticks;link_event_valid=0;link_tap_read=link_tap_write=0;link_remote_read=link_remote_write=0;link_remote_player=-1;link_tap_oldkeys=0;link_packets=link_events=0;
+ link_last_packet=video_ticks;link_event_valid=0;link_tap_read=link_tap_write=0;link_remote_read=link_remote_write=0;link_remote_player=-1;link_repeat=(DirectionRepeat){0};link_packets=link_events=0;
  link_clock_offset=0;link_resync=0;
  link_session=0;for(int i=0;i<11;i++)link_sent_name[i]=0;
  link_sent_status=~0u;
@@ -482,7 +500,7 @@ static int link_probe(void){
 /* Poll local input inside the SIO waits too: an absent peer must not trap
  * either console in the lobby until the cable timeout expires. */
 static int link_cancel_requested(void){
- if(game.mode==MP_LOBBY&&!link_name_edit&&link_config_mode!=MP_OPTION_HELP&&(!link_host_ready||!(link_snapshot.name_conflicts&(1<<mp.local)))&&((link_submit|~REG16(0x04000130))&B))link_cancelled=1;
+ if(game.mode==MP_LOBBY&&!link_name_edit&&link_config_mode!=MP_OPTION_HELP&&(!link_host_ready||!(link_snapshot.name_conflicts&(1<<mp.local)))&&(input_keys&B))link_cancelled=1;
  return link_cancelled;
 }
 static int link_timed_out(u32 start){

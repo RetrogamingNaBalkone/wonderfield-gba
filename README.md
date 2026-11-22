@@ -50,7 +50,7 @@
 .\scripts\build.ps1 -ZigExe C:\path\to\zig.exe -PythonExe C:\path\to\python.exe
 ```
 
-Готовый ROM находится в `dist/pole 2.0beta3.gba`, рабочая копия — в `build/gba/pole.gba`. [Сборка на Linux и подготовка оригинальных ресурсов](docs/linux-build.md).
+Готовый ROM находится в `dist/pole.2.0beta3.gba`, рабочая копия — в `build/gba/pole.gba`. [Сборка на Linux и подготовка оригинальных ресурсов](docs/linux-build.md).
 
 Для релизной проверки QR-кода также нужен Node.js. Генератор Nayuki и декодер jsQR сохранены в проекте с лицензиями; сборка не обращается к сети.
 

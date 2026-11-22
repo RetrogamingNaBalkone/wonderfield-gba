@@ -18,6 +18,10 @@ static u16 io[0x300];
 #define L 512
 static volatile u32 video_ticks;static volatile u16 input_keys;
 static int link_active=1,link_name_edit,link_avatar_edit;static u16 link_submit;
+enum {MP_LOBBY=30};
+static struct {int mode;} game;
+static u32 presentation_event;
+static int navigation_menu(void){return game.mode==MP_LOBBY;}
 #include "link-input-under-test.inc"
 static int failures;
 /* Local play: src/main.c pressed/repeat from VBlank-ordered presses. */
@@ -32,7 +36,7 @@ static unsigned local_moves(const u16*held,unsigned frames,u16 key){
 /* Cable: VBlank capture on the owner, a packet every `period` VBlanks starting
  * at `offset`, one applied press per authority iteration. */
 static unsigned cable_moves(const u16*held,unsigned frames,u16 key,unsigned period,unsigned offset,int change_owner_at){
- link_tap_read=link_tap_write=0;link_remote_read=link_remote_write=0;link_remote_player=-1;link_tap_oldkeys=0;
+ link_tap_read=link_tap_write=0;link_remote_read=link_remote_write=0;link_remote_player=-1;link_repeat=(DirectionRepeat){0};
  input_keys=0;unsigned moves=0;int player=0;
  for(u32 t=0;t<frames+400;t++){
   video_ticks=t;u16 keys=t<frames?held[t]:0,pressed=keys&~input_keys;input_keys=keys;link_capture_input(pressed);
@@ -65,7 +69,7 @@ int main(void){
   char name[64];snprintf(name,sizeof name,"DOWN held %u VBlanks",hold);check(name,held,600,DOWN);
  }
  /* Direction then A in the same VBlank keeps direction-first order. */
- link_tap_read=link_tap_write=0;link_remote_read=link_remote_write=0;link_remote_player=-1;link_tap_oldkeys=input_keys=0;
+ link_tap_read=link_tap_write=0;link_remote_read=link_remote_write=0;link_remote_player=-1;link_repeat=(DirectionRepeat){0};input_keys=0;
  video_ticks=1;input_keys=RIGHT|A;link_capture_input(RIGHT|A);link_sample_input();link_queue_remote(link_submit,0);
  link_sample_input();link_queue_remote(link_submit,0);
  u16 first=link_next_remote(0),second=link_next_remote(0);
@@ -80,5 +84,14 @@ int main(void){
  link_name_edit=1;link_tap_read=link_tap_write=0;input_keys=A;link_capture_input(A);link_sample_input();
  if(link_submit||link_tap_read!=link_tap_write){printf("FAIL name edit produced input\n");failures++;}else printf("PASS name edit produces no cable input\n");
  link_name_edit=0;
+ input_keys=A;link_capture_input(A);link_sample_input();
+ u16 delayed=link_submit;
+ presentation_event++;link_queue_remote(delayed,0);
+ if(link_next_remote(0)){puts("FAIL delayed confirmation crossed an action");failures++;}
+ input_keys=A;link_capture_input(A);link_sample_input();link_queue_remote(link_submit,0);
+ presentation_event++;
+ if(link_next_remote(0)){puts("FAIL queued confirmation crossed an action");failures++;}
+ input_keys=A;link_capture_input(A);presentation_event++;link_sample_input();
+ if(link_submit>>10){puts("FAIL stale owner event transmitted");failures++;}
  return failures?1:0;
 }

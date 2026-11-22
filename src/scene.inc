@@ -15,7 +15,8 @@ static void intro_begin(void){
 static void reveal_begin(void){
  scene.pending_mode=game.mode;scene.pending_wait=game.wait;
  /* Be visible while the host reacts; do not wait outside the screen. */
- set_mode(REVEAL);scene.start=video_ticks;scene.actor_x=32;scene.actor_stop=0;scene.phase_at=video_ticks+(game.sector_value==100?0:MESSAGE_TICKS);
+ set_mode(REVEAL);scene.start=video_ticks;scene.actor_x=32;scene.actor_stop=0;
+ scene.phase_at=scene.start+(game.sector_value==100?0:MESSAGE_TICKS);
 }
 static void credits_begin(void){set_mode(CREDITS);scene.start=video_ticks;}
 static void complete_reveal(void){
@@ -78,25 +79,25 @@ static void cash_begin(void){
 static void visual_tick(void){
  /* One transition per displayed pose; never skip a short mouth pulse
   * when rendering took longer than its deadline. Rendering is read-only. */
- if(host_visible()&&scene.host_phase<10&&scene.now-scene.host_phase_at>=host_durations[scene.host_phase]){
+ if(host_visible()&&scene.host_phase<10&&scene_age(scene.host_phase_at)>=host_durations[scene.host_phase]){
   scene.host_phase++;scene.host_phase_at=scene.now;
  }
 }
 static u32 visual_key(void){
  u32 key=(u32)game.mode<<24,age;
- if(game.mode==TITLE){age=scene.now-scene.title_at;return key|(age<TITLE_LOGO_AT?age:age<TITLE_READY_AT?TITLE_LOGO_AT:TITLE_READY_AT);}
+ if(game.mode==TITLE){age=scene_age(scene.title_at);return key|(age<TITLE_LOGO_AT?age:age<TITLE_READY_AT?TITLE_LOGO_AT:TITLE_READY_AT);}
  if(game.mode==SOLVE||game.mode==NAME||game.mode==GIFT_PAGES||game.mode==HELP||game.mode==MENU||game.mode==RECORDS||game.mode==AUTHORS||game.mode==RESTART_CONFIRM)return key;
  if(speech_visible())key|=1;
  if(host_visible())key|=(scene.host_phase+1)<<1;
  if(game.mode==INTRO&&(scene.phase==1||scene.phase==2||(mp.humans>1&&scene.phase==3))){
-  age=scene.now-scene.phase_at;key|=(age<54?age/18:3)<<5;
+  age=scene_age(scene.phase_at);key|=(age<54?age/18:3)<<5;
  }
- if(game.mode==CHEST){age=scene.now-scene.speech_at;key|=(age<90?(age/6)&1:2)<<7;}
- if(game.mode==RESULT&&scene.now<scene.chest_until)key|=1u<<9;
+ if(game.mode==CHEST){age=scene_age(scene.speech_at);key|=(age<90?(age/6)&1:2)<<7;}
+ if(game.mode==RESULT&&(int)(scene.chest_until-scene.now)>0)key|=1u<<9;
  /* Reveal steps already invalidate at their five-VBlank cadence. An
   * independent gait redraw between steps would delay the next movement. */
  if(game.mode==SPIN)key|=((game.sector*2+scene.spin_half)&31)<<10;
- if(game.mode==CREDITS){age=scene.now-scene.start;key|=(age<40?age:40)<<10;}
+ if(game.mode==CREDITS){age=scene_age(scene.start);key|=(age<40?age:40)<<10;}
  return key;
 }
 static int scene_tick(u16 pressed){
@@ -120,7 +121,7 @@ static int scene_tick(u16 pressed){
  }
  if(game.mode==INTRO){
   if(!authoritative)return 1;
-  if((pressed&A)||(scene.now-scene.phase_at>=MESSAGE_TICKS)){
+  if((pressed&A)||(scene_age(scene.phase_at)>=MESSAGE_TICKS)){
    scene.phase++;
    /* The multiplayer roster stays fixed across rounds and shootouts. */
    if(mp.humans>1&&(game.round>0||match.shootout)&&scene.phase==1)scene.phase=4;
@@ -132,16 +133,16 @@ static int scene_tick(u16 pressed){
  }
  if(game.mode==CREDITS){
   if(!authoritative)return 1;
-  if(((pressed&A)&&scene.now-scene.start>30)||scene.now-scene.start>600){game.round++;new_round();}
+  if(((pressed&A)&&scene_age(scene.start)>30)||scene_age(scene.start)>600){game.round++;new_round();}
   return 1;
  }
  if(game.mode==REVEAL){
   if(authoritative&&(pressed&A)){complete_reveal();return 1;}
-  if(game.sector_value!=100&&scene.now-scene.start<MESSAGE_TICKS)return 1;
+  if(game.sector_value!=100&&scene_age(scene.start)<MESSAGE_TICKS)return 1;
   scene.host_active=0;
   /* Walking and each stop previously advanced once per five-VBlank
    * rendered frame. Use that cadence independently of rendering cost. */
-  while(scene.actor_x<225&&scene.now-scene.phase_at>=5){
+  while(scene.actor_x<225&&scene_age(scene.phase_at)>=5){
    scene.phase_at+=5;
    int n=len(word()),left=30+((20-n)/2)*9,next=-1;
    for(int i=0;i<n;i++)if(scene.reveal_target[i]&&!game.revealed[i]){next=i;break;}

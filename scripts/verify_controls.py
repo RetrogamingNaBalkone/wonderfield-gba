@@ -131,17 +131,25 @@ try:
  fixture(22,0);write('scene',read('video_ticks')-30,4);e.tap(8)
  check('fresh A accelerates AI chest reply without choosing its side',e.state()[3]==6 and e.state()[81]==1)
 
+ fixture(18,0);write('scene',word[0]-128,144)
+ e.run(8,(8,));check('AI correct answer starts reveal',e.state()[3]==16)
+ for _ in range(3):
+  e.run(3);e.run(3,(8,))
+ e.run(90)
+ check('releasing the AI answer skip preserves the reveal',e.state()[3]==16)
+ e.tap(8);check('another press can finish the AI reveal',e.state()[3]!=16)
+
  for reason,duration in ((1,180),(2,180),(3,240),(4,180),(5,180),(6,240)):
   for player in ((0,1,2) if reason!=6 else (2,)):
    result_case(reason,player);deadline(f'result {reason}, player {player}',duration,6,8 if reason==4 else 10 if reason==6 else 1)
-   result_case(reason,player);e.tap(8);check(f'result {reason}, player {player} A accelerates once',e.state()[3]==(8 if reason==4 else 10 if reason==6 else 1))
+   result_case(reason,player);e.run(8);e.tap(8);check(f'result {reason}, player {player} A accelerates once',e.state()[3]==(8 if reason==4 else 10 if reason==6 else 1))
  fixture(5);e.poke(4,2);filled_answer(word);e.tap(8)
  deadline('final congratulations',300,9,19)
  fixture(7);e.poke(82,4);e.tap(8);deadline('Prize announcement',180,10,19)
  for mode,round_no,deal in ((9,0,0),(9,1,0),(10,0,0)):
   fixture(mode);e.poke(4,round_no);e.poke(82,deal);e.run(900)
   check(f'mode {mode}, round {round_no} still requires A',e.state()[3]==mode)
- fixture(7);e.poke(81,0);e.poke(82,1);e.poke(83,1000);e.tap(8);e.tap(8);e.run(900)
+ fixture(7);e.poke(81,0);e.poke(82,1);e.poke(83,1000);e.tap(8);e.run(8);e.tap(8);e.run(900)
  check('completed payout waits for another A',e.state()[3]==21 and read('cash')==read('cash',4))
  e.tap(8);check('completed payout A reaches farewell once',e.state()[3]==10)
 
@@ -184,7 +192,8 @@ try:
  e.run(10);remaining=read('remaining');e.tap(10);e.audio.clear();e.run(8)
  check('unmute restores current active tone',any(any(b) for b in e.audio) and 0<read('remaining')<remaining)
  e.run(50);e.audio.clear();e.run(30);check('unmute never replays expired notes',not any(any(b) for b in e.audio))
- fixture();e.tap(10);e.tap(menu_key());menu_item(3);e.tap(5);e.tap(8);e.tap(8)
+ fixture();e.tap(10);e.tap(menu_key());menu_item(3);e.tap(5);e.tap(8)
+ e.run(3);e.tap(8);e.run(3)  # Release the restart and title confirmations.
  check('mute persists through title and game setup',e.state()[3]==26 and read('sound_on')==0)
 
  # Actual PPU icon remains confined to its backing on every kind of screen.

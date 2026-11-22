@@ -8,7 +8,7 @@ from emulator import ROOT
 spec=importlib.util.spec_from_file_location('standings',ROOT/'scripts/test-standings.py')
 s=importlib.util.module_from_spec(spec);spec.loader.exec_module(s)
 
-def setup(sector,age):
+def setup(sector,age,movement_delay=0):
  e=s.frame(0,[0]*3,[100,200,300],2)
  for p,name in enumerate(('АЛЕКСАНДРА','КОНСТАНТИН','СВЯТОСЛАВА')):
   c.memmove(e.ram+e.sym['mp']-0x02000000+28+11*p,name.encode('cp866')+b'\0',11)
@@ -16,7 +16,7 @@ def setup(sector,age):
  s.write(e,'message1',struct.pack('<I',0))
  scene=bytearray(s.read(e,'scene',180));now=struct.unpack('<I',s.read(e,'video_ticks',4))[0]
  # reveal_begin schedules movement after the ordinary 180-tick reaction.
- first_step=now-age+(0 if sector==100 else 180)
+ first_step=now-age+(0 if sector==100 else 180)+movement_delay
  for offset,value in ((12,now-age),(16,first_step),(36,1),(40,0),(44,32),(48,0),(148,300)):
   struct.pack_into('<I',scene,offset,value&0xffffffff)
  scene[64:144]=b'\0'*80
@@ -51,9 +51,21 @@ compare(e,True,'before-walk')
 e.run(100);assert e.state()[3]==16
 compare(e,False,'after-start')
 e.until(lambda state:state[3]!=16,2000)
+# The mode changes before the first frame without the walk is displayed.
+e.run(10)
 s.write(e,'message1',struct.pack('<I',0));s.write(e,'dirty',struct.pack('<I',1))
 compare(e,True,'natural-finish');e.close()
 checks.append(dict(natural_intro_walk_finish=True))
+
+# A VBlank between the two old clock reads could leave movement scheduled
+# one tick later than the end of the reaction. That gap must not fast-forward.
+e=setup(25,179,movement_delay=1)
+e.run(4)
+assert e.state()[3]==16 and struct.unpack_from('<I',s.read(e,'scene',48),44)[0]==32
+e.run(8)
+assert e.state()[3]==16 and struct.unpack_from('<I',s.read(e,'scene',48),44)[0]>32
+e.close()
+checks.append(dict(wait_for_movement_deadline=True))
 report=dict(rom_sha256=hashlib.sha256((ROOT/'build/gba/pole.gba').read_bytes()).hexdigest(),checks=checks)
 (ROOT/'docs/verification/walk-names-tests.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

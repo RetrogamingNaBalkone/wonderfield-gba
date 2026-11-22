@@ -42,7 +42,7 @@ static u32 cash_initial_seed;
 static void cash_remote_sync(const Cash*target,u32 seed);
 static const char *message1,*message2;
 static char sector_message[32],turn_line[32];
-static u32 presentation_event;
+static volatile u32 presentation_event;
 static int message_position;
 static u32 message_tokens[2]={0xffffffffu,0xffffffffu};
 volatile u32 video_ticks;
@@ -105,7 +105,10 @@ static void intro_begin(void);
 static void reveal_begin(void);
 static int scene_tick(u16 pressed);
 static volatile u16 input_events[32],input_keys;
+static volatile u32 input_context[32];
+static volatile u16 input_stable;
 static volatile u8 input_read,input_write;
+
 static volatile u32 input_entropy;
 static volatile u32 input_seed_salt;
 static u32 input_seed_counter;
@@ -142,25 +145,45 @@ static void seed_from_input(void){
  input_seed_salt=input_entropy^mix_input(input_clock()^input_seed_counter*0x9e3779b9u);
  game.rng=mix_input(game.rng^input_seed_salt);
 }
-static void capture_keys(void){
- u16 keys=(~REG16(0x04000130))&1023,changed=keys^input_keys,pressed=keys&changed;input_keys=keys;
- link_capture_input(pressed);
+static int navigation_menu(void){
+ int mode=game.mode;
+ return mode==MENU||mode==RESTART_CONFIRM||mode==MP_SETUP||mode==MP_OPTIONS||
+        mode==MP_OPTION_HELP||mode==MP_COUNT||mode==MP_CONNECT||mode==MP_AVATAR||mode==MP_LOBBY||mode==LINK_TEST;
+}
+static volatile u16 entropy_keys;
+static void sample_input_entropy(u16 raw){
+ u16 changed=raw^entropy_keys;
  if(changed){
-  /* Capture both edges, including hold duration and releases during rendering.
-   * Keep timing separate until a new draw: pause/skip cannot reroll a spin. */
-  input_entropy=mix_input(input_entropy^input_clock()^((u32)changed<<16)^keys^video_ticks);
+  entropy_keys=raw;
+  input_entropy=mix_input(input_entropy^input_clock()^((u32)changed<<16)^raw^video_ticks);
  }
+}
+static u16 read_keys(void){return (~REG16(0x04000130))&1023;}
+static void capture_keys(u16 raw){
+ /* Accept the first down sample immediately. A new press requires four
+  * consecutive released VBlanks (six for A). Each key rearms independently. */
+ static u16 history[5];
+ u16 held=raw|history[0]|history[1]|history[2]|((history[3]|history[4])&A);
+ for(int i=4;i>0;i--)history[i]=history[i-1];
+ history[0]=raw;
+ u16 keys=raw|(input_stable&held);
+ u16 changed=keys^input_stable,pressed=keys&changed;
+ input_stable=keys;input_keys=raw;
+ link_capture_input(pressed);
  /* Queue startup A releases in order, even if a whole tap arrived while
   * rendering. The start draw must include the release's timing entropy. */
  u16 event=pressed;if(fast_input&&(changed&A)&&!(keys&A))event|=A_RELEASE;
  if(event){
-  u8 next=(input_write+1)&31;if(next!=input_read){input_events[input_write]=event;input_write=next;}
+  u8 next=(input_write+1)&31;if(next!=input_read){
+   input_context[input_write]=presentation_event;
+   input_events[input_write]=event;input_write=next;
+  }
  }
 }
-void game_irq(unsigned flags){if(flags&1){video_ticks++;capture_keys();}if(flags&128)link_irq();if(flags&2)link_hblank();speaker_irq(flags);}
+void game_irq(unsigned flags){if(flags&1){video_ticks++;u16 raw=read_keys();sample_input_entropy(raw);capture_keys(raw);}if(flags&128)link_irq();if(flags&2)link_hblank();speaker_irq(flags);}
 
 static u16 oldkeys;
-static u32 repeat_at,rendered_key=~0u,solve_fixed;
+static u32 rendered_key=~0u,solve_fixed;
 static u8 host_durations[10];
 volatile u32 rendered_frames;
 static volatile int dirty=1;
@@ -292,8 +315,12 @@ static void centered(int y,const char*s,int small,u8 c){text((240-len(s)*8)/2,y,
 static void number(int x,int y,int value,int small,u8 c){char b[12];int n=0;unsigned v=value<0?-value:value;do{b[n++]='0'+v%10;v/=10;}while(v);if(value<0)b[n++]='-';for(int i=n-1;i>=0;i--)glyph(x+(n-1-i)*8,y,b[i],small,c);}
 static void beep(int hz,int duration){game_tone(hz,duration*4);}
 static void poll_startup_keys(void){
- /* capture_keys also runs in VBlank: serialize its edge/queue updates. */
- u16 ime=REG16(0x04000208);REG16(0x04000208)=0;capture_keys();startup_input_polls++;REG16(0x04000208)=ime;
+ /* Preserve sub-frame timing for the random seed. Only VBlank queues input. */
+ if(read_keys()!=entropy_keys){
+  u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
+  sample_input_entropy(read_keys());REG16(0x04000208)=ime;
+ }
+ startup_input_polls++;
 }
 static void vblank(void){
  if(fast_input){
@@ -332,7 +359,13 @@ static int load(void){
 }
 static const char*word(void){return words[game.word_id].word;}
 static void set_mode(int mode){presentation_event++;if(mode==TITLE){scene.title_at=video_ticks-(title_seen?TITLE_READY_AT:0);title_seen=1;fast_input=1;start_pending=0;}game.mode=mode;game.wait=0;dirty=1;}
-static int message_done(u16 pressed,unsigned duration){return (pressed&A)||scene.now-scene.speech_at>=duration;}
+/* Scene deadlines are at most minutes apart. A rebased start in the
+ * near future has zero age, including when the VBlank counter wraps. */
+static u32 scene_age(u32 start){
+ int elapsed=(int)(scene.now-start);
+ return elapsed>0?(u32)elapsed:0;
+}
+static int message_done(u16 pressed,unsigned duration){return (pressed&A)||scene_age(scene.speech_at)>=duration;}
 /* Template IDs are offsets in this fingerprint-checked ROM, never RAM
  * addresses. Dynamic lines carry their arguments and are formatted locally. */
 static u32 message_token(const char*s){
@@ -379,7 +412,7 @@ static void say(const char*a,const char*b){
  dirty=1;
 }
 static void farewell(void){set_mode(GAME_OVER);game.keyboard=0;game.deal=0;say(msg_f9a,msg_fa9);}
-static void result(const char*a,const char*b,int next,int player){say(a,b);set_mode(RESULT);game.next_mode=next;game.next_player=player;game.wait=human(game.player)?0:65;}
+static void result(const char*a,const char*b,int next,int player){if(result_reason!=CHEST_RESULT)scene.chest_until=scene.now;say(a,b);set_mode(RESULT);game.next_mode=next;game.next_player=player;game.wait=human(game.player)?0:65;}
 static int nextplayer(void){int p=game.player;for(int i=0;i<3;i++){p=(p+1)%3;if(!(mp.eliminated&(1<<p)))return p;}return game.player;}
 static void begin_turn(void){int pass=mp.humans>1&&!mp.link&&human(game.player)&&mp.viewer!=game.player;if(mp.humans>1&&!mp.link&&human(game.player))mp.viewer=game.player;set_mode(TURN);game.choice=1;const char*a=mp.humans>1?(game.player==2?"Первый":game.player==0?"Второй":"Третий"):human(game.player)?msg_d9a:game.player==0?msg_d8c:msg_d93;int p=0;while(a[p]){turn_line[p]=a[p];p++;}for(int i=0;msg_da1[i];i++)turn_line[p++]=msg_da1[i];turn_line[p]=0;say(turn_line,msg_da9);if(!human(game.player))game.wait=65;if((mp.humans>1||prefs.plus)&&game.streak==3&&(mp.humans>1||human(game.player))){game.streak=0;result_reason=BONUS;result(msg_eb5,msg_ec8,CHEST,game.player);}else if(pass)set_mode(MP_PASS);}
 static void new_round(void){
@@ -530,7 +563,7 @@ static void spin_tick(u16 pressed,int authoritative){
    * its speed explicitly without changing spin_wait or the tone pitch. */
   if(game.spin_steps<=0)return;
   unsigned spin_delay=game.spin_wait<5?5:(unsigned)game.spin_wait;
-  while(game.spin_steps>0&&scene.now-scene.spin_at>=spin_delay){game.wait=0;scene.spin_half^=1;scene.spin_at+=spin_delay;dirty=1;
+  while(game.spin_steps>0&&scene_age(scene.spin_at)>=spin_delay){game.wait=0;scene.spin_half^=1;scene.spin_at+=spin_delay;dirty=1;
    if(!scene.spin_half){game.spin_ticks++;game.sector=(game.sector+15)&15;game.spin_steps--;if(game.spin_steps<8)game.spin_wait=2+(8-game.spin_steps)*2;speaker_tone(55+(game.spin_steps%10)*10+game.spin_wait*100,1);if(game.spin_steps<=0){game.sector=scene.spin_target;if(authoritative)stop_spin();}}
    spin_delay=game.spin_wait<5?5:(unsigned)game.spin_wait;
   }return;
@@ -599,7 +632,7 @@ static void menu_close(void){
  scene.title_at+=duration;scene.host_at+=duration;scene.host_phase_at+=duration;scene.chest_until+=duration;
  if(ui.origin==CASH)cash.next_at+=duration;
  /* Restoring the mode must not reset its clocks, wait, or input. */
- game.mode=ui.origin;game.wait=ui.wait;ui.active=0;dirty=1;
+ presentation_event++;game.mode=ui.origin;game.wait=ui.wait;ui.active=0;dirty=1;
 }
 /* Keep START available for saving a name, including while its menu is open. */
 static u16 menu_button(void){return (ui.active?ui.origin:game.mode)==NAME?SELECT:START;}
@@ -791,7 +824,7 @@ static void update(u16 pressed,u16 repeat){
 
  if(mp.humans>1&&game.mode==ROUND_END){if(pressed&A){mp_settle();set_mode(MP_SUMMARY);}return;}
  if(start_pending){
-  if(pressed&A_RELEASE){int select_mode=start_pending==2;start_pending=0;ui.active=ui.viewer=0;if(select_mode)mp_setup();else{mp.humans=1;mp.link=0;mp.viewer=2;options_begin();}}
+  if((pressed&A_RELEASE)||(!(input_stable&A)&&input_read==input_write)){int select_mode=start_pending==2;start_pending=0;ui.active=ui.viewer=0;if(select_mode)mp_setup();else{mp.humans=1;mp.link=0;mp.viewer=2;options_begin();}}
   return;
  }
  pressed&=~A_RELEASE;
@@ -825,8 +858,8 @@ static void update(u16 pressed,u16 repeat){
   return;
  }
  if(game.mode==AUTHORS){
-  if(pressed&B){if(ui.author_page){ui.author_page=0;dirty=1;}else set_mode(MENU);}
-  else if(pressed&A){if(!ui.author_page){ui.author_page=1;dirty=1;}else set_mode(MENU);}
+  if(pressed&B){if(ui.author_page){presentation_event++;ui.author_page=0;dirty=1;}else set_mode(MENU);}
+  else if(pressed&A){if(!ui.author_page){presentation_event++;ui.author_page=1;dirty=1;}else set_mode(MENU);}
   return;
  }
  if(game.mode==TITLE){if(pressed&A){fast_input=1;start_pending=2;}return;}
@@ -841,8 +874,8 @@ static void update(u16 pressed,u16 repeat){
  }
  if(scene_tick(pressed))return;
  if(game.mode==GIFT_PAGES){
-  if((pressed&B)&&scene.gift_page>0){scene.gift_page--;dirty=1;}
-  else if(pressed&A){if(scene.gift_page<3){scene.gift_page++;dirty=1;}else if(scene.gift_final)final_records();else if(mp.humans>1)mp_depart(0);else farewell();}
+  if((pressed&B)&&scene.gift_page>0){presentation_event++;scene.gift_page--;dirty=1;}
+  else if(pressed&A){if(scene.gift_page<3){presentation_event++;scene.gift_page++;dirty=1;}else if(scene.gift_final)final_records();else if(mp.humans>1)mp_depart(0);else farewell();}
   return;
  }
  if(game.mode==TURN){if(!human(game.player)){if(message_done(pressed,MESSAGE_TICKS))start_spin();}else{if(repeat&(LEFT|RIGHT)){int choice=(repeat&RIGHT)?1:0;if(choice!=game.choice){game.choice=choice;dirty=1;}}if(pressed&A){if(game.choice)start_spin();else solve_word();}}return;}
@@ -889,7 +922,7 @@ static void update(u16 pressed,u16 repeat){
   }return;
  }
  if(game.mode==ROUND_END&&(pressed&A)&&human(game.player)&&game.round<2){credits_begin();return;}
- if(game.mode==ROUND_END){if((pressed&A)||(human(game.player)&&game.round==2&&scene.now-scene.speech_at>=300)){if(!human(game.player))farewell();else gift_begin(1);}return;}
+ if(game.mode==ROUND_END){if((pressed&A)||(human(game.player)&&game.round==2&&scene_age(scene.speech_at)>=300)){if(!human(game.player))farewell();else gift_begin(1);}return;}
  if(game.mode==NAME){
   int old_cursor=game.cursor,old_pos=game.solve_pos;
   if(repeat&LEFT)game.cursor=(game.cursor+31)%32;if(repeat&RIGHT)game.cursor=(game.cursor+1)%32;if(repeat&UP)game.cursor=(game.cursor+24)%32;if(repeat&DOWN)game.cursor=(game.cursor+8)%32;
@@ -899,7 +932,7 @@ static void update(u16 pressed,u16 repeat){
   if(pressed&START){const char*n=game.solve_pos?(const char*)game.answer:"ИГРОК";for(int i=0;i<11;i++)record_names[record_entry][i]=i<len(n)?n[i]:0;game.best=record_scores[0];save();record_pending=0;ui.viewer=0;set_mode(RECORDS);}
   if(game.cursor!=old_cursor||game.solve_pos!=old_pos)dirty=1;return;
  }
- if(game.mode==GAME_OVER){if((pressed&A)||(game.deal==6&&scene.now-scene.speech_at>=180)){if(game.deal==6)gift_begin(0);else if(game.deal==5)farewell();else set_mode(TITLE);}return;}
+ if(game.mode==GAME_OVER){if((pressed&A)||(game.deal==6&&scene_age(scene.speech_at)>=180)){if(game.deal==6)gift_begin(0);else if(game.deal==5)farewell();else set_mode(TITLE);}return;}
 }
 /* Local lobby editing stays outside synchronized gameplay state. Every
  * console continues exchanging packets while a participant corrects a name. */
@@ -955,7 +988,7 @@ static void link_edit_avatar(u16 pressed,u16 repeat){
  /* A queued edge remains a new press even when its preceding release fell
   * between packet polls. The name-confirm action is consumed by the caller. */
  if(!link_avatar_armed){
-  if(!(pressed&(A|START))&&(REG16(0x04000130)&(A|START))!=(A|START))return;
+  if(!(pressed&(A|START))&&(input_stable&(A|START)))return;
   link_avatar_armed=1;
  }
  int count=prefs.characters?9:7,columns=(count+1)/2;
@@ -1014,14 +1047,17 @@ void gba_main(void){
  extern void gba_irq(void);REG32(0x03007ffc)=(u32)gba_irq;game.magic=0x504f4c45;REG16(0x04000204)=0x4317;game.rng=boot_seed();game.word_id=-1;game.best=load();REG16(0x04000000)=0x0404;for(int i=0;i<16;i++)((volatile u16*)0x05000000)[i]=palette[i];studio_palette();speaker_init();REG16(0x04000200)|=1;REG16(0x04000004)|=8;set_mode(TITLE);
  for(;;){
   /* VBlank queues taps even while a bitmap is being drawn. Drain in order. */
-  u16 ime=REG16(0x04000208);REG16(0x04000208)=0;capture_keys();
+  u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
   u16 keys=input_keys,pressed=0;
-  if(input_read!=input_write){pressed=input_events[input_read];input_read=(input_read+1)&31;}
+  if(input_read!=input_write){
+   pressed=input_events[input_read];
+   /* A tap captured while drawing the previous screen belongs there. */
+   if(input_context[input_read]!=presentation_event)pressed&=L;
+   input_read=(input_read+1)&31;
+  }
   REG16(0x04000208)=ime;
-  u16 repeat=pressed;
-  u32 now=video_ticks;
-  if(keys!=oldkeys||(pressed&(UP|DOWN|LEFT|RIGHT)))repeat_at=now+18;
-  else if((keys&(UP|DOWN|LEFT|RIGHT))&&(int)(now-repeat_at)>=0){repeat|=keys&(UP|DOWN|LEFT|RIGHT);repeat_at=now+5;}
+  static DirectionRepeat local_repeat;
+  u16 repeat=directional_repeat(&local_repeat,keys,pressed);
   oldkeys=keys;
   if(game.mode==LINK_TEST){
    link_test_update(pressed,repeat);
@@ -1056,7 +1092,7 @@ void gba_main(void){
      else{mp_setup();mp.choice=2;}pressed=repeat=0;
      /* The B tap may also be queued by VBlank while SIO was waiting. */
      ime=REG16(0x04000208);REG16(0x04000208)=0;
-     capture_keys();input_read=input_write;REG16(0x04000208)=ime;
+     input_read=input_write;REG16(0x04000208)=ime;
     }else set_mode(MP_ERROR);
    }
    if(link_active&&game.mode==TITLE){link_close();mp.link=0;mp.humans=1;dirty=1;}
@@ -1066,14 +1102,14 @@ void gba_main(void){
       link_join_prompt=1;link_config_mode=0;
       /* Discovery/menu taps cannot accept the invitation. */
       ime=REG16(0x04000208);REG16(0x04000208)=0;
-      capture_keys();input_read=input_write;REG16(0x04000208)=ime;
+      input_read=input_write;REG16(0x04000208)=ime;
       pressed=repeat=0;
      }
      if(pressed&A){link_create=0;link_join_prompt=0;pressed=repeat=0;}
      else{render();mute_icon();present();continue;}
     }
     if(!link_host_ready){
-     if(REG16(0x04000130)&A)link_choose_armed=1;
+     if(!(input_stable&A))link_choose_armed=1;
      if(link_host_device<0&&link_choose_armed&&(pressed&A))link_create=1;
      if(link_is_host()&&!link_setup_ready)link_edit_options(pressed,repeat);
      else{render();mute_icon();present();}
@@ -1084,7 +1120,7 @@ void gba_main(void){
      for(int i=0;i<21;i++)link_name_answer[i]=0;
      /* Waiting-screen taps captured during discovery are not name input. */
      ime=REG16(0x04000208);REG16(0x04000208)=0;
-     capture_keys();input_read=input_write;REG16(0x04000208)=ime;
+     input_read=input_write;REG16(0x04000208)=ime;
      link_avatar_edit=1;link_avatar_armed=0;pressed=repeat=0;
     }
     if(link_name_edit&&link_is_host())link_start_armed=0;
