@@ -141,9 +141,9 @@ static volatile unsigned link_armed,link_arm_kind,link_arm_n;
  * the other children's slots it needs (link_arm_need), so three consoles
  * with a child host need no relay block: the verdict covers those slots. */
 static volatile unsigned link_arm_need,link_rx_peer_crc[4];
-static volatile unsigned link_rx_state,link_rx_pos,link_rx_n,link_rx_seq,link_rx_attempt,link_rx_crc,link_rx_good,link_rx_present;
+static volatile unsigned link_rx_state,link_rx_pos,link_rx_n,link_rx_seq,link_rx_attempt,link_rx_crc,link_rx_good;
 static volatile unsigned link_pending_commit,link_pending_seq;
-static volatile unsigned link_done,link_present,link_request_ready,link_control_ready;
+static volatile unsigned link_done,link_request_ready,link_control_ready;
 /* CONTROL carries no guest data: the IRQ arms it right after REQUEST and keeps
  * its words, so a keepalive completes while the guest's main loop renders. */
 static volatile u16 link_control[2];
@@ -295,7 +295,7 @@ static unsigned link_crc16(unsigned crc,unsigned word){
 }
 static void link_commit(void){
  unsigned kind=link_arm_kind;
- link_pending_commit=0;link_present=link_rx_present;
+ link_pending_commit=0;
  link_armed=0;link_done++;
  if(kind==LINK_REQUEST){
   link_request_ready=1;
@@ -327,11 +327,12 @@ static void link_child_irq(u16 word,int error){
   link_rx_state=LINK_RX_ASK;return;
  }
  if(state==LINK_RX_ASK){
-  /* Every member answers ASK with a verdict, never 0xffff: an exact roster. */
-  unsigned present=0;for(int i=1;i<4;i++)if(link_received[i]!=0xffff)present|=1u<<i;
-  link_rx_present=present;
   REG16(0x0400012a)=LINK_IDLE;
-  link_pending_commit=link_rx_good&&!error;link_pending_seq=link_rx_seq;
+  /* Our CRC verdict was already on the wire during ASK. Even if this
+   * local completion reports ERROR, honor a subsequent clean COMMIT if
+   * the parent received OK. Discarding our vote here strands the peers
+   * on opposite sides of the same block boundary. */
+  link_pending_commit=link_rx_good;link_pending_seq=link_rx_seq;
   link_rx_state=LINK_RX_COMMIT;return;
  }
  if(state==LINK_RX_COMMIT){
@@ -366,6 +367,8 @@ enum{LINK_M_IDLE,LINK_M_PROBE,LINK_M_HEADER,LINK_M_DATA,LINK_M_CRC,LINK_M_ASK,LI
 static volatile unsigned link_m_state,link_m_kind,link_m_n,link_m_k,link_m_seq,link_m_attempt,link_m_polls,link_m_wait,link_m_ok,link_m_want,link_m_present;
 static volatile u16 link_m_next,link_m_crc,link_m_slot_crc[4],link_m_crcs[4];
 static volatile u32 link_m_sent_at;
+static unsigned link_m_missing;
+static u32 link_m_missing_since;
 static void link_m_send(u16 word){link_m_next=word;link_m_want=1;}
 static void link_m_stop(void){
  u16 ime=REG16(0x04000208);REG16(0x04000208)=0;
@@ -387,7 +390,17 @@ static void link_parent_irq(int error){
   /* Probe until every member has armed this block. */
   unsigned present=0,armed=1;u16 ready=LINK_READY|(link_m_kind<<6)|(link_m_n-1);
   for(int i=1;i<4;i++)if(slot[i]!=0xffff){present|=1u<<i;if(slot[i]!=ready&&(link_m_kind==LINK_REQUEST||(link_members&(1u<<i))))armed=0;}
-  if(link_m_kind!=LINK_REQUEST&&(link_members&~present)){link_m_state=LINK_M_FAILED;return;} /* A member left. */
+  /* Keep established members through a transient missing READY. In the
+   * lobby our own probes still complete after a child leaves, so measure
+   * how long that slot has been missing, not time since the last IRQ. */
+  unsigned missing=link_members&~present;
+  if(missing&&!error){
+   u32 now=input_clock();
+   if(missing!=link_m_missing)link_m_missing_since=now;
+   else if(now-link_m_missing_since>=16777216u){link_m_state=LINK_M_FAILED;return;}
+  }
+  link_m_missing=error?0:missing;
+  if(error||missing)armed=0;
   if(!armed){
    /* Back off to 65536 cycles: a child whose serial IRQ is delayed must get
     * a completion outside BUSY, or it would never see a probe at all. */
@@ -415,12 +428,14 @@ static void link_parent_irq(int error){
  }
  if(state==LINK_M_ASK){
   unsigned present=0;for(int i=1;i<4;i++)if(slot[i]!=0xffff)present|=1u<<i;
-  if(link_m_kind==LINK_REQUEST)link_members=present;
-  else if(link_members&~present){link_m_state=LINK_M_FAILED;return;}
-  int ok=!link_wire_bad;
-  for(int i=1;i<4;i++)if(link_members&(1u<<i)){
+  /* A missing verdict must not eject the peer or commit a smaller REQUEST.
+   * Validate the roster that answered the probe before publishing it. */
+  unsigned required=link_m_kind==LINK_REQUEST?link_m_present:link_members;
+  int ok=!link_wire_bad&&(link_m_kind!=LINK_REQUEST||present==required);
+  for(int i=1;i<4;i++)if(required&(1u<<i)){
    if(slot[i]!=(LINK_OK|link_m_attempt<<2|link_m_seq)||!(link_m_present&(1u<<i))||link_m_slot_crc[i]!=link_m_crcs[i])ok=0;
   }
+  if(ok&&link_m_kind==LINK_REQUEST)link_members=required;
   link_m_ok=ok;link_m_state=LINK_M_DECIDE;
   link_m_send((ok?LINK_COMMIT:LINK_RETRY)|link_m_seq);return;
  }
@@ -538,6 +553,7 @@ static int link_block_begin(unsigned kind,unsigned n,unsigned need){
   return 1;
  }
  link_m_kind=kind;link_m_n=n;link_m_seq=link_sequence&3;link_m_attempt=link_m_polls=link_m_wait=0;
+ link_m_missing=0;
  link_m_state=LINK_M_PROBE;link_m_send(link_last_commit);link_m_sent_at=input_clock();
  REG16(0x04000004)|=16;
  REG16(0x04000208)=ime;
@@ -705,7 +721,7 @@ static int link_packet(void){
   /* CONTROL: decisions and the owner's input, which only the host consumes. */
   {
    unsigned host=link_host_device<0?3:link_host_device;
-   link_tx[0]=0xb170|(link_step.full?2:0)|(link_step.lobby?4:0)|(!link_step.event?1:0)|(host<<9)|(link_host_ready?128:0);
+   link_tx[0]=0xb170|(link_step.full?2:0)|(link_step.lobby?4:0)|(!link_step.event?1:0)|(host<<9)|(link_host_ready?128:0)|(link_connected==3?8:0);
    link_tx[1]=link_keys;
   }
   LINK_AWAIT(link_block_begin(LINK_CONTROL,2,0));
@@ -721,8 +737,9 @@ static int link_packet(void){
    unsigned host=(control>>9)&3;link_host_device=host==3?-1:(int)host;
    link_host_ready=(control&128)!=0;
    if(!link_session&&!link_step.full)return link_mismatch(control,0xb176);
-   link_connected=1;for(int i=1;i<4;i++)if(link_present&(1u<<i))link_connected++;
-   if(link_connected>3||link_host_device>=link_connected)return 0;
+   /* Use the parent's CRC-checked roster for the committed REQUEST. */
+   link_connected=(control&8)?3:2;
+   if(link_host_device>=link_connected)return 0;
    mp.humans=link_connected;
    if(link_is_host()){link_keys=link_rx[0][1];link_keys_fresh=1;}
   }

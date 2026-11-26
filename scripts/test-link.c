@@ -19,8 +19,15 @@ static unsigned irq_delay,time_scale=1,delayed_irqs,busy_irqs;
 static uint32_t perf_stage;static unsigned stage_transfers[16];
 static void record_transfer(void){if(perf_stage){unsigned stage=c[0]->busRead32(c[0],perf_stage);if(stage<16)stage_transfers[stage]++;}}
 static uint64_t irq_due[3];
-static uint64_t clock_offset[3];
-static uint64_t cable_clock(int i){return clock_offset[i]+mTimingGlobalTime(&g[i]->timing);}
+/* mGBA 0.10.5 updates masterCycles on each tick. Extend its 32-bit
+ * current time across wraps so two cores can be scheduled by cycle. */
+static uint32_t previous_clock[3];
+static uint64_t elapsed_clock[3];
+static uint64_t cable_clock(int i){
+ uint32_t now=mTimingCurrentTime(&g[i]->timing);
+ elapsed_clock[i]+=(uint32_t)(now-previous_clock[i]);
+ previous_clock[i]=now;return elapsed_clock[i];
+}
 /* Optional fault controls used by test-link-chaos.c. */
 static unsigned irq_block_mask,ready_block,initial_role_mask;
 static void (*transfer_hook)(void);

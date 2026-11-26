@@ -114,6 +114,17 @@ static void corrupt_reply(int i){
  unsigned index=REG_SIOMULTI0/2+target,word=g[0]->memory.io[index];
  if(!fired&&payload_word(word)){g[0]->memory.io[index]^=1;fired=2;}
 }
+/* Fault on the first game input: the parent misses a READY or verdict, or
+ * the child sees ERROR while the parent receives its already prepared OK. */
+static void first_input_fault(int i){
+ if(fired||rd(0,stage_addr)!=2)return;
+ unsigned reply=sent[target],ask=(sent[0]&0xfffc)==0xe500;
+ if(i==0&&((amount==0&&reply==0x9001)||(amount==1&&ask))){
+  g[i]->memory.io[REG_SIOMULTI0/2+target]=0xffff;fired=1;
+ }else if((unsigned)i==target&&amount==2&&ask&&(reply&0xfff8)==0xb5a0){
+  g[i]->sio.siocnt|=64;fired=1;
+ }
+}
 static void arm(void){
  fired=0;
  if(kind==19)receive_hook=corrupt_reply;else if(kind==6||kind==7||kind==14||kind==21)receive_hook=corrupt;else transfer_hook=trigger;
@@ -123,6 +134,10 @@ static void arm(void){
 static void release_irq(void){
  irq_block_mask=0;
  if(g[target]->sio.mode==SIO_MULTI&&!(g[target]->sio.siocnt&128))GBARaiseIRQ(g[target],GBA_IRQ_SIO,0);
+}
+static void reset_console(unsigned i){
+ cable_clock(i);c[i]->reset(c[i]);
+ previous_clock[i]=mTimingCurrentTime(&g[i]->timing);irq_due[i]=0;
 }
 int main(int argc,char**argv){
  assert(argc==18);atexit(diagnostic);mLogSetDefaultLogger(&logger);
@@ -196,7 +211,13 @@ int main(int argc,char**argv){
   }
   else{
    start();
-   if(kind==10){uint64_t before=cable_clock(target);c[target]->reset(c[target]);clock_offset[target]=before-mTimingGlobalTime(&g[target]->timing);irq_due[target]=0;errors(target,400);run(100);assert(rd(target,game_addr+12)==0);retry();}
+   if(kind==23){
+    unsigned packets=strtoul(getenv("LINK_PACKETS_ADDR"),0,16),before[3];
+    for(int i=0;i<count;i++)before[i]=rd(i,packets);
+    receive_hook=first_input_fault;keys(0,1,12);run(300);
+    assert(fired);no_errors();
+    for(int i=0;i<count;i++){assert(rd(i,active_addr));assert(rd(i,packets)-before[i]>2);assert(rd(i,mp_addr)==(unsigned)count);}
+   }else if(kind==10){reset_console(target);errors(target,400);run(100);assert(rd(target,game_addr+12)==0);retry();}
    else if(kind==17){
     for(unsigned cycle=0;cycle<amount;cycle++){
      target=random32()%count;
@@ -205,7 +226,7 @@ int main(int argc,char**argv){
      printf("CYCLE %u target=%u action=%u rng=%u\n",cycle,target,action,seed);fflush(stdout);
      if(action==0){disconnected=target;errors(-1,400);}
      else if(action==1){
-      uint64_t before=cable_clock(target);c[target]->reset(c[target]);clock_offset[target]=before-mTimingGlobalTime(&g[target]->timing);irq_due[target]=0;
+      reset_console(target);
       errors(target,400);run(100);
      }else{ready_block=1;errors(-1,400);}
      retry();records();

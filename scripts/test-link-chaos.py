@@ -3,6 +3,7 @@ import argparse, concurrent.futures, hashlib, json, os, shlex, subprocess, time
 from pathlib import Path
 from emulator import ROOT, symbols
 CASE_NAMES={0:'startup order',1:'cancel waiting and retry',2:'cancel lobby and retry',3:'break cable chain',4:'pause SD-ready',5:'pause serial IRQ',6:'single hardware error recovered',7:'corrupt snapshot',8:'suppress first IRQ',9:'unplug/replug',10:'reset console',11:'hot-add third console',12:'random buttons and IRQ jitter',13:'timer wrap',14:'corrupt build fingerprint',15:'cancel initial packet',16:'ambiguous initial SI',17:'repeated mixed failures',18:'replay stale block',19:'corrupt child reply',20:'persistent payload corruption',21:'snapshot baseline recovery',22:'lobby departure deadline'}
+CASE_NAMES[23]='first game input with a missing reply or asymmetric ASK error'
 p=argparse.ArgumentParser(description=__doc__,epilog='Cases: '+', '.join(f'{k}={v}' for k,v in CASE_NAMES.items()))
 p.add_argument('--host',type=int,choices=(0,1,2),default=0)
 p.add_argument('--jobs',type=int,default=3)
@@ -15,7 +16,7 @@ p.add_argument('--amount',type=int,default=60)
 p.add_argument('--rom',type=Path,default=ROOT/'build/gba/pole.gba')
 p.add_argument('--elf',type=Path,default=ROOT/'build/gba/pole.elf')
 p.add_argument('--report',type=Path,default=ROOT/'build/qa/link-chaos.json')
-p.add_argument('--matrix', choices=('full','startup','wrap','stateful','bootstrap','crc','recovery','departure'), default='full')
+p.add_argument('--matrix', choices=('full','startup','wrap','stateful','bootstrap','crc','recovery','departure','first-input'), default='full')
 a=p.parse_args()
 os.environ['LINK_AUTHORITY']=str(a.host)
 if a.case is not None and a.host>=a.count:p.error('host port must exist in the requested console count')
@@ -26,6 +27,7 @@ for line in (build/'CMakeFiles/mgba.dir/flags.make').read_text().splitlines():
 exe=ROOT/'build/qa'/('test-link-chaos-'+a.report.stem);exe.parent.mkdir(parents=True,exist_ok=True)
 subprocess.run(['cc',*flags,str(ROOT/'scripts/test-link-chaos.c'),'-L'+str(build),'-Wl,-rpath,'+str(build),'-lmgba','-o',str(exe)],check=True)
 s=symbols(a.elf);os.environ['LINK_SNAPSHOT_ADDR']=hex(s['link_snapshot']);s['prefs']=s.get('prefs',s.get('prefs.0'))
+if 'link_packets' in s:os.environ['LINK_PACKETS_ADDR']=hex(s['link_packets'])
 for key in ('link_create','link_avatar_edit','link_name_edit'):
  if key in s:os.environ[key.upper()+'_ADDR']=hex(s[key])
  else:os.environ.pop(key.upper()+'_ADDR',None)
@@ -55,6 +57,7 @@ else:
    add(n,6,phase=phase)
   add(n,7,phase=6);add(n,14,phase=3);add(n,20,phase=3)
   for node in range(1,n):
+   for fault in range(3):add(n,23,target=node,amount=fault)
    add(n,18,target=node,amount=1)
    for stage in (2,3,6,7):add(n,19,target=node,phase=stage)
   for duration in (60,180):add(n,13,amount=duration)
@@ -62,6 +65,7 @@ else:
   for seed in (1,17,123,0xC0FFEE):add(n,17,seed=seed,amount=6)
  add(3,11,target=2)
  if a.matrix=='startup':cases=[c for c in cases if c['kind']==0]
+ if a.matrix=='first-input':cases=[c for c in cases if c['kind']==23]
  if a.matrix=='wrap':cases=[c for c in cases if c['kind']==13]
  if a.matrix=='stateful':cases=[c for c in cases if c['kind']==17]
  if a.matrix=='crc':cases=[c for c in cases if c['kind'] in (7,14,18,19,20)]
