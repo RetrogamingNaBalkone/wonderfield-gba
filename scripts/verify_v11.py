@@ -44,7 +44,7 @@ def letter(ch):e.poke(70,ch-128);e.tap(8)
 def answer():return c.string_at(e.ramgame+352,21)
 
 title_pixels=ppu(title_raw);font6=asset('font6',256*6)
-version=b'2.0beta3';version_x=230-len(version)*4
+version=b'2.0';version_x=230-len(version)*4
 logo_w,logo_h,logo_addr=struct.unpack_from('<III',rom,e.sym['title_logos']-0x08000000+12)
 def title_label_pixel(x,y):
  i,col=divmod(x-version_x,4)
@@ -53,7 +53,7 @@ def title_label_pixel(x,y):
   color=rom[logo_addr-0x08000000+(y-23)*logo_w+x-104]
   if color!=7:return color
  return 6 if (x-5)%23==0 else 7
-check('full beta version is right-aligned over the original grid and logo',
+check('release version is right-aligned over the original grid and logo',
       all(title_pixels[y*240+x]==title_label_pixel(x,y) for y in range(122,128) for x in range(version_x,230)))
 check('version keeps the grid cell border intact',all(title_pixels[y*240+234]==6 for y in range(115,134)) and all(title_pixels[134*240+x]==6 for x in range(213,235)))
 check('version no longer touches the dedication',all(title_pixels[y*240+x]==7 for y in range(8) for x in range(208,232)))

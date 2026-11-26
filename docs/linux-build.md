@@ -23,7 +23,7 @@ python3 -m venv .venv
 
 ## Результаты и проверки
 
-- `dist/pole.2.0beta3.gba` — ROM для эмулятора или флеш-картриджа.
+- `dist/pole.2.0.gba` — ROM для эмулятора или флеш-картриджа.
 - `build/gba/pole.gba` — рабочая копия ROM.
 - `build/gba/pole.elf` и `build/gba/pole.map` — символы и карта линковки.
 - `build/gba/build-report.json` — размер ROM, SHA-256 и контрольная сумма заголовка.
